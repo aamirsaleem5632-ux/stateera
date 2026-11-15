@@ -14,7 +14,7 @@ export const BottomNav: React.FC = () => {
     { label: t.nav.home, href: "/", icon: Home },
     { label: t.nav.explore, href: "/explore", icon: Compass },
     { label: t.nav.portfolio, href: "/dashboard", icon: PieChart },
-    { label: t.common.status, href: "/reports", icon: Bookmark },
+    { label: t.nav.reports, href: "/reports", icon: Bookmark },
     { label: t.nav.wallet, href: "/wallet", icon: Wallet },
   ];
 

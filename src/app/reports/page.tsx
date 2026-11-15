@@ -28,6 +28,8 @@ import {
 } from "recharts";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
+import Link from "next/link";
 
 export default function ReportsPage() {
   const { properties, holdings, payoutHistory, totalPortfolioValue, monthlyEstimatedIncome } = useDemo();
@@ -81,15 +83,15 @@ export default function ReportsPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-mint text-emerald-900">
-              Audited Financials
+              Verified Records
             </span>
-            <span className="text-xs text-[#8782A3]">DEMO DATA</span>
+            <span className="text-xs text-[#8782A3]">DEMO PRACTICE DATA</span>
           </div>
           <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Reports & Financial Analytics
+            Reports & Insights
           </h1>
           <p className="text-xs sm:text-sm text-[#585375]">
-            Consolidated statements, Net Operating Income (NOI), and investor distribution audits.
+            Simple summaries of rent collected from tenants, running costs, and rent money paid to share owners.
           </p>
         </div>
 
@@ -109,6 +111,23 @@ export default function ReportsPage() {
             <span>Export CSV</span>
           </button>
         </div>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>What to look for:</strong> Check <strong>"Money Left After Costs"</strong> to see how much profit is left to pay out to investors after building bills.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>What is NOI? See Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Report Type Selector Toolbar */}
@@ -166,24 +185,40 @@ export default function ReportsPage() {
       {/* Executive Summary Metrics */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] font-semibold uppercase">Gross Rent Collected</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-[#8782A3] font-semibold uppercase">Rent from Tenants</span>
+            <InfoTooltip termId="gross-rental-yield" size="sm" />
+          </div>
           <div className="text-2xl font-black text-[#1E1B4B]">$724,700</div>
-          <div className="text-[11px] text-emerald-600 font-bold">98.4% On-time tenant collection</div>
+          <div className="text-[11px] text-emerald-600 font-bold">98.4% Rent paid on time</div>
+          <span className="text-[10px] text-[#8782A3] block">Before any costs</span>
         </div>
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] font-semibold uppercase">Operating Expenses</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-[#8782A3] font-semibold uppercase">Running Costs</span>
+            <InfoTooltip termId="operating-expenses" size="sm" />
+          </div>
           <div className="text-2xl font-black text-[#585375]">$109,400</div>
-          <div className="text-[11px] text-[#8782A3]">15.1% Operating Expense Ratio</div>
+          <div className="text-[11px] text-[#8782A3]">15.1% of total rent</div>
+          <span className="text-[10px] text-[#8782A3] block">Taxes, repairs, bills</span>
         </div>
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] font-semibold uppercase">Net Operating Income (NOI)</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-[#8782A3] font-semibold uppercase">Money Left After Costs (NOI)</span>
+            <InfoTooltip termId="noi" size="sm" />
+          </div>
           <div className="text-2xl font-black text-[#7C4DFF]">$615,300</div>
-          <div className="text-[11px] text-emerald-600 font-bold">+5.2% vs previous period</div>
+          <div className="text-[11px] text-emerald-600 font-bold">+5.2% vs last quarter</div>
+          <span className="text-[10px] text-[#8782A3] block">Profit before sharing</span>
         </div>
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] font-semibold uppercase">Distributions Credited</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-[#8782A3] font-semibold uppercase">Rent Paid to Investors</span>
+            <InfoTooltip termId="rent-payments" size="sm" />
+          </div>
           <div className="text-2xl font-black text-emerald-600">$553,770</div>
-          <div className="text-[11px] text-[#585375]">90% Net distributable flow</div>
+          <div className="text-[11px] text-[#585375]">90% of money left</div>
+          <span className="text-[10px] text-[#8782A3] block">Paid into wallets</span>
         </div>
       </div>
 
@@ -192,14 +227,14 @@ export default function ReportsPage() {
         <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
           <div>
             <h3 className="font-bold text-base text-[#1E1B4B]">
-              Income, Operating Expenses & NOI Trend
+              Rent Collected, Running Costs & Money Left
             </h3>
             <p className="text-xs text-[#585375]">
-              Gross tenant rent collections minus operating expenses and capital reserves.
+              Shows total rent collected from tenants minus property upkeep costs.
             </p>
           </div>
           <span className="text-xs font-bold text-[#7C4DFF] bg-[#F3EAFC] px-2.5 py-1 rounded-full">
-            Reconciled
+            All Records Match
           </span>
         </div>
 
@@ -212,9 +247,9 @@ export default function ReportsPage() {
                 contentStyle={{ backgroundColor: "#1E1B4B", borderRadius: "0.75rem", color: "#fff", fontSize: "12px" }}
               />
               <Legend />
-              <Bar dataKey="grossRent" name="Gross Rent" fill="#7C4DFF" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="operatingExpenses" name="Operating Expenses" fill="#F43F5E" radius={[4, 4, 0, 0]} />
-              <Bar dataKey="noi" name="Net Operating Income (NOI)" fill="#10B981" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="grossRent" name="Rent from Tenants" fill="#7C4DFF" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="operatingExpenses" name="Running Costs" fill="#F43F5E" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="noi" name="Money Left After Costs (NOI)" fill="#10B981" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>

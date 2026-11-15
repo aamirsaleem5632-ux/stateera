@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import {
@@ -14,10 +14,13 @@ import {
   Activity,
   UserCheck,
   Clock,
+  ArrowRight,
 } from "lucide-react";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InvestorUser, PropertyApprovalQueueItem, PlatformAuditLog } from "@/types/admin";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
+import Link from "next/link";
 
 const INITIAL_INVESTORS: InvestorUser[] = [
   {
@@ -164,16 +167,33 @@ export default function AdminPortalPage() {
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-red-100 text-red-900">
-            System Administration
+            Platform Controls
           </span>
-          <span className="text-xs text-[#8782A3]">ROOT ACCESS • ROLE-BASED ACCESS CONTROL</span>
+          <span className="text-xs text-[#8782A3]">SIMULATED ADMIN CONTROLS</span>
         </div>
         <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-          Platform Administrator Portal
+          Platform Management & Controls
         </h1>
         <p className="text-xs sm:text-sm text-[#585375]">
-          Global platform liquidity, investor KYC audit queue, offering approvals, and immutable audit logs.
+          Review investor identity checks, approve new property listings, and inspect system records.
         </p>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">ðŸ’¡</span>
+          <span>
+            <strong>Next Step:</strong> Click <strong>&quot;Investor Management&quot;</strong> to approve pending KYC identity checks, or <strong>&quot;Building Approvals&quot;</strong> to verify listings.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>What is KYC? See Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {feedback && (
@@ -192,31 +212,34 @@ export default function AdminPortalPage() {
         </div>
 
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] uppercase font-bold">Total Registered Investors</span>
+          <span className="text-xs text-[#8782A3] uppercase font-bold">Registered Investors</span>
           <div className="text-2xl font-black text-[#7C4DFF]">48,512</div>
-          <div className="text-[11px] text-[#585375]">94% KYC Completion Rate</div>
+          <div className="text-[11px] text-[#585375]">94% Identity check completed</div>
         </div>
 
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] uppercase font-bold">Active Properties</span>
-          <div className="text-2xl font-black text-[#1E1B4B]">{properties.length} Assets</div>
-          <div className="text-[11px] text-emerald-600 font-bold">100% Freehold Title Audited</div>
+          <span className="text-xs text-[#8782A3] uppercase font-bold">Live Buildings</span>
+          <div className="text-2xl font-black text-[#1E1B4B]">{properties.length} Buildings</div>
+          <div className="text-[11px] text-emerald-600 font-bold">100% Ownership papers checked</div>
         </div>
 
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] uppercase font-bold">Escrow Liquidity Buffer</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-[#8782A3] uppercase font-bold">Emergency Reserve Fund</span>
+            <InfoTooltip termId="escrow" size="sm" />
+          </div>
           <div className="text-2xl font-black text-emerald-600">$14,200,000</div>
-          <div className="text-[11px] text-[#585375]">Tier-1 Bank Custody</div>
+          <div className="text-[11px] text-[#585375]">Protected emergency backup</div>
         </div>
       </div>
 
       {/* Tabs */}
       <div className="flex items-center gap-2 border-b border-[#E6D8F5] pb-2 overflow-x-auto no-scrollbar">
         {[
-          { id: "overview", label: "Overview & Transactions" },
-          { id: "investors", label: "Investor Management & KYC" },
-          { id: "approvals", label: "Property Approval Queue" },
-          { id: "audit", label: "Security & Audit Logs" },
+          { id: "overview", label: "Overview & Money Records" },
+          { id: "investors", label: "Investor Management" },
+          { id: "approvals", label: "Building Safety Approvals" },
+          { id: "audit", label: "Activity Records" },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -362,10 +385,10 @@ export default function AdminPortalPage() {
                     </span>
                   </div>
                   <div className="text-[#585375]">
-                    {item.city} • Developer: <strong>{item.developer}</strong> • Manager: {item.managerName}
+                    {item.city} â€¢ Developer: <strong>{item.developer}</strong> â€¢ Manager: {item.managerName}
                   </div>
                   <div className="text-[#8782A3] text-[11px]">
-                    Valuation: <strong>${item.proposedValuation.toLocaleString()}</strong> • Projected Net Yield: <strong>{item.projectedNetYield}%</strong>
+                    Valuation: <strong>${item.proposedValuation.toLocaleString()}</strong> â€¢ Projected Net Yield: <strong>{item.projectedNetYield}%</strong>
                   </div>
                 </div>
 
@@ -378,7 +401,7 @@ export default function AdminPortalPage() {
                   </button>
                 ) : (
                   <span className="text-xs font-bold text-emerald-700 bg-mint px-3 py-1 rounded-xl">
-                    ✓ Approved Offering
+                    âœ“ Approved Offering
                   </span>
                 )}
               </div>
@@ -402,7 +425,7 @@ export default function AdminPortalPage() {
                   <div className="font-bold text-[#1E1B4B]">{log.action}</div>
                   <div className="text-[11px] text-[#585375]">{log.details}</div>
                   <div className="text-[10px] text-[#8782A3]">
-                    Actor: {log.actorName} ({log.actorRole}) • IP: {log.ipAddress}
+                    Actor: {log.actorName} ({log.actorRole}) â€¢ IP: {log.ipAddress}
                   </div>
                 </div>
                 <div className="text-right text-[11px] text-[#8782A3]">{log.timestamp}</div>

@@ -16,6 +16,7 @@ import {
 import { Property } from "@/types/property";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
 
 interface PropertyCardProps {
   property: Property;
@@ -83,9 +84,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             <span>{property.city}, {property.country}</span>
           </div>
 
-          <div className="bg-mint text-emerald-900 font-black px-2.5 py-1 rounded-lg text-xs shadow-sm flex items-center gap-1">
+          <div className="bg-mint text-emerald-900 font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm flex items-center gap-1">
             <TrendingUp className="w-3.5 h-3.5 text-emerald-700" />
-            <span>{property.netYield}% Net Yield</span>
+            <span>{property.netYield}% Yearly Return</span>
           </div>
         </div>
       </div>
@@ -106,27 +107,39 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         {/* Key Metrics Grid */}
         <div className="grid grid-cols-3 gap-2 py-2.5 px-3 rounded-xl bg-[#F8F4FD] border border-[#E6D8F5] text-xs">
           <div>
-            <span className="text-[10px] text-[#8782A3] block uppercase font-medium">Share Price</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-[#8782A3] block uppercase font-medium">1 Share</span>
+              <InfoTooltip termId="fractional-shares" size="sm" />
+            </div>
             <span className="font-bold text-[#1E1B4B]">${property.sharePrice}</span>
+            <span className="text-[9px] text-[#8782A3] block">Entry price</span>
           </div>
           <div>
-            <span className="text-[10px] text-[#8782A3] block uppercase font-medium">Est. Rent/Mo</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-[#8782A3] block uppercase font-medium">Rent / Mo</span>
+              <InfoTooltip termId="rent-payments" size="sm" />
+            </div>
             <span className="font-bold text-emerald-700">${property.estimatedMonthlyRent.toLocaleString()}</span>
+            <span className="text-[9px] text-[#8782A3] block">Whole property</span>
           </div>
           <div>
-            <span className="text-[10px] text-[#8782A3] block uppercase font-medium">AI Confidence</span>
+            <div className="flex items-center gap-1">
+              <span className="text-[10px] text-[#8782A3] block uppercase font-medium">Safe Check</span>
+              <InfoTooltip termId="property-checks" size="sm" />
+            </div>
             <span className="font-bold text-[#7C4DFF] flex items-center gap-0.5">
               <ShieldCheck className="w-3.5 h-3.5" />
               {property.aiValuationConfidence}%
             </span>
+            <span className="text-[9px] text-[#8782A3] block">Confidence</span>
           </div>
         </div>
 
         {/* Funding Progress Bar */}
         <div className="space-y-1">
           <div className="flex items-center justify-between text-[11px] text-[#585375]">
-            <span>Funded: <strong className="text-[#1E1B4B]">{property.fundedPercentage}%</strong></span>
-            <span>Available: <strong className="text-[#7C4DFF]">{property.availableShares.toLocaleString()}</strong> shares</span>
+            <span>Invested: <strong className="text-[#1E1B4B]">{property.fundedPercentage}%</strong></span>
+            <span>Shares left: <strong className="text-[#7C4DFF]">{property.availableShares.toLocaleString()}</strong></span>
           </div>
           <div className="w-full bg-[#E6D8F5] h-2 rounded-full overflow-hidden">
             <div

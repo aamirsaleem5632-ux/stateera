@@ -12,9 +12,12 @@ import {
   AlertCircle,
   ThumbsUp,
   ThumbsDown,
+  ArrowRight,
 } from "lucide-react";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
+import Link from "next/link";
 
 interface Proposal {
   id: string;
@@ -92,16 +95,33 @@ export default function GovernancePage() {
       <div>
         <div className="flex items-center gap-2 mb-1">
           <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-mint text-emerald-900">
-            Shareholder Governance
+            Owner Voting & Decisions
           </span>
-          <span className="text-xs text-[#8782A3]">SIMULATED REGISTRY</span>
+          <span className="text-xs text-[#8782A3]">SIMULATED RECORDS</span>
         </div>
         <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-          Ownership & Governance Centre
+          Owner Updates & Big Decisions
         </h1>
         <p className="text-xs sm:text-sm text-[#585375]">
-          Exercise shareholder voting rights, inspect ownership allocations, and review asset management resolutions.
+          As a part-owner of buildings, you get a vote on big decisions like solar panel upgrades and building manager contracts.
         </p>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>How voting works:</strong> 1 share = 1 vote. If you own 10 shares, your vote counts as 10 votes. Click <strong>"Vote YES"</strong> or <strong>"Vote NO"</strong> below to test.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>See Simple Terms Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {feedback && (
@@ -114,8 +134,11 @@ export default function GovernancePage() {
       {/* Shareholder Voting Proposals */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-bold text-[#1E1B4B]">Active Shareholder Resolutions</h2>
-          <span className="text-xs text-[#8782A3]">Weighted by fractional share count</span>
+          <div className="flex items-center gap-1.5">
+            <h2 className="text-xl font-bold text-[#1E1B4B]">Decisions That Need Your Vote</h2>
+            <InfoTooltip termId="governance" size="sm" />
+          </div>
+          <span className="text-xs text-[#8782A3]">Weighted by how many shares you own</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -194,11 +217,14 @@ export default function GovernancePage() {
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
           <div>
-            <h3 className="font-bold text-base text-[#1E1B4B]">Ownership Share Allocation Register</h3>
-            <p className="text-xs text-[#585375]">Simulated cap-table and equity distributions:</p>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-bold text-base text-[#1E1B4B]">List of Building Owners & Shares</h3>
+              <InfoTooltip termId="owners-list" size="sm" />
+            </div>
+            <p className="text-xs text-[#585375]">Shows how parts (shares) of each building are divided between investors:</p>
           </div>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-mint text-emerald-900">
-            Immutable Registry
+            Digital Record
           </span>
         </div>
 
@@ -206,11 +232,11 @@ export default function GovernancePage() {
           <table className="w-full text-left text-xs">
             <thead>
               <tr className="border-b border-[#E6D8F5] text-[#8782A3] uppercase text-[10px]">
-                <th className="pb-3">Property Name</th>
+                <th className="pb-3">Building Name</th>
                 <th className="pb-3">Total Shares</th>
-                <th className="pb-3">Institutional Shares</th>
-                <th className="pb-3">Retail Community Shares</th>
-                <th className="pb-3 text-right">Free Float %</th>
+                <th className="pb-3">Big Investors</th>
+                <th className="pb-3">Community Members</th>
+                <th className="pb-3 text-right">Shares Left to Buy</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F3EAFC]">

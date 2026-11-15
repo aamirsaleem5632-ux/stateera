@@ -14,9 +14,12 @@ import {
   ShieldCheck,
   Bell,
   MessageSquare,
+  ArrowRight,
 } from "lucide-react";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
+import Link from "next/link";
 
 export default function TenantPortalPage() {
   const {
@@ -77,12 +80,29 @@ export default function TenantPortalPage() {
             <span className="text-xs text-[#8782A3]">Tenant ID: TNT-9082</span>
           </div>
           <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Tenant & Leasing Portal
+            Tenant & Renter Portal
           </h1>
           <p className="text-xs sm:text-sm text-[#585375]">
-            Review lease covenants, pay monthly rent, and submit maintenance work orders.
+            Check your lease terms, pay your monthly rent, and request home repairs.
           </p>
         </div>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>Next Step:</strong> Click the purple <strong>"Pay Monthly Rent"</strong> button below to test how tenant rent flows to property investors.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>See Simple Terms Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Feedback Banner */}
@@ -107,13 +127,13 @@ export default function TenantPortalPage() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#F3EAFC] gap-4">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-[#7C4DFF]">
-                Active Master Lease
+                Current Home Lease
               </span>
               <h2 className="text-2xl font-black text-[#1E1B4B] mt-0.5">
                 {activeLease.propertyTitle} • {activeLease.unitNumber}
               </h2>
               <div className="text-xs text-[#585375]">
-                Lease Holder: <strong>{activeLease.tenantName}</strong>
+                Renter: <strong>{activeLease.tenantName}</strong>
               </div>
             </div>
 

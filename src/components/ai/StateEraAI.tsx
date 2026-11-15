@@ -65,39 +65,39 @@ export const StateEraAI: React.FC = () => {
   const contextualPrompts = React.useMemo(() => {
     if (pathname.includes("/property/")) {
       return [
-        "Explain this property's gross vs net rental yield",
-        "What are the key due diligence verification results?",
-        "How much monthly rent would 10 shares generate?",
-        "What are the occupancy trends and tenant covenants?",
+        "How much rent would 10 shares earn each month?",
+        "Is this property safe? Show legal checks",
+        "Explain rent return before vs after costs",
+        "Who is renting this building right now?",
       ];
     }
     if (pathname.includes("/dashboard") || pathname.includes("/wallet")) {
       return [
-        "Review my current portfolio performance and yield",
-        "How do automated monthly rental payouts work?",
-        "How can I reinvest my demo cash balance?",
-        "Show my highest performing fractional holding",
+        "How much rent do I make every month?",
+        "How do monthly rent payments work?",
+        "How do I add more practice money?",
+        "Which property earns me the most rent?",
       ];
     }
     if (pathname.includes("/manager")) {
       return [
-        "How to log monthly tenant rent collections?",
-        "What is the average NOI and operating expense ratio?",
-        "Show active maintenance work orders",
+        "How do I record rent collected from tenants?",
+        "How much profit is left after property bills?",
+        "Show current repair jobs",
       ];
     }
     if (pathname.includes("/tenant")) {
       return [
-        "How do I pay monthly rent with my demo wallet?",
-        "Submit a new maintenance inspection request",
-        "Explain tenant lease agreement terms",
+        "How do I pay my monthly rent?",
+        "Ask for a home repair",
+        "Explain my lease agreement terms",
       ];
     }
     if (pathname.includes("/admin")) {
       return [
-        "Summarize platform asset volume and KYC status",
-        "Review new property compliance submissions",
-        "Check simulated distribution liquidity health",
+        "How many investors have checked their identity?",
+        "Check new buildings waiting for approval",
+        "Check emergency reserve funds",
       ];
     }
     return [
@@ -362,21 +362,21 @@ function generateAIResponse(
   const time = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 
   // 1. Yield & Return Calculations
-  if (q.includes("gross") || q.includes("net") || q.includes("yield") || q.includes("difference")) {
+  if (q.includes("gross") || q.includes("net") || q.includes("yield") || q.includes("difference") || q.includes("cost") || q.includes("return")) {
     return {
       id: `ai-${Date.now()}`,
       sender: "ai",
-      text: `**Gross Yield vs Net Yield Explained:**\n\n• **Gross Rental Yield** = (Annual Gross Rent / Property Valuation) × 100.\n• **Net Rental Yield** = (Annual Gross Rent - Operating Expenses - Maintenance Reserves - Management Fees) / Property Valuation × 100.\n\nOn StateEra, all distributions are paid from **Net Distributable Income**. Across our curated assets, average gross yield is **10.1%** and projected net yield is **8.7%**.`,
+      text: `**Yearly Rent Return (Before vs After Costs):**\n\n• **Before Costs (Gross Return):** The total rent collected from the renter before paying any bills.\n• **After Costs (Net Return):** What you actually keep in your pocket after paying property taxes, building insurance, cleaning, and repair savings.\n\n**Example:** If a building collects 10.1% rent per year, but costs 1.4% in running bills, you pocket **8.7% yearly rent**.\n\nAll monthly rent payouts on StateEra are paid directly from net rent into your wallet.`,
       timestamp: time,
       action: {
-        label: "Compare All Property Yields",
+        label: "Compare All Property Returns",
         path: "/explore",
       },
     };
   }
 
   // 2. Investment calculation query (e.g. $500 or shares)
-  if (q.includes("calculate") || q.includes("500") || q.includes("invest") || q.includes("return")) {
+  if (q.includes("calculate") || q.includes("500") || q.includes("invest") || q.includes("10 shares") || q.includes("rent")) {
     const sampleProperty = properties[0];
     const sharesFor500 = Math.floor(500 / sampleProperty.sharePrice);
     const estMonthlyPayout = (sharesFor500 * sampleProperty.monthlyPerShareRent).toFixed(2);
@@ -385,7 +385,7 @@ function generateAIResponse(
     return {
       id: `ai-${Date.now()}`,
       sender: "ai",
-      text: `**Illustrative Calculation for a $500 Investment:**\n\nUsing **${sampleProperty.title}** (Share Price: $${sampleProperty.sharePrice}, Net Yield: ${sampleProperty.netYield}%):\n\n• **Fractional Shares Acquired:** ${sharesFor500} shares ($${sharesFor500 * sampleProperty.sharePrice})\n• **Est. Monthly Rental Dividend:** $${estMonthlyPayout} / month\n• **Est. Annual Rental Return:** $${estAnnualPayout} / year\n\n*All payments are credited automatically to your demo wallet on the 1st of each month.*`,
+      text: `**Example of what a $500 investment earns:**\n\nUsing **${sampleProperty.title}** (1 share costs $${sampleProperty.sharePrice}, pays ${sampleProperty.netYield}% yearly rent after costs):\n\n• **Shares you get:** ${sharesFor500} shares ($${sharesFor500 * sampleProperty.sharePrice})\n• **Estimated rent paid to you:** $${estMonthlyPayout} every month\n• **Estimated rent for the year:** $${estAnnualPayout} per year\n\n*All rent is credited straight into your wallet on the 1st of every month.*`,
       timestamp: time,
       action: {
         label: `View ${sampleProperty.title}`,
@@ -400,31 +400,31 @@ function generateAIResponse(
     const list = highYields
       .slice(0, 3)
       .map(
-        (p) => `• **${p.title}** (${p.city}, ${p.country}): **${p.netYield}%** Net Yield ($${p.sharePrice}/share)`
+        (p) => `• **${p.title}** (${p.city}, ${p.country}): **${p.netYield}%** Yearly Return ($${p.sharePrice} / share)`
       )
       .join("\n");
 
     return {
       id: `ai-${Date.now()}`,
       sender: "ai",
-      text: `**Top High-Yield Assets on StateEra:**\n\n${list}\n\nEach asset has audited title deeds, corporate tenancies, and automated monthly escrow distributions.`,
+      text: `**Top Rent-Earning Properties on StateEra:**\n\n${list}\n\nEach building has verified ownership deeds, reliable corporate renters, and monthly rent payouts into your wallet.`,
       timestamp: time,
       action: {
-        label: "Explore High-Yield Properties",
+        label: "Explore Top Properties",
         path: "/explore",
       },
     };
   }
 
   // 4. Due Diligence and Risk Analysis
-  if (q.includes("due diligence") || q.includes("risk") || q.includes("legal") || q.includes("audit") || q.includes("document")) {
+  if (q.includes("due diligence") || q.includes("risk") || q.includes("legal") || q.includes("audit") || q.includes("safe") || q.includes("document")) {
     return {
       id: `ai-${Date.now()}`,
       sender: "ai",
-      text: `**StateEra Due Diligence & Risk Framework:**\n\nEvery property listed undergoes a 4-tier verification:\n1. **Legal & Freehold Title:** Verification with local Land Registries (e.g. Dubai DLD, NY ACRIS, UK Land Registry).\n2. **Engineering & MEP Inspection:** Bureau Veritas structural audits ensuring zero deferred capital maintenance.\n3. **Financial & Escrow Audit:** Big-4 historical cash flow & tenant payment reconciliation.\n4. **Comprehensive Insurance:** All-risk replacement and loss-of-rent coverage.\n\n*You can inspect and download all legal documents in the Due Diligence Centre on any property page.*`,
+      text: `**Is this property safe? How we check:**\n\nEvery building listed on StateEra goes through 4 simple checks:\n1. **Ownership Papers:** Verified with official land registry records to confirm clear ownership.\n2. **Building Condition:** Certified engineers inspect plumbing, elevators, and physical structure.\n3. **Renter Payment History:** We check that tenants have paid rent on time without missing months.\n4. **Insurance:** Full insurance protects against physical damage or lost rent.\n\nYou can inspect all certificates on the **Property Checks** tab of any property page.`,
       timestamp: time,
       action: {
-        label: "Inspect Due Diligence Records",
+        label: "Inspect Property Checks",
         path: `/property/${properties[0].id}`,
       },
     };
@@ -435,10 +435,10 @@ function generateAIResponse(
     return {
       id: `ai-${Date.now()}`,
       sender: "ai",
-      text: `**Your Investor Account Overview:**\n\n• **Demo Cash Balance:** $${walletBalance.toLocaleString()}\n• **Total Portfolio Value:** $${totalPortfolioValue.toLocaleString()}\n• **Properties Owned:** ${holdings.length} active fractional holdings\n\nWould you like to simulate a monthly rental payout or explore new properties to diversify?`,
+      text: `**Your Investments & Wallet Summary:**\n\n• **Practice Cash in Wallet:** $${walletBalance.toLocaleString()}\n• **Total Value of Your Shares:** $${totalPortfolioValue.toLocaleString()}\n• **Properties You Own Shares In:** ${holdings.length} buildings\n\nWould you like to test a rent payout or buy shares in another building?`,
       timestamp: time,
       action: {
-        label: "Go to Investor Dashboard",
+        label: "Go to My Investments",
         path: "/dashboard",
       },
     };
@@ -449,10 +449,10 @@ function generateAIResponse(
     return {
       id: `ai-${Date.now()}`,
       sender: "ai",
-      text: `**How Fractional Ownership Works on StateEra:**\n\n1. **Asset Tokenization:** Institutional-grade properties are divided into affordable fractional shares starting at $50-$200.\n2. **Instant Investment:** Purchase shares using your demo wallet balance.\n3. **Monthly Rental Dividends:** Collect passive rental payouts deposited directly to your wallet every month.\n4. **Capital Appreciation & Liquidity:** Trade your shares on the secondary market or hold as the property value grows.`,
+      text: `**How Buying Shares in Property Works:**\n\n1. **Small Parts (Shares):** Instead of needing millions to buy an entire building, each building is split into small parts starting from $50.\n2. **Pick Your Shares:** You choose how many shares to buy using your wallet balance.\n3. **Collect Rent Monthly:** Rent collected from the building's tenants is paid straight to your wallet on the 1st of every month.\n4. **Sell Whenever You Want:** You can keep your shares to earn rent, or sell them to other investors on the trading page anytime.`,
       timestamp: time,
       action: {
-        label: "Try Interactive Demo",
+        label: "Try Buying Shares",
         path: "/explore",
       },
     };
@@ -462,10 +462,10 @@ function generateAIResponse(
   return {
     id: `ai-${Date.now()}`,
     sender: "ai",
-    text: `I'm analyzing your query regarding "${query}".\n\nOn StateEra, you can explore **${properties.length} international properties**, execute fractional trades, inspect engineering due diligence, and monitor monthly rental yields. What specific property or calculation would you like to explore?`,
+    text: `I'm happy to help you with "${query}".\n\nOn StateEra, you can explore **${properties.length} real buildings**, buy small shares starting at $50, collect monthly rent, and inspect building safety checks. What would you like to explore?`,
     timestamp: time,
     action: {
-      label: "Browse Marketplace",
+      label: "Find Buildings",
       path: "/explore",
     },
   };

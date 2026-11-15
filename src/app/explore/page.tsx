@@ -26,6 +26,8 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Property, PropertyCategory } from "@/types/property";
 import { PropertyCard } from "@/components/property/PropertyCard";
+import { BeginnerGuideBanner } from "@/components/common/BeginnerGuideBanner";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
 
 export default function ExplorePage() {
   const { properties, isWatchlisted, toggleWatchlist } = useDemo();
@@ -107,18 +109,38 @@ export default function ExplorePage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12" dir={dir}>
+      {/* 3-Step Beginner Explainer Strip */}
+      <BeginnerGuideBanner pageName="explore" />
+
       {/* Header */}
-      <div className="mb-8">
+      <div className="mb-6">
         <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3EAFC] text-[#5B3A8C] text-xs font-bold uppercase tracking-wider mb-2">
           <Sparkles className="w-3.5 h-3.5 text-[#7C4DFF]" />
-          <span>Global Property Discovery</span>
+          <span>{t.nav.explore}</span>
         </div>
         <h1 className="text-3xl sm:text-4xl font-black text-[#1E1B4B] tracking-tight">
-          Explore Investment Properties
+          Find Properties to Invest In
         </h1>
         <p className="text-sm sm:text-base text-[#585375] mt-1">
-          Search institutional-grade residential and commercial assets with automated monthly rental yields.
+          Browse real buildings, inspect their photos and paperwork, and buy small shares to start collecting monthly rent.
         </p>
+
+        {/* Friendly Next Step Hint */}
+        <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-base">💡</span>
+            <span>
+              <strong>Next Step:</strong> Click on any property below to see its photos, monthly rent payouts, and safety checks.
+            </span>
+          </div>
+          <Link
+            href="/glossary"
+            className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          >
+            <span>Confused by terms? See Guide</span>
+            <ArrowRight className="w-3 h-3 rtl-flip" />
+          </Link>
+        </div>
       </div>
 
       {/* Search & Filter Toolbar */}
@@ -154,10 +176,10 @@ export default function ExplorePage() {
                 aria-label="Sort Properties"
                 className="bg-[#F8F4FD] border border-[#E6D8F5] text-xs text-[#1E1B4B] font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#7C4DFF]"
               >
-                <option value="yield">Highest Net Yield</option>
+                <option value="yield">Highest Yearly Rent Return</option>
                 <option value="price-asc">Share Price: Low to High</option>
                 <option value="price-desc">Share Price: High to Low</option>
-                <option value="valuation">Highest Property Valuation</option>
+                <option value="valuation">Highest Property Price</option>
               </select>
             </div>
 
@@ -215,8 +237,9 @@ export default function ExplorePage() {
 
           {/* Sliders */}
           <div className="flex flex-wrap items-center gap-4 text-xs text-[#585375]">
-            <div className="flex items-center gap-2">
-              <span>Min Yield:</span>
+            <div className="flex items-center gap-1.5">
+              <span>Min Yearly Rent:</span>
+              <InfoTooltip termId="net-rental-yield" size="sm" />
               <strong className="text-[#1E1B4B] w-10">{minYield}%</strong>
               <input
                 type="range"
@@ -225,13 +248,14 @@ export default function ExplorePage() {
                 step="0.5"
                 value={minYield}
                 onChange={(e) => setMinYield(Number(e.target.value))}
-                aria-label="Minimum Net Yield"
+                aria-label="Minimum Yearly Rent"
                 className="w-20 sm:w-24 h-1.5 bg-[#E6D8F5] rounded appearance-none accent-[#7C4DFF] cursor-pointer"
               />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <span>Max Share Price:</span>
+              <InfoTooltip termId="fractional-shares" size="sm" />
               <strong className="text-[#1E1B4B] w-12">${maxSharePrice}</strong>
               <input
                 type="range"
@@ -592,15 +616,15 @@ export default function ExplorePage() {
       {filteredProperties.length === 0 && (
         <div className="text-center py-16 bg-white rounded-2xl border border-[#E6D8F5] p-8">
           <Search className="w-10 h-10 text-[#8782A3] mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-[#1E1B4B]">No properties matched your criteria</h3>
+          <h3 className="text-lg font-bold text-[#1E1B4B]">No properties found with these filters</h3>
           <p className="text-xs text-[#585375] mt-1 max-w-sm mx-auto">
-            Try adjusting your search terms, minimum yield, or price filters.
+            Try lowering your minimum rent return or clearing your search keywords.
           </p>
           <button
             onClick={clearFilters}
-            className="mt-4 px-4 py-2 rounded-xl bg-[#7C4DFF] text-white text-xs font-semibold"
+            className="mt-4 px-4 py-2 rounded-xl bg-[#7C4DFF] text-white text-xs font-semibold shadow-sm hover:bg-[#6C3CE9] transition-colors"
           >
-            Clear All Filters
+            Clear Filters & Show All
           </button>
         </div>
       )}

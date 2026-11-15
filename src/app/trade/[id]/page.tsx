@@ -28,6 +28,7 @@ import {
 } from "recharts";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
 
 export default function TradePropertyPage() {
   const params = useParams();
@@ -119,37 +120,54 @@ export default function TradePropertyPage() {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12" dir={dir}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
           <div className="flex items-center gap-2 mb-1 text-xs">
-            <Link href="/explore" className="text-[#8782A3] hover:text-[#7C4DFF]">Marketplace</Link>
+            <Link href="/explore" className="text-[#8782A3] hover:text-[#7C4DFF]">Explore</Link>
             <span className="text-[#8782A3]">/</span>
-            <span className="text-[#7C4DFF] font-semibold">Fractional Trading</span>
+            <span className="text-[#7C4DFF] font-semibold">Buy & Sell Shares</span>
           </div>
           <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Fractional Share Exchange
+            Buy & Sell Property Shares
           </h1>
           <p className="text-xs sm:text-sm text-[#585375]">
-            Trade simulated real estate equity with secondary market liquidity.
+            Pick how many shares you want to buy or sell. Real math with zero financial risk.
           </p>
         </div>
 
         {/* Property Switcher */}
         <div className="flex items-center gap-2">
-          <label className="text-xs text-[#8782A3]">Switch Asset:</label>
+          <label className="text-xs text-[#8782A3]">Choose Property:</label>
           <select
             value={property.id}
             onChange={(e) => router.push(`/trade/${e.target.value}`)}
-            aria-label="Switch Asset"
+            aria-label="Choose Property"
             className="bg-white border border-[#E6D8F5] text-xs font-bold text-[#1E1B4B] rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:border-[#7C4DFF]"
           >
             {properties.map((p) => (
               <option key={p.id} value={p.id}>
-                {p.title} (${p.sharePrice})
+                {p.title} (${p.sharePrice} / share)
               </option>
             ))}
           </select>
         </div>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="mb-6 p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>Next Step:</strong> Choose <strong>"Buy Shares"</strong> or <strong>"Sell Shares"</strong> on the right, type your quantity, and click the purple button to test.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>Market vs Limit Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Main Grid: Chart & Asset Info on Left (8), Order Card on Right (4) */}
@@ -320,29 +338,32 @@ export default function TradePropertyPage() {
             <form onSubmit={handleExecuteOrder} className="space-y-4">
               {/* Order Type */}
               <div className="space-y-1.5">
-                <label className="text-xs font-bold text-[#1E1B4B]">Order Type</label>
+                <div className="flex items-center gap-1">
+                  <label className="text-xs font-bold text-[#1E1B4B]">How do you want to set the price?</label>
+                  <InfoTooltip termId="market-order" size="sm" />
+                </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
                   <button
                     type="button"
                     onClick={() => setOrderType("Market")}
-                    className={`py-2 rounded-xl font-semibold border ${
+                    className={`py-2 px-2 rounded-xl font-semibold border flex items-center justify-center gap-1 ${
                       orderType === "Market"
                         ? "border-[#7C4DFF] bg-[#F3EAFC] text-[#7C4DFF]"
                         : "border-[#E6D8F5] text-[#585375]"
                     }`}
                   >
-                    Market Order
+                    <span>Today's Price</span>
                   </button>
                   <button
                     type="button"
                     onClick={() => setOrderType("Limit")}
-                    className={`py-2 rounded-xl font-semibold border ${
+                    className={`py-2 px-2 rounded-xl font-semibold border flex items-center justify-center gap-1 ${
                       orderType === "Limit"
                         ? "border-[#7C4DFF] bg-[#F3EAFC] text-[#7C4DFF]"
                         : "border-[#E6D8F5] text-[#585375]"
                     }`}
                   >
-                    Limit Order
+                    <span>Only at My Price</span>
                   </button>
                 </div>
               </div>
@@ -350,7 +371,10 @@ export default function TradePropertyPage() {
               {/* Limit Price Input (if limit) */}
               {orderType === "Limit" && (
                 <div className="space-y-1.5">
-                  <label className="text-xs font-bold text-[#1E1B4B]">Limit Price per Share ($)</label>
+                  <div className="flex items-center gap-1">
+                    <label className="text-xs font-bold text-[#1E1B4B]">My Maximum Price per Share ($)</label>
+                    <InfoTooltip termId="limit-order" size="sm" />
+                  </div>
                   <input
                     type="number"
                     step="0.5"
@@ -359,13 +383,17 @@ export default function TradePropertyPage() {
                     onChange={(e) => setLimitPrice(Number(e.target.value))}
                     className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#1E1B4B] focus:outline-none focus:border-[#7C4DFF]"
                   />
+                  <p className="text-[10px] text-[#8782A3]">We will only buy if the price is at or below this amount.</p>
                 </div>
               )}
 
               {/* Share Quantity */}
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
-                  <label className="font-bold text-[#1E1B4B]">Share Quantity</label>
+                  <div className="flex items-center gap-1">
+                    <label className="font-bold text-[#1E1B4B]">How many shares?</label>
+                    <InfoTooltip termId="fractional-shares" size="sm" />
+                  </div>
                   <span className="text-[#8782A3]">Max: {orderSide === "BUY" ? property.availableShares : sharesOwned}</span>
                 </div>
                 <input
@@ -381,12 +409,14 @@ export default function TradePropertyPage() {
               {/* Order Calculations */}
               <div className="p-3 bg-[#F3EAFC]/70 rounded-xl border border-[#E6D8F5] text-xs space-y-1.5">
                 <div className="flex justify-between text-[#585375]">
-                  <span>Total Order Value:</span>
+                  <span>Total {orderSide === "BUY" ? "Cost" : "You Receive"}:</span>
                   <strong className="text-sm font-black text-[#1E1B4B]">${orderTotalValue.toLocaleString()}</strong>
                 </div>
                 <div className="flex justify-between text-[#585375]">
-                  <span>Est. Monthly Rental Dividend:</span>
-                  <strong className="text-emerald-700 font-bold">+${estMonthlyRentalIncome.toFixed(2)} / mo</strong>
+                  <span>Estimated Monthly Rent:</span>
+                  <strong className="text-emerald-700 font-bold">
+                    {orderSide === "BUY" ? "+" : "-"}${estMonthlyRentalIncome.toFixed(2)} / mo
+                  </strong>
                 </div>
               </div>
 
@@ -400,8 +430,8 @@ export default function TradePropertyPage() {
                 }`}
               >
                 {orderSide === "BUY"
-                  ? `Confirm Purchase of ${quantity} Shares`
-                  : `Confirm Sale of ${quantity} Shares`}
+                  ? `Complete Order: Buy ${quantity} Shares`
+                  : `Complete Order: Sell ${quantity} Shares`}
               </button>
             </form>
 

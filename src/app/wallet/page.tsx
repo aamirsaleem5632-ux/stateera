@@ -14,10 +14,12 @@ import {
   Calendar,
   AlertCircle,
   FileSpreadsheet,
+  ArrowRight,
 } from "lucide-react";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { TransactionType } from "@/types/investor";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
 
 export default function WalletPage() {
   const {
@@ -88,10 +90,10 @@ export default function WalletPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Demo Wallet & Distributions
+            Practice Wallet & Rent Payments
           </h1>
           <p className="text-xs sm:text-sm text-[#585375]">
-            Manage simulated cash balance, deposit liquidity, and audit monthly rental payouts.
+            Check your practice cash, add demo funds, and see how rent is paid out every month.
           </p>
         </div>
 
@@ -101,9 +103,26 @@ export default function WalletPage() {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#E6D8F5] text-xs font-bold text-[#5B3A8C] hover:border-[#7C4DFF] shadow-sm transition-colors"
           >
             <Download className="w-4 h-4 text-[#7C4DFF]" />
-            <span>Export CSV Ledger</span>
+            <span>Download Spreadsheet (CSV)</span>
           </button>
         </div>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>Next Step:</strong> Click <strong>"Simulate Rent Payment"</strong> below to test receiving monthly rent, or click <strong>"Deposit Demo Cash"</strong> to top up.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>See Simple Terms Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Feedback banner */}
@@ -126,15 +145,18 @@ export default function WalletPage() {
       <div className="bg-gradient-to-r from-[#5B3A8C] via-[#7C4DFF] to-[#5B3A8C] rounded-3xl p-6 sm:p-10 text-white shadow-card space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <span className="text-xs uppercase font-bold tracking-wider text-[#E6D8F5]">
-              Total Available Demo Liquidity
-            </span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs uppercase font-bold tracking-wider text-[#E6D8F5]">
+                Practice Cash in Wallet
+              </span>
+              <InfoTooltip termId="escrow" size="sm" />
+            </div>
             <div className="text-4xl sm:text-5xl font-black mt-1">
               ${walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
             <div className="text-xs text-white/80 mt-1 flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-mint" />
-              <span>Institutional Escrow Simulation • FDIC insured mock ledger</span>
+              <span>Practice Mode • Real-world math, no real money used</span>
             </div>
           </div>
 
@@ -156,7 +178,7 @@ export default function WalletPage() {
               className="px-5 py-2.5 rounded-xl bg-mint text-emerald-900 font-bold text-xs hover:bg-emerald-200 shadow-md transition-all flex items-center gap-1.5"
             >
               <Coins className="w-4 h-4 text-emerald-700" />
-              <span>Simulate Rental Dividend</span>
+              <span>Simulate Rent Payment</span>
             </button>
           </div>
         </div>
@@ -166,21 +188,37 @@ export default function WalletPage() {
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
           <div>
-            <h3 className="font-bold text-base text-[#1E1B4B]">Rental Payout Waterfall & Formula</h3>
-            <p className="text-xs text-[#585375]">How monthly investor distributions are strictly computed:</p>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-base text-[#1E1B4B]">How Rent Money Is Split (Rent Waterfall)</h3>
+              <InfoTooltip termId="waterfall" size="sm" />
+            </div>
+            <p className="text-xs text-[#585375]">How monthly rent money is calculated and shared with you:</p>
           </div>
           <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-mint text-emerald-900">
-            Automated Escrow
+            Automated & Clear
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#F8F4FD] border border-[#E6D8F5] text-xs font-mono text-[#1E1B4B] space-y-1">
-          <div>Gross Rental Revenue Collected</div>
-          <div>- Operating Expenses (Property Taxes, Insurance, Utilities)</div>
-          <div>- Maintenance Reserve Allocation (CapEx Reserve)</div>
-          <div>- Property Management Oversight Fee (6-8%)</div>
-          <div className="font-bold text-[#7C4DFF] pt-1 border-t border-[#E6D8F5]">
-            = Net Distributable Rental Income ÷ Total Property Shares × Investor Shares Owned
+        <div className="p-4 rounded-2xl bg-[#F8F4FD] border border-[#E6D8F5] text-xs font-medium text-[#1E1B4B] space-y-2">
+          <div className="flex items-center justify-between">
+            <span>1. Rent Collected from Tenants</span>
+            <span className="text-emerald-700 font-bold">Total tenant rent</span>
+          </div>
+          <div className="flex items-center justify-between text-[#585375]">
+            <span>- Running Costs (Taxes, insurance, water/power)</span>
+            <span className="text-red-600 font-semibold">- Costs</span>
+          </div>
+          <div className="flex items-center justify-between text-[#585375]">
+            <span>- Emergency Fund & Repair Savings</span>
+            <span className="text-red-600 font-semibold">- Repairs</span>
+          </div>
+          <div className="flex items-center justify-between text-[#585375]">
+            <span>- Property Manager Fee (Building upkeep)</span>
+            <span className="text-red-600 font-semibold">- Fee</span>
+          </div>
+          <div className="pt-2 border-t border-[#E6D8F5] flex items-center justify-between font-bold text-[#7C4DFF]">
+            <span>= Rent Money to Share with You</span>
+            <span className="text-sm">Paid into your wallet on the 1st of every month</span>
           </div>
         </div>
       </div>

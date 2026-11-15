@@ -42,6 +42,8 @@ import {
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { DueDiligenceStatus } from "@/types/property";
+import { BeginnerGuideBanner } from "@/components/common/BeginnerGuideBanner";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
 
 export default function PropertyDetailPage() {
   const params = useParams();
@@ -85,6 +87,9 @@ export default function PropertyDetailPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12" dir={dir}>
+      {/* 3-Step Beginner Explainer Strip */}
+      <BeginnerGuideBanner pageName="property" />
+
       {/* Breadcrumb & Navigation */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2 text-xs text-[#585375]">
@@ -115,6 +120,23 @@ export default function PropertyDetailPage() {
             <span>{isSaved ? "Saved" : "Save"}</span>
           </button>
         </div>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="mb-6 p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>Next Step:</strong> Check the safety score, review photos & rent details, then click <strong>"Buy Shares"</strong> on the right to test investing.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>See Simple Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Property Title & Location Header */}
@@ -180,10 +202,10 @@ export default function PropertyDetailPage() {
           {/* Navigation Tabs */}
           <div className="flex items-center gap-2 border-b border-[#E6D8F5] pb-2 overflow-x-auto no-scrollbar">
             {[
-              { id: "overview", label: "Overview & Forecasts" },
-              { id: "due-diligence", label: "Due Diligence Centre" },
-              { id: "financials", label: "Rental History & NOI" },
-              { id: "manager", label: "Asset Manager & Tenants" },
+              { id: "overview", label: "Overview & Future Price" },
+              { id: "due-diligence", label: "Property Checks (Is it safe?)" },
+              { id: "financials", label: "Rent & Money Details" },
+              { id: "manager", label: "Building Manager & Renters" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -204,7 +226,7 @@ export default function PropertyDetailPage() {
             <div className="space-y-8">
               {/* Description */}
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-                <h3 className="text-xl font-bold text-[#1E1B4B]">Property Description</h3>
+                <h3 className="text-xl font-bold text-[#1E1B4B]">About This Property</h3>
                 <p className="text-sm text-[#585375] leading-relaxed">
                   {property.description}
                 </p>
@@ -213,18 +235,25 @@ export default function PropertyDetailPage() {
                   <div>
                     <span className="text-[#8782A3] block">Year Built</span>
                     <strong className="text-[#1E1B4B] text-sm">{property.yearBuilt}</strong>
+                    <span className="text-[10px] text-[#8782A3] block">Construction year</span>
                   </div>
                   <div>
-                    <span className="text-[#8782A3] block">Total Area</span>
+                    <span className="text-[#8782A3] block">Total Size</span>
                     <strong className="text-[#1E1B4B] text-sm">{property.totalAreaSqFt.toLocaleString()} sq ft</strong>
+                    <span className="text-[10px] text-[#8782A3] block">Floor area</span>
                   </div>
                   <div>
                     <span className="text-[#8782A3] block">Total Units</span>
                     <strong className="text-[#1E1B4B] text-sm">{property.tenantMetrics.totalUnits} Units</strong>
+                    <span className="text-[10px] text-[#8782A3] block">Apartments/Offices</span>
                   </div>
                   <div>
-                    <span className="text-[#8782A3] block">Occupancy Rate</span>
+                    <div className="flex items-center gap-1">
+                      <span className="text-[#8782A3] block">Rented Out</span>
+                      <InfoTooltip termId="occupancy-rate" size="sm" />
+                    </div>
                     <strong className="text-emerald-700 text-sm font-bold">{property.occupancyRate}%</strong>
+                    <span className="text-[10px] text-[#8782A3] block">Occupancy rate</span>
                   </div>
                 </div>
               </div>
@@ -235,18 +264,22 @@ export default function PropertyDetailPage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <h3 className="text-lg font-bold text-[#1E1B4B]">
-                        Historical Valuation & AI Forecast
+                        Past Price & AI Future Estimate
                       </h3>
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-mint text-emerald-900">
-                        {property.aiValuationConfidence}% Confidence
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-mint text-emerald-900 flex items-center gap-1">
+                        <span>{property.aiValuationConfidence}% Estimate Accuracy</span>
+                        <InfoTooltip termId="ai-valuation-confidence" size="sm" />
                       </span>
                     </div>
                     <p className="text-xs text-[#585375]">
-                      Algorithmic pricing based on 40+ macroeconomic and municipal real estate indicators.
+                      How we calculated the price: based on local sales, rent collected, and neighborhood demand.
                     </p>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] uppercase font-bold text-[#8782A3]">Current AI Valuation</span>
+                    <div className="flex items-center justify-end gap-1">
+                      <span className="text-[10px] uppercase font-bold text-[#8782A3]">Estimated Property Price</span>
+                      <InfoTooltip termId="estimated-price" size="sm" />
+                    </div>
                     <div className="text-xl font-black text-[#7C4DFF]">
                       ${property.aiEstimatedValuation.toLocaleString()}
                     </div>
@@ -337,20 +370,23 @@ export default function PropertyDetailPage() {
             </div>
           )}
 
-          {/* TAB 2: DUE DILIGENCE CENTRE */}
+          {/* TAB 2: PROPERTY CHECKS (IS IT SAFE?) */}
           {activeTab === "due-diligence" && (
             <div className="space-y-6">
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
                 <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
                   <div>
-                    <h3 className="text-xl font-bold text-[#1E1B4B]">Due Diligence & Title Verification</h3>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-xl font-bold text-[#1E1B4B]">Property Checks (Is It Safe?)</h3>
+                      <InfoTooltip termId="property-checks" />
+                    </div>
                     <p className="text-xs text-[#585375]">
-                      Every document is audited by third-party legal, engineering, and accounting firms.
+                      Every document, title deed, and structural safety check is inspected by certified independent experts.
                     </p>
                   </div>
                   <div className="text-right">
                     <span className="text-xs font-bold text-emerald-800 bg-mint px-3 py-1 rounded-full">
-                      Overall Audit: {property.dueDiligenceScore}%
+                      Safety Score: {property.dueDiligenceScore} / 100
                     </span>
                   </div>
                 </div>
@@ -390,13 +426,21 @@ export default function PropertyDetailPage() {
             </div>
           )}
 
-          {/* TAB 3: FINANCIALS & NOI */}
+          {/* TAB 3: FINANCIALS & MONEY DETAILS */}
           {activeTab === "financials" && (
             <div className="space-y-6">
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-6">
-                <h3 className="text-xl font-bold text-[#1E1B4B]">
-                  Monthly Rental Collections & Distributions
-                </h3>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="text-xl font-bold text-[#1E1B4B]">
+                      Rent Collected & Rent Money Paid to You
+                    </h3>
+                    <InfoTooltip termId="rent-payments" />
+                  </div>
+                  <p className="text-xs text-[#585375] mt-1">
+                    See total rent collected from tenants and the rent money shared with property share owners after running costs.
+                  </p>
+                </div>
 
                 {/* Rental History Bar Chart */}
                 <div className="h-64 w-full">
@@ -413,31 +457,38 @@ export default function PropertyDetailPage() {
                         }}
                       />
                       <Legend />
-                      <Bar dataKey="grossCollected" name="Gross Rent" fill="#7C4DFF" radius={[4, 4, 0, 0]} />
-                      <Bar dataKey="netDistributed" name="Net Distributable Rent" fill="#10B981" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="grossCollected" name="Rent Collected from Tenants" fill="#7C4DFF" radius={[4, 4, 0, 0]} />
+                      <Bar dataKey="netDistributed" name="Rent Money Paid to You" fill="#10B981" radius={[4, 4, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>
 
                 {/* Operating Expense Breakdown */}
                 <div className="pt-4 border-t border-[#F3EAFC] space-y-3">
-                  <h4 className="text-sm font-bold text-[#1E1B4B]">Annual Operating Expense Assumptions</h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-bold text-[#1E1B4B]">Building Running Costs (Yearly)</h4>
+                    <InfoTooltip termId="operating-expenses" size="sm" />
+                  </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                     <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
                       <span className="text-[#8782A3] block">Property Tax</span>
                       <strong className="text-[#1E1B4B]">${property.operatingExpenses.propertyTaxAnnual.toLocaleString()}</strong>
+                      <span className="text-[10px] text-[#8782A3] block">Govt tax</span>
                     </div>
                     <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
                       <span className="text-[#8782A3] block">Insurance</span>
                       <strong className="text-[#1E1B4B]">${property.operatingExpenses.insuranceAnnual.toLocaleString()}</strong>
+                      <span className="text-[10px] text-[#8782A3] block">Building protection</span>
                     </div>
                     <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-                      <span className="text-[#8782A3] block">Maintenance</span>
+                      <span className="text-[#8782A3] block">Repairs & Cleaning</span>
                       <strong className="text-[#1E1B4B]">${property.operatingExpenses.maintenanceAnnual.toLocaleString()}</strong>
+                      <span className="text-[10px] text-[#8782A3] block">Upkeep fund</span>
                     </div>
                     <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-                      <span className="text-[#8782A3] block">Management Fee</span>
+                      <span className="text-[#8782A3] block">Manager Fee</span>
                       <strong className="text-[#1E1B4B]">{(property.operatingExpenses.managementFeeRate * 100).toFixed(1)}%</strong>
+                      <span className="text-[10px] text-[#8782A3] block">Building manager</span>
                     </div>
                   </div>
                 </div>
@@ -449,7 +500,7 @@ export default function PropertyDetailPage() {
           {activeTab === "manager" && (
             <div className="space-y-6">
               <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-6">
-                <h3 className="text-xl font-bold text-[#1E1B4B]">Assigned Property Manager</h3>
+                <h3 className="text-xl font-bold text-[#1E1B4B]">Building Manager</h3>
                 <div className="flex items-center gap-4 p-4 rounded-2xl bg-[#F8F4FD] border border-[#E6D8F5]">
                   <div className="w-14 h-14 rounded-2xl bg-[#7C4DFF] text-white flex items-center justify-center text-xl font-bold">
                     {property.assignedManager.name.slice(0, 2).toUpperCase()}
@@ -464,18 +515,18 @@ export default function PropertyDetailPage() {
                 </div>
 
                 <div className="space-y-3 pt-2">
-                  <h4 className="text-sm font-bold text-[#1E1B4B]">Tenant Covenants & Stability</h4>
+                  <h4 className="text-sm font-bold text-[#1E1B4B]">Renter Records & Lease Details</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 text-xs">
                     <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-                      <span className="text-[#8782A3] block">Average Lease Duration</span>
+                      <span className="text-[#8782A3] block">Average Lease Length</span>
                       <strong className="text-[#1E1B4B]">{property.tenantMetrics.avgLeaseMonths} Months</strong>
                     </div>
                     <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-                      <span className="text-[#8782A3] block">On-Time Payment History</span>
+                      <span className="text-[#8782A3] block">Rent Paid on Time</span>
                       <strong className="text-emerald-700 font-bold">{property.tenantMetrics.onTimePaymentRate}%</strong>
                     </div>
                     <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-                      <span className="text-[#8782A3] block">Next Payout Date</span>
+                      <span className="text-[#8782A3] block">Next Rent Payment</span>
                       <strong className="text-[#7C4DFF] font-bold">{property.nextPayoutDate}</strong>
                     </div>
                   </div>
@@ -490,33 +541,46 @@ export default function PropertyDetailPage() {
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-card space-y-5">
             <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
               <div>
-                <span className="text-[10px] uppercase font-bold text-[#8782A3]">Fractional Share Price</span>
+                <div className="flex items-center gap-1">
+                  <span className="text-[10px] uppercase font-bold text-[#8782A3]">1 Share Price</span>
+                  <InfoTooltip termId="fractional-shares" size="sm" />
+                </div>
                 <div className="text-3xl font-black text-[#1E1B4B]">${property.sharePrice}</div>
+                <span className="text-[10px] text-[#8782A3]">Entry price for 1 share</span>
               </div>
               <div className="text-right">
-                <span className="text-xs font-bold text-emerald-700 bg-mint px-2.5 py-1 rounded-lg">
-                  {property.netYield}% Net Yield
-                </span>
-                <div className="text-[11px] text-[#8782A3] mt-1">{property.grossYield}% Gross</div>
+                <div className="flex items-center justify-end gap-1">
+                  <span className="text-xs font-bold text-emerald-700 bg-mint px-2.5 py-1 rounded-lg">
+                    {property.netYield}% Yearly Return
+                  </span>
+                  <InfoTooltip termId="net-rental-yield" size="sm" />
+                </div>
+                <div className="text-[11px] text-[#8782A3] mt-1">{property.grossYield}% before costs</div>
               </div>
             </div>
 
             {/* Quick Metrics */}
             <div className="space-y-2 text-xs text-[#585375]">
-              <div className="flex justify-between">
-                <span>Total Asset Valuation:</span>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1">
+                  <span>Total Building Price:</span>
+                  <InfoTooltip termId="total-valuation" size="sm" />
+                </div>
                 <strong className="text-[#1E1B4B]">${property.totalValuation.toLocaleString()}</strong>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>Available Shares:</span>
                 <strong className="text-[#7C4DFF]">{property.availableShares.toLocaleString()} / {property.totalShares.toLocaleString()}</strong>
               </div>
-              <div className="flex justify-between">
-                <span>Monthly Rent / Share:</span>
+              <div className="flex justify-between items-center">
+                <div className="flex items-center gap-1">
+                  <span>Monthly Rent for 1 Share:</span>
+                  <InfoTooltip termId="rent-payments" size="sm" />
+                </div>
                 <strong className="text-emerald-700">${property.monthlyPerShareRent.toFixed(3)}</strong>
               </div>
-              <div className="flex justify-between">
-                <span>Next Dividend Payout:</span>
+              <div className="flex justify-between items-center">
+                <span>Next Rent Payment:</span>
                 <strong className="text-[#1E1B4B]">{property.nextPayoutDate}</strong>
               </div>
             </div>
@@ -524,7 +588,7 @@ export default function PropertyDetailPage() {
             {/* Funding Progress Bar */}
             <div className="space-y-1 pt-1">
               <div className="flex justify-between text-[11px]">
-                <span className="text-[#585375]">Funding Progress</span>
+                <span className="text-[#585375]">Invested So Far</span>
                 <strong className="text-[#7C4DFF]">{property.fundedPercentage}%</strong>
               </div>
               <div className="w-full bg-[#E6D8F5] h-2.5 rounded-full overflow-hidden">
@@ -538,7 +602,7 @@ export default function PropertyDetailPage() {
                 href={`/trade/${property.id}`}
                 className="w-full py-3.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-sm shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2 text-center"
               >
-                <span>Buy Shares on Exchange</span>
+                <span>Buy Shares Now</span>
                 <ArrowRight className="w-4 h-4 rtl-flip" />
               </Link>
 
@@ -546,13 +610,13 @@ export default function PropertyDetailPage() {
                 href={`/simulator`}
                 className="w-full py-2.5 rounded-xl bg-[#F3EAFC] hover:bg-[#E6D8F5] text-[#5B3A8C] font-semibold text-xs transition-colors text-center block"
               >
-                Run Investment Scenario Simulation
+                Test 'What If?' Rent Calculator
               </Link>
             </div>
 
             <div className="pt-3 border-t border-[#F3EAFC] text-[11px] text-[#8782A3] flex items-center gap-1.5 justify-center">
               <ShieldCheck className="w-4 h-4 text-emerald-600" />
-              <span>Simulated Prototype • 100% Escrow Backed</span>
+              <span>Practice Mode • Real-world math, zero financial risk</span>
             </div>
           </div>
         </div>

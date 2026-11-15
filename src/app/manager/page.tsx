@@ -17,10 +17,12 @@ import {
   Clock,
   ShieldCheck,
   Calendar,
+  ArrowRight,
 } from "lucide-react";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MaintenanceRequest } from "@/types/tenant";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
 
 export default function PropertyManagerPage() {
   const {
@@ -108,19 +110,36 @@ export default function PropertyManagerPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#F3EAFC] text-[#5B3A8C]">
-              Operational Portal
+              Building Manager Portal
             </span>
             <span className="text-xs text-emerald-700 bg-mint px-2 py-0.5 rounded-full font-bold">
               License #MGR-44910
             </span>
           </div>
           <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Property Manager Portal
+            Building Manager Portal
           </h1>
           <p className="text-xs sm:text-sm text-[#585375]">
-            Manage assigned assets, upload rent collections, track maintenance work orders, and review NOI.
+            Record rent collected from tenants, schedule repair jobs, and keep building records accurate.
           </p>
         </div>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>Next Step:</strong> Click <strong>"Record Rent Collected"</strong> to log incoming tenant rent, or <strong>"Repair Jobs"</strong> to track fixing building issues.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>See Simple Terms Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Feedback Banner */}
@@ -142,10 +161,10 @@ export default function PropertyManagerPage() {
       {/* Tab Navigation */}
       <div className="flex items-center gap-2 border-b border-[#E6D8F5] pb-2 overflow-x-auto no-scrollbar">
         {[
-          { id: "overview", label: "Assigned Properties" },
-          { id: "rent-collection", label: "Log Rent Collection" },
-          { id: "maintenance", label: "Maintenance Work Orders" },
-          { id: "ledger", label: "Property Accounting Ledger" },
+          { id: "overview", label: "My Buildings" },
+          { id: "rent-collection", label: "Record Rent Collected" },
+          { id: "maintenance", label: "Repair Jobs" },
+          { id: "ledger", label: "Money In & Out" },
         ].map((tab) => (
           <button
             key={tab.id}

@@ -23,6 +23,8 @@ import {
 } from "recharts";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
+import Link from "next/link";
 
 export default function ScenarioSimulatorPage() {
   const { properties } = useDemo();
@@ -122,15 +124,15 @@ export default function ScenarioSimulatorPage() {
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#F3EAFC] text-[#5B3A8C]">
-              Deterministic Stress-Test Engine
+              What-If Stress Test
             </span>
-            <span className="text-xs text-[#8782A3]">SIMULATION TOOL</span>
+            <span className="text-xs text-[#8782A3]">INTERACTIVE CALCULATOR</span>
           </div>
           <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Investment Risk & Scenario Simulator
+            'What If?' Rent & Risk Calculator
           </h1>
           <p className="text-xs sm:text-sm text-[#585375]">
-            Model economic shocks, vacancy swings, rising maintenance, and dividend impacts.
+            Move the sliders to see what happens to your monthly rent if tenants move out or repairs cost more.
           </p>
         </div>
 
@@ -139,8 +141,25 @@ export default function ScenarioSimulatorPage() {
           className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#E6D8F5] text-xs font-bold text-[#5B3A8C] hover:border-[#7C4DFF] shadow-sm transition-colors self-start sm:self-auto"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          <span>Reset Parameters</span>
+          <span>Reset to Normal</span>
         </button>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>How to use this:</strong> Drag the <strong>"How full is the building?"</strong> slider down to see how your monthly rent holds up in bad times.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>What is Occupancy? Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Main Grid: Interactive Controls on Left (5 cols), Live Results on Right (7 cols) */}
@@ -148,7 +167,7 @@ export default function ScenarioSimulatorPage() {
         {/* Left Column: Sliders (5 cols) */}
         <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-5">
           <div className="space-y-1 pb-3 border-b border-[#F3EAFC]">
-            <label className="text-xs font-bold text-[#8782A3] uppercase">Target Property Asset</label>
+            <label className="text-xs font-bold text-[#8782A3] uppercase">Choose a Property to Test</label>
             <select
               value={selectedPropertyId}
               onChange={(e) => setSelectedPropertyId(e.target.value)}
@@ -156,7 +175,7 @@ export default function ScenarioSimulatorPage() {
             >
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.title} (${p.sharePrice}/share • {p.netYield}% Net)
+                  {p.title} (${p.sharePrice}/share • {p.netYield}% Yearly Return)
                 </option>
               ))}
             </select>
@@ -165,7 +184,10 @@ export default function ScenarioSimulatorPage() {
           {/* Investment Amount */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
-              <span>Investment Amount</span>
+              <div className="flex items-center gap-1">
+                <span>How much to invest</span>
+                <InfoTooltip termId="fractional-shares" size="sm" />
+              </div>
               <span className="text-[#7C4DFF]">${investmentAmount.toLocaleString()} ({scenarios.sharesCount} shares)</span>
             </div>
             <input
@@ -182,8 +204,11 @@ export default function ScenarioSimulatorPage() {
           {/* Occupancy Rate */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
-              <span>Simulated Occupancy Rate</span>
-              <span className={occupancyRate < 80 ? "text-red-500" : "text-emerald-600"}>
+              <div className="flex items-center gap-1">
+                <span>How full is the building? (Occupancy)</span>
+                <InfoTooltip termId="occupancy-rate" size="sm" />
+              </div>
+              <span className={occupancyRate < 80 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>
                 {occupancyRate}%
               </span>
             </div>
@@ -201,8 +226,8 @@ export default function ScenarioSimulatorPage() {
           {/* Rent Variation % */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
-              <span>Market Rent Variation</span>
-              <span className={rentVariationPercent < 0 ? "text-red-500" : "text-emerald-600"}>
+              <span>Tenant Rent Change</span>
+              <span className={rentVariationPercent < 0 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>
                 {rentVariationPercent > 0 ? `+${rentVariationPercent}%` : `${rentVariationPercent}%`}
               </span>
             </div>
@@ -220,9 +245,12 @@ export default function ScenarioSimulatorPage() {
           {/* Maintenance Multiplier */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
-              <span>Maintenance & Repairs Index</span>
-              <span className={maintenanceMultiplier > 1.2 ? "text-red-500" : "text-[#1E1B4B]"}>
-                {(maintenanceMultiplier * 100).toFixed(0)}% of Baseline
+              <div className="flex items-center gap-1">
+                <span>Repair & Maintenance Bills</span>
+                <InfoTooltip termId="operating-expenses" size="sm" />
+              </div>
+              <span className={maintenanceMultiplier > 1.2 ? "text-red-500 font-bold" : "text-[#1E1B4B]"}>
+                {(maintenanceMultiplier * 100).toFixed(0)}% of Normal
               </span>
             </div>
             <input
@@ -239,8 +267,8 @@ export default function ScenarioSimulatorPage() {
           {/* Management Fee Rate */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
-              <span>Asset Management Fee</span>
-              <span className="text-[#5B3A8C]">{managementFeeRate}%</span>
+              <span>Building Manager Fee</span>
+              <span className="text-[#5B3A8C] font-bold">{managementFeeRate}%</span>
             </div>
             <input
               type="range"
@@ -261,46 +289,46 @@ export default function ScenarioSimulatorPage() {
             {/* Worst Case */}
             <div className="p-4 rounded-2xl bg-red-50 border border-red-200 text-center space-y-1">
               <span className="text-[10px] uppercase font-bold tracking-wider text-red-700">
-                Worst Case Shock
+                Tough Times (Recession)
               </span>
               <div className="text-xl font-black text-red-900">
                 ${scenarios.worst.monthly.toFixed(2)} / mo
               </div>
               <div className="text-xs text-red-700 font-semibold">
-                {scenarios.worst.yield.toFixed(1)}% Net Yield
+                {scenarios.worst.yield.toFixed(1)}% Yearly Return
               </div>
             </div>
 
             {/* Simulated Case */}
             <div className="p-4 rounded-2xl bg-[#F3EAFC] border border-[#E6D8F5] text-center space-y-1 ring-2 ring-[#7C4DFF]/30">
               <span className="text-[10px] uppercase font-bold tracking-wider text-[#5B3A8C]">
-                Your Simulation
+                Your Custom Test
               </span>
               <div className="text-xl font-black text-[#7C4DFF]">
                 ${scenarios.simulated.monthly.toFixed(2)} / mo
               </div>
               <div className="text-xs text-[#5B3A8C] font-semibold">
-                {scenarios.simulated.yield.toFixed(1)}% Net Yield
+                {scenarios.simulated.yield.toFixed(1)}% Yearly Return
               </div>
             </div>
 
             {/* Best Case */}
             <div className="p-4 rounded-2xl bg-mint border border-emerald-300 text-center space-y-1">
               <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-800">
-                Best Case Boom
+                Boom Times (100% Full)
               </span>
               <div className="text-xl font-black text-emerald-900">
                 ${scenarios.best.monthly.toFixed(2)} / mo
               </div>
               <div className="text-xs text-emerald-800 font-semibold">
-                {scenarios.best.yield.toFixed(1)}% Net Yield
+                {scenarios.best.yield.toFixed(1)}% Yearly Return
               </div>
             </div>
           </div>
 
           {/* Scenario Comparison Chart */}
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Projected Annual Income Comparison ($)</h3>
+            <h3 className="font-bold text-base text-[#1E1B4B]">Estimated Yearly Rent Under Each Scenario ($)</h3>
             <div className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical">
@@ -319,7 +347,8 @@ export default function ScenarioSimulatorPage() {
           <div className="p-4 rounded-2xl bg-[#F8F4FD] border border-[#E6D8F5] text-xs text-[#585375] leading-relaxed flex items-start gap-2.5">
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <strong className="text-[#1E1B4B]">Risk Sensitivity Insights:</strong> In real estate fractional investments, occupancy drops have a greater dollar impact on net distributions than moderate increases in maintenance costs. StateEra properties carry 100% corporate master-tenancies and mandatory 3-month escrow reserve buffers to mitigate downside shocks.
+              <strong className="text-[#1E1B4B]">Helpful Tip: </strong>
+              Empty apartments hurt your monthly rent much more than a slightly higher repair bill. That is why every property has an emergency fund set aside to protect your monthly rent even if a tenant moves out.
             </div>
           </div>
         </div>

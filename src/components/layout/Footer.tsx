@@ -93,18 +93,24 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2 text-sm text-[#A5A0C8]">
               <li>
+                <Link href="/glossary" className="hover:text-white transition-colors flex items-center gap-1 text-mint font-medium">
+                  <span>{t.nav.glossary}</span>
+                  <ArrowUpRight className="w-3.5 h-3.5" />
+                </Link>
+              </li>
+              <li>
                 <Link href="/governance" className="hover:text-white transition-colors">
-                  Shareholder Registry
+                  {t.common.ownersList} & {t.common.ownerUpdatesVoting}
                 </Link>
               </li>
               <li>
                 <Link href="/property/prop-dubai-marina-tower" className="hover:text-white transition-colors">
-                  Due Diligence Audit Centre
+                  {t.common.propertyChecks} (Is it safe?)
                 </Link>
               </li>
               <li>
                 <Link href="/reports" className="hover:text-white transition-colors">
-                  Monthly NOI Statements
+                  {t.common.moneyRecordsList}
                 </Link>
               </li>
               <li>
@@ -167,8 +173,8 @@ export const Footer: React.FC = () => {
         <div className="mt-8 p-4 rounded-xl bg-[#272252]/80 border border-[#3A336E] flex items-start gap-3">
           <ShieldAlert className="w-5 h-5 text-[#F8D7E8] flex-shrink-0 mt-0.5" />
           <p className="text-xs text-[#C5BFE3] leading-relaxed">
-            <strong className="text-white font-semibold">Regulatory & Simulation Disclaimer: </strong>
-            {BRAND_CONFIG.disclaimer} All dividend distributions, yields, valuations, occupancy rates, and transaction ledgers represent simulated prototype mechanics. StateEra does not provide investment, tax, or legal advisory services.
+            <strong className="text-white font-semibold">Demo Practice Platform: </strong>
+            {BRAND_CONFIG.disclaimer} All rent payouts, property prices, share values, and transaction ledgers are for learning and practice only. StateEra is a technology demonstration and does not handle real investments, banking, or legal advice.
           </p>
         </div>
 

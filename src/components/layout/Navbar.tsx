@@ -153,6 +153,14 @@ export const Navbar: React.FC = () => {
             >
               {t.nav.governance}
             </Link>
+            <Link
+              href="/glossary"
+              className={`hover:text-[#7C4DFF] transition-colors ${
+                pathname === "/glossary" ? "text-[#7C4DFF] font-semibold" : ""
+              }`}
+            >
+              {t.nav.glossary}
+            </Link>
           </nav>
 
           {/* Right Action Icons & Controls */}
@@ -386,6 +394,13 @@ export const Navbar: React.FC = () => {
                 className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
               >
                 {t.nav.governance}
+              </Link>
+              <Link
+                href="/glossary"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+              >
+                {t.nav.glossary}
               </Link>
               <Link
                 href="/manager"

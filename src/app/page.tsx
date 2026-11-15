@@ -42,23 +42,23 @@ export default function HomePage() {
   const faqs = [
     {
       q: "What is fractional real estate investment?",
-      a: "Fractional real estate investment enables multiple investors to pool capital to purchase legal shares of prime commercial or residential properties. Rather than needing hundreds of thousands of dollars to purchase an entire building, you can purchase fractional shares starting at just $50-$200 and receive proportional monthly rental dividends and capital appreciation.",
+      a: "Instead of needing hundreds of thousands of dollars to buy an entire building, you can buy small parts (called shares) starting from just $50. You own that share of the building and receive your share of the rent money every month.",
     },
     {
       q: "How are rental income payouts distributed?",
-      a: "Net rental income is collected from contracted residential or commercial tenants and deposited into a dedicated escrow account. On the 1st of each calendar month, operating expenses, maintenance reserves, and management fees are deducted, and the net distributable rent is automatically credited directly to each investor's digital wallet balance according to their share count.",
+      a: "Tenants pay rent each month. Building running costs (cleaning, insurance, and emergency savings) are paid first. The remaining rent money is then paid directly to your wallet on the 1st of every month based on how many shares you own.",
     },
     {
       q: "How does StateEra AI evaluate properties?",
-      a: "StateEra AI continuously monitors over 40 quantitative data points—including regional rent comps, neighborhood absorption rates, GDP growth, municipal building permits, and historical occupancy. It calculates deterministic property valuations, risk metrics, and confidence scores so investors can make informed decisions.",
+      a: "StateEra AI checks neighborhood rent prices, building inspection reports, and rental demand. It gives each property a simple estimated price and a safety score so you can see how safe and profitable it is before investing.",
     },
     {
-      q: "Can I sell my fractional shares if I need liquidity?",
-      a: "Yes. StateEra features an integrated secondary share trading marketplace where verified investors can place Market or Limit orders to buy or sell fractional shares directly with other community members without waiting for property liquidation.",
+      q: "Can I sell my fractional shares if I want my money back?",
+      a: "Yes! You don't have to wait years. You can put your shares up for sale to other investors on the trading page whenever you want to cash out.",
     },
     {
       q: "Is this platform a real investment platform or a demonstration prototype?",
-      a: "StateEra is currently configured as a functional demonstration prototype. All properties, financial calculations, rental payouts, wallet balances, and secondary trades operate in simulation mode with realistic fictional data to let you test and evaluate the entire product workflow without financial risk.",
+      a: "StateEra is a practice demonstration platform. All properties, rent payouts, wallet balances, and share orders use practice money with realistic numbers, so you can safely learn how modern property investing works without financial risk.",
     },
   ];
 
@@ -119,15 +119,15 @@ export default function HomePage() {
                 </div>
                 <div>
                   <div className="text-xl sm:text-2xl font-black text-[#7C4DFF]">$182M+</div>
-                  <div className="text-xs text-[#8782A3] mt-0.5">Assets Funded</div>
+                  <div className="text-xs text-[#8782A3] mt-0.5">Funded in Properties</div>
                 </div>
                 <div>
                   <div className="text-xl sm:text-2xl font-black text-emerald-600">9.4%</div>
-                  <div className="text-xs text-[#8782A3] mt-0.5">Avg Net Yield</div>
+                  <div className="text-xs text-[#8782A3] mt-0.5">Avg Yearly Rent Return</div>
                 </div>
                 <div>
                   <div className="text-xl sm:text-2xl font-black text-[#5B3A8C]">100%</div>
-                  <div className="text-xs text-[#8782A3] mt-0.5">Escrow Audited</div>
+                  <div className="text-xs text-[#8782A3] mt-0.5">Papers Checked</div>
                 </div>
               </div>
             </div>
@@ -148,7 +148,7 @@ export default function HomePage() {
 
                   {/* Floating Metric Badge 1 (Top Left) */}
                   <div className="absolute top-5 left-5 bg-white/95 backdrop-blur-md p-3.5 rounded-2xl shadow-lg border border-white/60">
-                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#8782A3]">Monthly Dividend</span>
+                    <span className="text-[10px] uppercase font-bold tracking-wider text-[#8782A3]">Monthly Rent Payouts</span>
                     <div className="text-lg font-black text-emerald-600 flex items-center gap-1 mt-0.5">
                       <TrendingUp className="w-4 h-4" />
                       <span>$78,400 / mo</span>
@@ -162,8 +162,8 @@ export default function HomePage() {
                       <span className="text-[#7C4DFF]">$125 / share</span>
                     </div>
                     <div className="flex items-center justify-between text-[11px] text-[#585375]">
-                      <span>New York • 8.2% Net Yield</span>
-                      <span className="text-emerald-700 bg-mint px-2 py-0.5 rounded-md font-semibold">100% Occupied</span>
+                      <span>New York • 8.2% Yearly Return</span>
+                      <span className="text-emerald-700 bg-mint px-2 py-0.5 rounded-md font-semibold">100% Rented</span>
                     </div>
                   </div>
                 </div>
@@ -171,7 +171,7 @@ export default function HomePage() {
                 {/* Decorative Pill Underneath */}
                 <div className="absolute -bottom-4 -left-4 bg-[#7C4DFF] text-white px-4 py-2 rounded-2xl shadow-lg text-xs font-bold flex items-center gap-2">
                   <ShieldCheck className="w-4 h-4 text-mint" />
-                  <span>Freehold Title Deed Verified</span>
+                  <span>Ownership Papers Checked & Safe</span>
                 </div>
               </div>
             </div>
@@ -222,13 +222,13 @@ export default function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
             <span className="text-xs uppercase font-bold tracking-wider text-[#7C4DFF] bg-[#F3EAFC] px-3 py-1 rounded-full">
-              Seamless 4-Step Process
+              Simple 4-Step Process
             </span>
             <h2 className="text-3xl sm:text-4xl font-black text-[#1E1B4B] tracking-tight mt-3">
-              How Fractional Ownership Works
+              How Buying Shares Works
             </h2>
             <p className="text-base text-[#585375] mt-2">
-              Investing in prime real estate is as simple as purchasing equities, but backed by physical brick-and-mortar assets.
+              Investing in prime real estate is simple. You buy small pieces of properties and collect rent directly into your wallet.
             </p>
           </div>
 
@@ -237,25 +237,25 @@ export default function HomePage() {
               {
                 step: "01",
                 title: "Browse & Inspect",
-                desc: "Explore institutional properties worldwide with transparent AI valuations, tenancy history, and verified land registry records.",
+                desc: "Explore top buildings worldwide with clear price estimates, tenant history, and verified ownership papers.",
                 icon: Compass,
               },
               {
                 step: "02",
-                title: "Choose Shares",
-                desc: "Select the exact number of fractional shares you want to acquire, starting from as little as $50 using your demo wallet balance.",
+                title: "Pick Your Shares",
+                desc: "Choose how many small parts (shares) of the building you want to buy, starting from just $50.",
                 icon: PieChart,
               },
               {
                 step: "03",
-                title: "Collect Rental Income",
-                desc: "Receive automated monthly rental dividends credited directly into your wallet on the 1st of every calendar month.",
+                title: "Collect Rent Monthly",
+                desc: "Your share of the rent money is sent automatically to your wallet on the 1st of every month.",
                 icon: Coins,
               },
               {
                 step: "04",
-                title: "Secondary Liquidity",
-                desc: "Hold for long-term capital appreciation or sell your fractional shares anytime on the secondary share exchange.",
+                title: "Sell Whenever You Want",
+                desc: "Keep your shares to collect monthly rent, or sell them to other investors on the trading page anytime.",
                 icon: TrendingUp,
               },
             ].map((s) => {
@@ -287,19 +287,19 @@ export default function HomePage() {
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
               <div className="lg:col-span-6 space-y-6">
                 <span className="text-xs font-bold uppercase tracking-wider text-[#7C4DFF] bg-white px-3 py-1 rounded-full border border-[#E6D8F5]">
-                  Live Calculation Engine
+                  Practice Calculator
                 </span>
                 <h2 className="text-3xl sm:text-4xl font-black text-[#1E1B4B] tracking-tight">
-                  Calculate Your Illustrative Rental Yield
+                  Test How Much Rent You Could Earn
                 </h2>
                 <p className="text-sm sm:text-base text-[#585375] leading-relaxed">
-                  Adjust the investment slider below to preview projected monthly cash distributions and annual returns based on our platform average <strong>9.4% net yield</strong>.
+                  Move the slider below to see an example of monthly rent payments and yearly returns based on our platform average <strong>9.4% yearly return (after costs)</strong>.
                 </p>
 
                 {/* Slider Input */}
                 <div className="space-y-3 pt-2">
                   <div className="flex items-center justify-between">
-                    <label className="text-xs uppercase font-bold text-[#8782A3]">Simulated Investment Amount</label>
+                    <label className="text-xs uppercase font-bold text-[#8782A3]">How much you want to invest</label>
                     <span className="text-2xl font-black text-[#7C4DFF]">${calcAmount.toLocaleString()}</span>
                   </div>
                   <input
@@ -309,7 +309,7 @@ export default function HomePage() {
                     step="100"
                     value={calcAmount}
                     onChange={(e) => setCalcAmount(Number(e.target.value))}
-                    aria-label="Simulated Investment Amount"
+                    aria-label="How much you want to invest"
                     className="w-full h-2.5 bg-[#E6D8F5] rounded-lg appearance-none cursor-pointer accent-[#7C4DFF]"
                   />
                   <div className="flex justify-between text-[11px] text-[#8782A3]">
@@ -324,31 +324,31 @@ export default function HomePage() {
               {/* Calculator Output Cards */}
               <div className="lg:col-span-6 grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="bg-white p-6 rounded-2xl border border-[#E6D8F5] shadow-sm text-center">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#8782A3]">Est. Monthly Payout</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#8782A3]">Estimated Monthly Rent for You</span>
                   <div className="text-3xl font-black text-emerald-600 mt-2">
                     ${estMonthlyRent.toFixed(2)}
                   </div>
-                  <p className="text-xs text-[#585375] mt-1">Paid directly to your demo wallet</p>
+                  <p className="text-xs text-[#585375] mt-1">Paid directly to your demo wallet each month</p>
                 </div>
 
                 <div className="bg-white p-6 rounded-2xl border border-[#E6D8F5] shadow-sm text-center">
-                  <span className="text-xs font-bold uppercase tracking-wider text-[#8782A3]">Est. Annual Income</span>
+                  <span className="text-xs font-bold uppercase tracking-wider text-[#8782A3]">Estimated Yearly Rent for You</span>
                   <div className="text-3xl font-black text-[#7C4DFF] mt-2">
                     ${estAnnualRent.toFixed(2)}
                   </div>
-                  <p className="text-xs text-[#585375] mt-1">Net yield of 9.4% per annum</p>
+                  <p className="text-xs text-[#585375] mt-1">Based on 9.4% yearly return after property costs</p>
                 </div>
 
                 <div className="sm:col-span-2 bg-[#1E1B4B] text-white p-5 rounded-2xl flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div>
-                    <span className="text-xs text-mint font-semibold">Ready to test with your $25,000 balance?</span>
-                    <div className="text-sm font-bold text-white">Purchase shares of curated properties instantly</div>
+                    <span className="text-xs text-mint font-semibold">Ready to test with your $25,000 practice cash?</span>
+                    <div className="text-sm font-bold text-white">Buy shares of real buildings and start earning demo rent</div>
                   </div>
                   <Link
                     href="/explore"
                     className="px-5 py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs whitespace-nowrap shadow-md transition-all"
                   >
-                    Invest Now in Demo
+                    Try Buying Shares
                   </Link>
                 </div>
               </div>
@@ -364,21 +364,21 @@ export default function HomePage() {
             <div className="lg:col-span-6 space-y-5">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white border border-[#E6D8F5] text-xs font-bold text-[#5B3A8C]">
                 <Bot className="w-4 h-4 text-[#7C4DFF]" />
-                <span>Autonomous Asset Intelligence</span>
+                <span>Your Helpful Property Assistant</span>
               </div>
               <h2 className="text-3xl sm:text-4xl font-black text-[#1E1B4B] tracking-tight">
                 Meet {BRAND_CONFIG.aiAgentName}
               </h2>
               <p className="text-base text-[#585375] leading-relaxed">
-                Persistent across every page, StateEra AI evaluates gross vs net rental yields, analyzes tenant covenants, inspects structural audit reports, and identifies vacancy risks in real time.
+                Available on every page, StateEra AI answers your questions in simple everyday words, calculates rent returns, checks building paperwork, and spots potential risks.
               </p>
 
               <div className="space-y-3 pt-2">
                 {[
-                  "Deterministic rental return & share calculations",
-                  "Bureau Veritas engineering & structural audit summaries",
-                  "Land registry and freehold title deed verification checks",
-                  "Multi-language support with native Urdu, Arabic RTL & Spanish",
+                  "Clear math for monthly rent and share costs",
+                  "Simple summaries of building safety and repair reports",
+                  "Ownership paperwork and land registry checks",
+                  "Helps you in 6 languages including Urdu, Arabic, Spanish, and English",
                 ].map((item, i) => (
                   <div key={i} className="flex items-center gap-3 text-sm text-[#1E1B4B]">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600 flex-shrink-0" />
@@ -397,20 +397,20 @@ export default function HomePage() {
                     </div>
                     <div>
                       <h4 className="font-bold text-sm text-[#1E1B4B]">{BRAND_CONFIG.aiAgentName}</h4>
-                      <span className="text-[11px] text-emerald-600 font-semibold">Risk & Valuation Copilot</span>
+                      <span className="text-[11px] text-emerald-600 font-semibold">Property & Rent Helper</span>
                     </div>
                   </div>
                   <span className="text-xs bg-mint text-emerald-900 font-bold px-2.5 py-1 rounded-full">
-                    Active on all pages
+                    Ready to chat on all pages
                   </span>
                 </div>
 
                 <div className="space-y-3 text-xs">
                   <div className="p-3 bg-[#F8F4FD] rounded-xl text-[#585375] border border-[#E6D8F5]">
-                    "StateEra AI, how does the 9.4% net yield for Marina Horizon compare to the Dubai Marina district average?"
+                    "StateEra AI, how does the 9.4% yearly return for Marina Horizon compare to other nearby buildings?"
                   </div>
                   <div className="p-3.5 bg-[#F3EAFC]/80 rounded-xl text-[#1E1B4B] border border-[#E6D8F5] leading-relaxed">
-                    <strong>Analysis:</strong> Marina Horizon outperforms the 7.8% district average by +160 bps due to 100% corporate master-leased tenancies and low operating expense ratios (7.5%). Freehold title DLD deed verified.
+                    <strong>Simple Answer:</strong> Marina Horizon pays about 1.6% more rent per year than nearby towers because it is 100% rented to reliable corporate tenants and running costs are very low (only 7.5%). All property papers are checked and verified.
                   </div>
                 </div>
 
@@ -419,7 +419,7 @@ export default function HomePage() {
                     href="/explore"
                     className="w-full py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs text-center block transition-colors"
                   >
-                    Open StateEra AI in Marketplace
+                    Ask StateEra AI in Explore
                   </Link>
                 </div>
               </div>

@@ -34,6 +34,8 @@ import {
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { PropertyCard } from "@/components/property/PropertyCard";
+import { BeginnerGuideBanner } from "@/components/common/BeginnerGuideBanner";
+import { InfoTooltip } from "@/components/common/InfoTooltip";
 
 const PIE_COLORS = ["#7C4DFF", "#5B3A8C", "#10B981", "#3B82F6", "#F59E0B"];
 
@@ -78,7 +80,10 @@ export default function InvestorDashboardPage() {
   const savedProperties = properties.filter((p) => watchlist.includes(p.id));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-10" dir={dir}>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8" dir={dir}>
+      {/* 3-Step Beginner Explainer Strip */}
+      <BeginnerGuideBanner pageName="dashboard" />
+
       {/* Header Profile Bar */}
       <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
@@ -89,11 +94,11 @@ export default function InvestorDashboardPage() {
             <div className="flex items-center gap-2">
               <h1 className="text-2xl font-black text-[#1E1B4B]">Jonathan Sterling</h1>
               <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-mint text-emerald-900">
-                Premium Investor
+                Verified Investor
               </span>
             </div>
             <p className="text-xs text-[#585375] mt-0.5">
-              Investor ID: STE-892144 • KYC Verified • Tier 1 Escrow Access
+              Investor ID: STE-892144 • Identity Check: Complete • Practice Wallet Active
             </p>
           </div>
         </div>
@@ -112,9 +117,26 @@ export default function InvestorDashboardPage() {
             className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs shadow-md transition-all"
           >
             <Plus className="w-4 h-4" />
-            <span>Invest in Assets</span>
+            <span>Buy Shares in New Buildings</span>
           </Link>
         </div>
+      </div>
+
+      {/* Friendly Next Step Hint */}
+      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="flex items-center gap-2">
+          <span className="font-bold text-base">💡</span>
+          <span>
+            <strong>Next Step:</strong> Test your monthly rent by clicking <strong>"Simulate Monthly Dividend Payout"</strong> above, or browse new buildings to add to your holdings.
+          </span>
+        </div>
+        <Link
+          href="/glossary"
+          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+        >
+          <span>See Simple Terms Guide</span>
+          <ArrowRight className="w-3 h-3 rtl-flip" />
+        </Link>
       </div>
 
       {/* Payout Feedback Alert */}
@@ -125,54 +147,71 @@ export default function InvestorDashboardPage() {
         </div>
       )}
 
-      {/* 6 Key Portfolio KPI Cards */}
+      {/* 4 Key Portfolio KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         {/* Total Portfolio Value */}
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8782A3]">
-            <span>Total Portfolio Value</span>
+            <div className="flex items-center gap-1">
+              <span>Total Value of My Shares</span>
+              <InfoTooltip termId="portfolio" size="sm" />
+            </div>
             <PieIcon className="w-4 h-4 text-[#7C4DFF]" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[#1E1B4B]">
             ${totalPortfolioValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
           </div>
-          <div className="text-xs text-[#585375] flex items-center gap-1">
+          <div className="text-xs text-[#585375] flex items-center justify-between">
             <span>Invested: <strong>${totalInvested.toLocaleString()}</strong></span>
+            <span className="text-[10px] text-[#8782A3]">Current price of all shares</span>
           </div>
         </div>
 
         {/* Total Gain / Loss */}
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8782A3]">
-            <span>Total Capital Gain</span>
+            <div className="flex items-center gap-1">
+              <span>Total Profit or Loss</span>
+              <InfoTooltip termId="total-gain-loss" size="sm" />
+            </div>
             <TrendingUp className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-emerald-600">
             +${totalGainLoss.toFixed(2)}
           </div>
-          <div className="text-xs font-bold text-emerald-700 bg-mint w-fit px-2 py-0.5 rounded-full">
-            +{totalGainLossPercent.toFixed(2)}% Overall ROI
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-bold text-emerald-700 bg-mint px-2 py-0.5 rounded-full">
+              +{totalGainLossPercent.toFixed(2)}% Overall Growth
+            </span>
+            <span className="text-[10px] text-[#8782A3]">Since first share</span>
           </div>
         </div>
 
         {/* Monthly Estimated Rental Income */}
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8782A3]">
-            <span>Est. Monthly Rental Dividend</span>
+            <div className="flex items-center gap-1">
+              <span>Estimated Monthly Rent</span>
+              <InfoTooltip termId="rent-payments" size="sm" />
+            </div>
             <Coins className="w-4 h-4 text-emerald-600" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[#1E1B4B]">
             ${monthlyEstimatedIncome.toFixed(2)}
           </div>
-          <div className="text-xs text-[#585375]">
-            Annual Run Rate: <strong>${(monthlyEstimatedIncome * 12).toFixed(2)} / yr</strong>
+          <div className="text-xs text-[#585375] flex items-center justify-between">
+            <span>Yearly: <strong>${(monthlyEstimatedIncome * 12).toFixed(2)} / yr</strong></span>
+            <span className="text-[10px] text-[#8782A3]">Deposited on the 1st</span>
           </div>
         </div>
 
         {/* Demo Cash Balance */}
         <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-2">
           <div className="flex items-center justify-between text-xs font-semibold text-[#8782A3]">
-            <span>Available Demo Balance</span>
+            <div className="flex items-center gap-1">
+              <span>Practice Cash in Wallet</span>
+              <InfoTooltip termId="escrow" size="sm" />
+            </div>
             <Wallet className="w-4 h-4 text-[#7C4DFF]" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-[#7C4DFF]">
@@ -180,7 +219,7 @@ export default function InvestorDashboardPage() {
           </div>
           <div className="text-xs text-[#585375]">
             <Link href="/wallet" className="text-[#7C4DFF] font-semibold hover:underline">
-              Top up or withdraw cash →
+              Add practice money or withdraw →
             </Link>
           </div>
         </div>
@@ -191,7 +230,10 @@ export default function InvestorDashboardPage() {
         {/* Asset Allocation Chart (5 cols) */}
         <div className="lg:col-span-5 bg-white p-6 sm:p-7 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Portfolio Asset Allocation</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-bold text-base text-[#1E1B4B]">Where Your Money Is Invested</h3>
+              <InfoTooltip termId="asset-allocation" size="sm" />
+            </div>
             <span className="text-xs text-[#8782A3]">{holdings.length} Properties</span>
           </div>
 
@@ -250,9 +292,12 @@ export default function InvestorDashboardPage() {
         {/* My Fractional Holdings Table (7 cols) */}
         <div className="lg:col-span-7 bg-white p-6 sm:p-7 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="font-bold text-base text-[#1E1B4B]">My Owned Fractional Shares</h3>
+            <div className="flex items-center gap-1.5">
+              <h3 className="font-bold text-base text-[#1E1B4B]">Properties I Own Shares In</h3>
+              <InfoTooltip termId="fractional-shares" size="sm" />
+            </div>
             <Link href="/wallet" className="text-xs text-[#7C4DFF] font-semibold hover:underline">
-              View Payout Ledger
+              See All Rent Payments →
             </Link>
           </div>
 
@@ -263,7 +308,7 @@ export default function InvestorDashboardPage() {
                   <th className="pb-3">Property</th>
                   <th className="pb-3">Shares</th>
                   <th className="pb-3">Value</th>
-                  <th className="pb-3">Est. Rent/Mo</th>
+                  <th className="pb-3">Rent / Mo</th>
                   <th className="pb-3 text-right">Actions</th>
                 </tr>
               </thead>
@@ -287,7 +332,7 @@ export default function InvestorDashboardPage() {
                         href={`/trade/${h.propertyId}`}
                         className="px-2.5 py-1 rounded-lg bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-semibold text-[11px]"
                       >
-                        Trade
+                        Buy / Sell
                       </Link>
                     </td>
                   </tr>
