@@ -5,7 +5,6 @@ import {
   Sliders,
   TrendingUp,
   AlertTriangle,
-  Sparkles,
   ShieldAlert,
   ArrowRight,
   RotateCcw,
@@ -25,10 +24,12 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
 import Link from "next/link";
+import { useChartInView } from "@/hooks/useChartInView";
 
 export default function ScenarioSimulatorPage() {
   const { properties } = useDemo();
   const { t, dir } = useLanguage();
+  const chartInView = useChartInView();
 
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>(properties[0]?.id || "");
   const property = properties.find((p) => p.id === selectedPropertyId) || properties[0];
@@ -123,22 +124,20 @@ export default function ScenarioSimulatorPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#F3EAFC] text-[#5B3A8C]">
-              What-If Stress Test
-            </span>
-            <span className="text-xs text-[#8782A3]">INTERACTIVE CALCULATOR</span>
+            <span className="badge badge-info">What-If Stress Test</span>
+            <span className="text-xs text-muted-se">INTERACTIVE CALCULATOR</span>
           </div>
-          <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            'What If?' Rent & Risk Calculator
+          <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
+            &lsquo;What If?&rsquo; Rent &amp; Risk Calculator
           </h1>
-          <p className="text-xs sm:text-sm text-[#585375]">
+          <p className="text-xs sm:text-sm text-secondary-se">
             Move the sliders to see what happens to your monthly rent if tenants move out or repairs cost more.
           </p>
         </div>
 
         <button
           onClick={resetSliders}
-          className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#E6D8F5] text-xs font-bold text-[#5B3A8C] hover:border-[#7C4DFF] shadow-sm transition-colors self-start sm:self-auto"
+          className="btn btn-ghost flex items-center gap-1.5 self-start sm:self-auto"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Reset to Normal</span>
@@ -146,16 +145,17 @@ export default function ScenarioSimulatorPage() {
       </div>
 
       {/* Friendly Next Step Hint */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+      <div className="glass rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-secondary-se">
         <div className="flex items-center gap-2">
           <span className="font-bold text-base">💡</span>
           <span>
-            <strong>How to use this:</strong> Drag the <strong>"How full is the building?"</strong> slider down to see how your monthly rent holds up in bad times.
+            <strong className="text-[#1A080C]">How to use this:</strong> Drag the{" "}
+            <strong className="text-[#1A080C]">&ldquo;How full is the building?&rdquo;</strong> slider down to see how your monthly rent holds up in bad times.
           </span>
         </div>
         <Link
           href="/glossary"
-          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
         >
           <span>What is Occupancy? Guide</span>
           <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -165,17 +165,17 @@ export default function ScenarioSimulatorPage() {
       {/* Main Grid: Interactive Controls on Left (5 cols), Live Results on Right (7 cols) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Column: Sliders (5 cols) */}
-        <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-5">
-          <div className="space-y-1 pb-3 border-b border-[#F3EAFC]">
-            <label className="text-xs font-bold text-[#8782A3] uppercase">Choose a Property to Test</label>
+        <div className="lg:col-span-5 glass rounded-3xl p-6 sm:p-7 space-y-5">
+          <div className="space-y-1 pb-3 border-b border-[#EADCDD]">
+            <label className="text-xs font-bold text-muted-se uppercase">Choose a Property to Test</label>
             <select
               value={selectedPropertyId}
               onChange={(e) => setSelectedPropertyId(e.target.value)}
-              className="w-full bg-[#F8F4FD] border border-[#E6D8F5] text-xs font-bold text-[#1E1B4B] rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#7C4DFF]"
+              className="select text-xs font-bold"
             >
               {properties.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.title} (${p.sharePrice}/share • {p.netYield}% Yearly Return)
+                  {p.title} (${p.sharePrice}/share &bull; {p.netYield}% Yearly Return)
                 </option>
               ))}
             </select>
@@ -183,12 +183,12 @@ export default function ScenarioSimulatorPage() {
 
           {/* Investment Amount */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
+            <div className="flex justify-between text-xs font-bold text-[#1A080C]">
               <div className="flex items-center gap-1">
                 <span>How much to invest</span>
                 <InfoTooltip termId="fractional-shares" size="sm" />
               </div>
-              <span className="text-[#7C4DFF]">${investmentAmount.toLocaleString()} ({scenarios.sharesCount} shares)</span>
+              <span className="text-accent-se">${investmentAmount.toLocaleString()} ({scenarios.sharesCount} shares)</span>
             </div>
             <input
               type="range"
@@ -197,18 +197,18 @@ export default function ScenarioSimulatorPage() {
               step="100"
               value={investmentAmount}
               onChange={(e) => setInvestmentAmount(Number(e.target.value))}
-              className="w-full h-2 bg-[#E6D8F5] rounded-lg appearance-none cursor-pointer accent-[#7C4DFF]"
+              className="w-full h-2 bg-[#FAF5F5] border border-[#EADCDD] rounded-lg appearance-none cursor-pointer accent-[var(--se-primary)]"
             />
           </div>
 
           {/* Occupancy Rate */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
+            <div className="flex justify-between text-xs font-bold text-[#1A080C]">
               <div className="flex items-center gap-1">
                 <span>How full is the building? (Occupancy)</span>
                 <InfoTooltip termId="occupancy-rate" size="sm" />
               </div>
-              <span className={occupancyRate < 80 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>
+              <span className={occupancyRate < 80 ? "text-red-600 font-bold" : "text-emerald-700 font-bold"}>
                 {occupancyRate}%
               </span>
             </div>
@@ -219,15 +219,15 @@ export default function ScenarioSimulatorPage() {
               step="5"
               value={occupancyRate}
               onChange={(e) => setOccupancyRate(Number(e.target.value))}
-              className="w-full h-2 bg-[#E6D8F5] rounded-lg appearance-none cursor-pointer accent-[#7C4DFF]"
+              className="w-full h-2 bg-[#FAF5F5] border border-[#EADCDD] rounded-lg appearance-none cursor-pointer accent-[var(--se-primary)]"
             />
           </div>
 
           {/* Rent Variation % */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
+            <div className="flex justify-between text-xs font-bold text-[#1A080C]">
               <span>Tenant Rent Change</span>
-              <span className={rentVariationPercent < 0 ? "text-red-500 font-bold" : "text-emerald-600 font-bold"}>
+              <span className={rentVariationPercent < 0 ? "text-red-600 font-bold" : "text-emerald-700 font-bold"}>
                 {rentVariationPercent > 0 ? `+${rentVariationPercent}%` : `${rentVariationPercent}%`}
               </span>
             </div>
@@ -238,18 +238,18 @@ export default function ScenarioSimulatorPage() {
               step="5"
               value={rentVariationPercent}
               onChange={(e) => setRentVariationPercent(Number(e.target.value))}
-              className="w-full h-2 bg-[#E6D8F5] rounded-lg appearance-none cursor-pointer accent-[#7C4DFF]"
+              className="w-full h-2 bg-[#FAF5F5] border border-[#EADCDD] rounded-lg appearance-none cursor-pointer accent-[var(--se-primary)]"
             />
           </div>
 
           {/* Maintenance Multiplier */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
+            <div className="flex justify-between text-xs font-bold text-[#1A080C]">
               <div className="flex items-center gap-1">
-                <span>Repair & Maintenance Bills</span>
+                <span>Repair &amp; Maintenance Bills</span>
                 <InfoTooltip termId="operating-expenses" size="sm" />
               </div>
-              <span className={maintenanceMultiplier > 1.2 ? "text-red-500 font-bold" : "text-[#1E1B4B]"}>
+              <span className={maintenanceMultiplier > 1.2 ? "text-red-600 font-bold" : "text-[#1A080C]"}>
                 {(maintenanceMultiplier * 100).toFixed(0)}% of Normal
               </span>
             </div>
@@ -260,15 +260,15 @@ export default function ScenarioSimulatorPage() {
               step="0.1"
               value={maintenanceMultiplier}
               onChange={(e) => setMaintenanceMultiplier(Number(e.target.value))}
-              className="w-full h-2 bg-[#E6D8F5] rounded-lg appearance-none cursor-pointer accent-[#7C4DFF]"
+              className="w-full h-2 bg-[#FAF5F5] border border-[#EADCDD] rounded-lg appearance-none cursor-pointer accent-[var(--se-primary)]"
             />
           </div>
 
           {/* Management Fee Rate */}
           <div className="space-y-2">
-            <div className="flex justify-between text-xs font-bold text-[#1E1B4B]">
+            <div className="flex justify-between text-xs font-bold text-[#1A080C]">
               <span>Building Manager Fee</span>
-              <span className="text-[#5B3A8C] font-bold">{managementFeeRate}%</span>
+              <span className="text-accent-se font-bold">{managementFeeRate}%</span>
             </div>
             <input
               type="range"
@@ -277,7 +277,7 @@ export default function ScenarioSimulatorPage() {
               step="0.5"
               value={managementFeeRate}
               onChange={(e) => setManagementFeeRate(Number(e.target.value))}
-              className="w-full h-2 bg-[#E6D8F5] rounded-lg appearance-none cursor-pointer accent-[#7C4DFF]"
+              className="w-full h-2 bg-[#FAF5F5] border border-[#EADCDD] rounded-lg appearance-none cursor-pointer accent-[var(--se-primary)]"
             />
           </div>
         </div>
@@ -300,54 +300,54 @@ export default function ScenarioSimulatorPage() {
             </div>
 
             {/* Simulated Case */}
-            <div className="p-4 rounded-2xl bg-[#F3EAFC] border border-[#E6D8F5] text-center space-y-1 ring-2 ring-[#7C4DFF]/30">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-[#5B3A8C]">
+            <div className="p-4 rounded-2xl bg-white border border-[#3B0F18]/30 shadow-sm text-center space-y-1">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-accent-se">
                 Your Custom Test
               </span>
-              <div className="text-xl font-black text-[#7C4DFF]">
+              <div className="text-xl font-black text-[#1A080C]">
                 ${scenarios.simulated.monthly.toFixed(2)} / mo
               </div>
-              <div className="text-xs text-[#5B3A8C] font-semibold">
+              <div className="text-xs text-secondary-se font-semibold">
                 {scenarios.simulated.yield.toFixed(1)}% Yearly Return
               </div>
             </div>
 
             {/* Best Case */}
-            <div className="p-4 rounded-2xl bg-mint border border-emerald-300 text-center space-y-1">
-              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-800">
+            <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-1">
+              <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">
                 Boom Times (100% Full)
               </span>
               <div className="text-xl font-black text-emerald-900">
                 ${scenarios.best.monthly.toFixed(2)} / mo
               </div>
-              <div className="text-xs text-emerald-800 font-semibold">
+              <div className="text-xs text-emerald-700 font-semibold">
                 {scenarios.best.yield.toFixed(1)}% Yearly Return
               </div>
             </div>
           </div>
 
           {/* Scenario Comparison Chart */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Estimated Yearly Rent Under Each Scenario ($)</h3>
-            <div className="h-64 w-full">
+          <div className="glass rounded-3xl p-6 sm:p-7 space-y-4">
+            <h3 className="font-bold text-base text-[#1A080C]">Estimated Yearly Rent Under Each Scenario ($)</h3>
+            <div ref={chartInView.ref} className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical">
-                  <XAxis type="number" stroke="#8782A3" fontSize={11} tickFormatter={(v) => `$${v}`} />
-                  <YAxis type="category" dataKey="scenario" stroke="#8782A3" fontSize={11} width={130} />
+                  <XAxis type="number" stroke="#8C7B7F" fontSize={11} tickFormatter={(v) => `$${v}`} />
+                  <YAxis type="category" dataKey="scenario" stroke="#8C7B7F" fontSize={11} width={130} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#1E1B4B", borderRadius: "0.75rem", color: "#fff", fontSize: "12px" }}
+                    contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", color: "#1A080C", fontSize: "12px", border: "1px solid #EADCDD", boxShadow: "0 4px 12px rgba(26,8,12,0.08)" }}
                   />
-                  <Bar dataKey="annualIncome" fill="#7C4DFF" radius={[0, 4, 4, 0]} />
+                  <Bar dataKey="annualIncome" fill="#3B0F18" radius={[0, 4, 4, 0]} isAnimationActive={chartInView.isAnimationActive} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           </div>
 
           {/* Explanatory Risk Callout */}
-          <div className="p-4 rounded-2xl bg-[#F8F4FD] border border-[#E6D8F5] text-xs text-[#585375] leading-relaxed flex items-start gap-2.5">
+          <div className="bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl p-4 text-xs text-[#5E4A4E] leading-relaxed flex items-start gap-2.5">
             <AlertTriangle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
             <div>
-              <strong className="text-[#1E1B4B]">Helpful Tip: </strong>
+              <strong className="text-[#1A080C]">Helpful Tip: </strong>
               Empty apartments hurt your monthly rent much more than a slightly higher repair bill. That is why every property has an emergency fund set aside to protect your monthly rent even if a tenant moves out.
             </div>
           </div>

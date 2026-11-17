@@ -19,27 +19,26 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <div className="md:hidden fixed bottom-3 left-4 right-4 z-40">
-      <div className="bg-white/95 backdrop-blur-lg border border-[#E6D8F5] shadow-2xl rounded-2xl p-1.5 flex items-center justify-around">
-        {navItems.map((item) => {
-          const Icon = item.icon;
-          const isActive = pathname === item.href;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-xl transition-all ${
-                isActive
-                  ? "bg-[#7C4DFF] text-white shadow-sm font-semibold scale-105"
-                  : "text-[#585375] hover:text-[#7C4DFF]"
-              }`}
-            >
-              <Icon className="w-4 h-4" />
-              <span className="text-[10px] mt-0.5">{item.label}</span>
-            </Link>
-          );
-        })}
-      </div>
-    </div>
+    <nav className="md:hidden glass-bottom-nav" aria-label="Mobile Navigation">
+      {navItems.map((item) => {
+        const Icon = item.icon;
+        const isActive = pathname === item.href;
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            aria-current={isActive ? "page" : undefined}
+            className={`flex flex-col items-center justify-center py-1.5 px-3 rounded-lg transition-colors ${
+              isActive
+                ? "text-[#3B0F18] font-bold"
+                : "text-[#5E4A4E] hover:text-[#1A080C]"
+            }`}
+          >
+            <Icon className="w-4 h-4" />
+            <span className="text-[10px] mt-0.5">{item.label}</span>
+          </Link>
+        );
+      })}
+    </nav>
   );
 };

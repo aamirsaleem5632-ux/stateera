@@ -89,10 +89,10 @@ export default function WalletPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
+          <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
             Practice Wallet & Rent Payments
           </h1>
-          <p className="text-xs sm:text-sm text-[#585375]">
+          <p className="text-xs sm:text-sm text-secondary-se">
             Check your practice cash, add demo funds, and see how rent is paid out every month.
           </p>
         </div>
@@ -100,25 +100,25 @@ export default function WalletPage() {
         <div className="flex items-center gap-2">
           <button
             onClick={exportCSV}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-white border border-[#E6D8F5] text-xs font-bold text-[#5B3A8C] hover:border-[#7C4DFF] shadow-sm transition-colors"
+            className="btn btn-secondary text-xs"
           >
-            <Download className="w-4 h-4 text-[#7C4DFF]" />
+            <Download className="w-4 h-4 text-accent-se" />
             <span>Download Spreadsheet (CSV)</span>
           </button>
         </div>
       </div>
 
       {/* Friendly Next Step Hint */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+      <div className="p-3 rounded-xl bg-[#FAF5F5] border border-[#EADCDD] flex items-center justify-between gap-3 text-xs text-[#5E4A4E]">
         <div className="flex items-center gap-2">
           <span className="font-bold text-base">💡</span>
           <span>
-            <strong>Next Step:</strong> Click <strong>"Simulate Rent Payment"</strong> below to test receiving monthly rent, or click <strong>"Deposit Demo Cash"</strong> to top up.
+            <strong className="text-[#1A080C]">Next Step:</strong> Click <strong>&quot;Simulate Rent Payment&quot;</strong> below to test receiving monthly rent, or click <strong>&quot;Deposit Demo Cash&quot;</strong> to top up.
           </span>
         </div>
         <Link
           href="/glossary"
-          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
         >
           <span>See Simple Terms Guide</span>
           <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -128,8 +128,8 @@ export default function WalletPage() {
       {/* Feedback banner */}
       {feedback && (
         <div
-          className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 shadow-sm ${
-            feedback.success ? "bg-mint border border-emerald-300 text-emerald-900" : "bg-red-50 border border-red-200 text-red-900"
+          className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 shadow-sm toast-glass ${
+            feedback.success ? "border-emerald-200 text-emerald-800 bg-emerald-50" : "border-red-200 text-red-800 bg-red-50"
           }`}
         >
           {feedback.success ? (
@@ -142,20 +142,20 @@ export default function WalletPage() {
       )}
 
       {/* Main Wallet Balance Card */}
-      <div className="bg-gradient-to-r from-[#5B3A8C] via-[#7C4DFF] to-[#5B3A8C] rounded-3xl p-6 sm:p-10 text-white shadow-card space-y-6">
+      <div className="bg-white border border-[#EADCDD] rounded-3xl p-6 sm:p-10 text-[#1A080C] space-y-6 shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-1.5">
-              <span className="text-xs uppercase font-bold tracking-wider text-[#E6D8F5]">
+              <span className="text-xs uppercase font-bold tracking-wider text-accent-se">
                 Practice Cash in Wallet
               </span>
               <InfoTooltip termId="escrow" size="sm" />
             </div>
-            <div className="text-4xl sm:text-5xl font-black mt-1">
+            <div className="text-4xl sm:text-5xl font-black mt-1 text-[#1A080C]">
               ${walletBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
             </div>
-            <div className="text-xs text-white/80 mt-1 flex items-center gap-1.5">
-              <ShieldCheck className="w-4 h-4 text-mint" />
+            <div className="text-xs text-secondary-se mt-1 flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-accent-se" />
               <span>Practice Mode • Real-world math, no real money used</span>
             </div>
           </div>
@@ -163,21 +163,21 @@ export default function WalletPage() {
           <div className="flex flex-wrap items-center gap-2.5">
             <button
               onClick={() => setDepositModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-white text-[#5B3A8C] font-bold text-xs hover:bg-[#F3EAFC] shadow-md transition-all"
+              className="btn btn-primary text-xs"
             >
               Deposit Demo Cash
             </button>
             <button
               onClick={() => setWithdrawModalOpen(true)}
-              className="px-5 py-2.5 rounded-xl bg-[#1E1B4B] text-white font-bold text-xs hover:bg-[#332D56] border border-white/20 transition-all"
+              className="btn btn-secondary text-xs"
             >
               Withdraw Cash
             </button>
             <button
               onClick={handleSimulatePayout}
-              className="px-5 py-2.5 rounded-xl bg-mint text-emerald-900 font-bold text-xs hover:bg-emerald-200 shadow-md transition-all flex items-center gap-1.5"
+              className="btn btn-primary text-xs flex items-center gap-1.5"
             >
-              <Coins className="w-4 h-4 text-emerald-700" />
+              <Coins className="w-4 h-4" />
               <span>Simulate Rent Payment</span>
             </button>
           </div>
@@ -185,38 +185,38 @@ export default function WalletPage() {
       </div>
 
       {/* Payout Formula & Financial Transparency Explainer */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
+      <div className="glass p-6 sm:p-8 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[var(--se-glass-border-soft)]">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-base text-[#1E1B4B]">How Rent Money Is Split (Rent Waterfall)</h3>
+              <h3 className="font-bold text-base text-[#1A080C]">How Rent Money Is Split (Rent Waterfall)</h3>
               <InfoTooltip termId="waterfall" size="sm" />
             </div>
-            <p className="text-xs text-[#585375]">How monthly rent money is calculated and shared with you:</p>
+            <p className="text-xs text-secondary-se">How monthly rent money is calculated and shared with you:</p>
           </div>
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-mint text-emerald-900">
+          <span className="badge badge-success text-xs font-bold">
             Automated & Clear
           </span>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#F8F4FD] border border-[#E6D8F5] text-xs font-medium text-[#1E1B4B] space-y-2">
+        <div className="p-4 rounded-2xl bg-[#FAF5F5] border border-[#EADCDD] text-xs font-medium text-[#1A080C] space-y-2">
           <div className="flex items-center justify-between">
             <span>1. Rent Collected from Tenants</span>
-            <span className="text-emerald-700 font-bold">Total tenant rent</span>
+            <span className="text-accent-se font-bold">Total tenant rent</span>
           </div>
-          <div className="flex items-center justify-between text-[#585375]">
+          <div className="flex items-center justify-between text-secondary-se">
             <span>- Running Costs (Taxes, insurance, water/power)</span>
             <span className="text-red-600 font-semibold">- Costs</span>
           </div>
-          <div className="flex items-center justify-between text-[#585375]">
+          <div className="flex items-center justify-between text-secondary-se">
             <span>- Emergency Fund & Repair Savings</span>
             <span className="text-red-600 font-semibold">- Repairs</span>
           </div>
-          <div className="flex items-center justify-between text-[#585375]">
+          <div className="flex items-center justify-between text-secondary-se">
             <span>- Property Manager Fee (Building upkeep)</span>
             <span className="text-red-600 font-semibold">- Fee</span>
           </div>
-          <div className="pt-2 border-t border-[#E6D8F5] flex items-center justify-between font-bold text-[#7C4DFF]">
+          <div className="pt-2 border-t border-[#EADCDD] flex items-center justify-between font-bold text-accent-se">
             <span>= Rent Money to Share with You</span>
             <span className="text-sm">Paid into your wallet on the 1st of every month</span>
           </div>
@@ -224,30 +224,30 @@ export default function WalletPage() {
       </div>
 
       {/* Rental Payout History */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-        <h3 className="font-bold text-base text-[#1E1B4B]">Simulated Monthly Distribution Ledger</h3>
+      <div className="glass p-6 sm:p-8 space-y-4">
+        <h3 className="font-bold text-base text-[#1A080C]">Simulated Monthly Distribution Ledger</h3>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="table-glass text-xs">
             <thead>
-              <tr className="border-b border-[#E6D8F5] text-[#8782A3] uppercase text-[10px]">
-                <th className="pb-3">Date</th>
-                <th className="pb-3">Property</th>
-                <th className="pb-3">Eligible Shares</th>
-                <th className="pb-3">Payout / Share</th>
-                <th className="pb-3">Net Received</th>
-                <th className="pb-3 text-right">Reference</th>
+              <tr>
+                <th>Date</th>
+                <th>Property</th>
+                <th>Eligible Shares</th>
+                <th>Payout / Share</th>
+                <th>Net Received</th>
+                <th className="text-right">Reference</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F3EAFC]">
+            <tbody>
               {payoutHistory.map((p) => (
-                <tr key={p.id} className="hover:bg-[#F8F4FD] transition-colors">
-                  <td className="py-3 text-[#585375]">{p.payoutDate}</td>
-                  <td className="py-3 font-bold text-[#1E1B4B]">{p.propertyTitle}</td>
-                  <td className="py-3 text-[#585375]">{p.sharesEligible} shares</td>
-                  <td className="py-3 font-semibold text-[#1E1B4B]">${p.payoutPerShare}</td>
-                  <td className="py-3 font-black text-emerald-600">+${p.totalReceived.toFixed(2)}</td>
-                  <td className="py-3 text-right text-[11px] font-mono text-[#8782A3]">{p.referenceId}</td>
+                <tr key={p.id}>
+                  <td className="text-secondary-se">{p.payoutDate}</td>
+                  <td className="font-bold text-[#1A080C]">{p.propertyTitle}</td>
+                  <td className="text-secondary-se">{p.sharesEligible} shares</td>
+                  <td className="font-semibold text-[#1A080C]">${p.payoutPerShare}</td>
+                  <td className="font-black text-accent-se">+${p.totalReceived.toFixed(2)}</td>
+                  <td className="text-right text-[11px] font-mono text-muted-se">{p.referenceId}</td>
                 </tr>
               ))}
             </tbody>
@@ -256,9 +256,9 @@ export default function WalletPage() {
       </div>
 
       {/* All Transactions Ledger */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-5">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#F3EAFC]">
-          <h3 className="font-bold text-base text-[#1E1B4B]">Complete Transaction Ledger</h3>
+      <div className="glass p-6 sm:p-8 space-y-5">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[var(--se-glass-border-soft)]">
+          <h3 className="font-bold text-base text-[#1A080C]">Complete Transaction Ledger</h3>
 
           {/* Filter Chips */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar text-xs">
@@ -268,8 +268,8 @@ export default function WalletPage() {
                 onClick={() => setFilterType(t)}
                 className={`px-3 py-1 rounded-xl font-bold transition-all ${
                   filterType === t
-                    ? "bg-[#7C4DFF] text-white shadow-sm"
-                    : "bg-[#F8F4FD] text-[#585375] hover:bg-[#F3EAFC]"
+                    ? "btn-primary shadow-sm"
+                    : "bg-[#FAF5F5] border border-[#EADCDD] text-secondary-se hover:bg-[#F2E8E9]"
                 }`}
               >
                 {t}
@@ -278,26 +278,26 @@ export default function WalletPage() {
           </div>
         </div>
 
-        <div className="divide-y divide-[#F3EAFC]">
+        <div className="divide-y divide-[var(--se-glass-border-soft)]">
           {filteredTransactions.map((tx) => (
             <div key={tx.id} className="py-3.5 flex items-center justify-between text-xs">
               <div className="flex items-center gap-3">
                 <div
                   className={`w-9 h-9 rounded-xl flex items-center justify-center font-bold text-xs ${
                     tx.type === "BUY"
-                      ? "bg-[#F3EAFC] text-[#7C4DFF]"
+                      ? "bg-[#FAF5F5] text-[#3B0F18] border border-[#EADCDD]"
                       : tx.type === "RENT_PAYOUT"
-                      ? "bg-mint text-emerald-800"
+                      ? "badge-success"
                       : tx.type === "DEPOSIT"
-                      ? "bg-sky-100 text-sky-800"
-                      : "bg-[#FCE7F3] text-pink-800"
+                      ? "badge-info"
+                      : "badge-warning"
                   }`}
                 >
                   {tx.type === "BUY" ? "BUY" : tx.type === "RENT_PAYOUT" ? "DIV" : tx.type.slice(0, 3)}
                 </div>
                 <div>
-                  <div className="font-bold text-[#1E1B4B]">{tx.propertyTitle || "Wallet Operation"}</div>
-                  <div className="text-[11px] text-[#8782A3]">
+                  <div className="font-bold text-[#1A080C]">{tx.propertyTitle || "Wallet Operation"}</div>
+                  <div className="text-[11px] text-muted-se">
                     {tx.timestamp} • Code: {tx.referenceCode}
                   </div>
                 </div>
@@ -307,13 +307,13 @@ export default function WalletPage() {
                 <div
                   className={`font-black text-sm ${
                     tx.type === "RENT_PAYOUT" || tx.type === "SELL" || tx.type === "DEPOSIT"
-                      ? "text-emerald-600"
-                      : "text-[#1E1B4B]"
+                      ? "text-accent-se"
+                      : "text-[#1A080C]"
                   }`}
                 >
                   {tx.type === "BUY" || tx.type === "WITHDRAW" ? "-" : "+"}${tx.amount.toLocaleString()}
                 </div>
-                <span className="text-[10px] text-emerald-700 font-semibold bg-mint px-2 py-0.5 rounded">
+                <span className="badge badge-success text-[10px]">
                   {tx.status}
                 </span>
               </div>
@@ -324,23 +324,23 @@ export default function WalletPage() {
 
       {/* Modal: Deposit Funds */}
       {depositModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1E1B4B]/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-[#E6D8F5] shadow-2xl space-y-4">
-            <h3 className="text-xl font-bold text-[#1E1B4B]">Deposit Demo Funds</h3>
-            <p className="text-xs text-[#585375]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+          <div className="modal-glass p-6 sm:p-8 max-w-md w-full space-y-4">
+            <h3 className="text-xl font-bold text-[#1A080C]">Deposit Demo Funds</h3>
+            <p className="text-xs text-secondary-se">
               Simulate adding balance to your demo investor wallet.
             </p>
 
             <form onSubmit={handleDeposit} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#1E1B4B]">Amount ($)</label>
+                <label className="se-label text-xs font-bold text-[#1A080C]">Amount ($)</label>
                 <input
                   type="number"
                   min="100"
                   step="100"
                   value={depositAmount}
                   onChange={(e) => setDepositAmount(Number(e.target.value))}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 text-base font-bold text-[#1E1B4B]"
+                  className="input text-base font-bold text-[#1A080C]"
                 />
               </div>
 
@@ -351,7 +351,7 @@ export default function WalletPage() {
                     key={amt}
                     type="button"
                     onClick={() => setDepositAmount(amt)}
-                    className="flex-1 py-1.5 rounded-lg bg-[#F3EAFC] text-[#5B3A8C] text-xs font-semibold hover:bg-[#E6D8F5]"
+                    className="flex-1 py-1.5 rounded-lg bg-[#FAF5F5] border border-[#EADCDD] text-secondary-se hover:text-[#1A080C] text-xs font-semibold"
                   >
                     +${amt.toLocaleString()}
                   </button>
@@ -362,13 +362,13 @@ export default function WalletPage() {
                 <button
                   type="button"
                   onClick={() => setDepositModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-[#E6D8F5] text-xs font-semibold text-[#585375]"
+                  className="btn btn-secondary flex-1 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-[#7C4DFF] text-white text-xs font-bold shadow-md hover:bg-[#6C3CE9]"
+                  className="btn btn-primary flex-1 text-xs font-bold"
                 >
                   Confirm Deposit
                 </button>
@@ -380,16 +380,16 @@ export default function WalletPage() {
 
       {/* Modal: Withdraw Funds */}
       {withdrawModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1E1B4B]/60 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl p-6 sm:p-8 max-w-md w-full border border-[#E6D8F5] shadow-2xl space-y-4">
-            <h3 className="text-xl font-bold text-[#1E1B4B]">Withdraw Demo Cash</h3>
-            <p className="text-xs text-[#585375]">
-              Available balance: <strong>${walletBalance.toLocaleString()}</strong>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
+          <div className="modal-glass p-6 sm:p-8 max-w-md w-full space-y-4">
+            <h3 className="text-xl font-bold text-[#1A080C]">Withdraw Demo Cash</h3>
+            <p className="text-xs text-secondary-se">
+              Available balance: <strong className="text-[#1A080C]">${walletBalance.toLocaleString()}</strong>
             </p>
 
             <form onSubmit={handleWithdraw} className="space-y-4">
               <div className="space-y-1">
-                <label className="text-xs font-bold text-[#1E1B4B]">Withdrawal Amount ($)</label>
+                <label className="se-label text-xs font-bold text-[#1A080C]">Withdrawal Amount ($)</label>
                 <input
                   type="number"
                   min="50"
@@ -397,7 +397,7 @@ export default function WalletPage() {
                   step="50"
                   value={withdrawAmount}
                   onChange={(e) => setWithdrawAmount(Number(e.target.value))}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 text-base font-bold text-[#1E1B4B]"
+                  className="input text-base font-bold text-[#1A080C]"
                 />
               </div>
 
@@ -405,13 +405,13 @@ export default function WalletPage() {
                 <button
                   type="button"
                   onClick={() => setWithdrawModalOpen(false)}
-                  className="flex-1 py-2.5 rounded-xl border border-[#E6D8F5] text-xs font-semibold text-[#585375]"
+                  className="btn btn-secondary flex-1 text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-2.5 rounded-xl bg-red-500 text-white text-xs font-bold shadow-md hover:bg-red-600"
+                  className="btn btn-danger flex-1 text-xs font-bold"
                 >
                   Confirm Withdrawal
                 </button>

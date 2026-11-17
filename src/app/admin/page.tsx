@@ -114,9 +114,7 @@ export default function AdminPortalPage() {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("stateera_admin_investors");
       if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {}
+        try { return JSON.parse(saved); } catch {}
       }
     }
     return INITIAL_INVESTORS;
@@ -126,9 +124,7 @@ export default function AdminPortalPage() {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("stateera_admin_queue");
       if (saved) {
-        try {
-          return JSON.parse(saved);
-        } catch {}
+        try { return JSON.parse(saved); } catch {}
       }
     }
     return INITIAL_QUEUE;
@@ -166,30 +162,30 @@ export default function AdminPortalPage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-red-100 text-red-900">
-            Platform Controls
-          </span>
-          <span className="text-xs text-[#8782A3]">SIMULATED ADMIN CONTROLS</span>
+          <span className="badge badge-error">Platform Controls</span>
+          <span className="text-xs text-muted-se">SIMULATED ADMIN CONTROLS</span>
         </div>
-        <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-          Platform Management & Controls
+        <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
+          Platform Management &amp; Controls
         </h1>
-        <p className="text-xs sm:text-sm text-[#585375]">
+        <p className="text-xs sm:text-sm text-secondary-se">
           Review investor identity checks, approve new property listings, and inspect system records.
         </p>
       </div>
 
       {/* Friendly Next Step Hint */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+      <div className="glass rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-secondary-se">
         <div className="flex items-center gap-2">
-          <span className="font-bold text-base">ðŸ’¡</span>
+          <span className="font-bold text-base">💡</span>
           <span>
-            <strong>Next Step:</strong> Click <strong>&quot;Investor Management&quot;</strong> to approve pending KYC identity checks, or <strong>&quot;Building Approvals&quot;</strong> to verify listings.
+            <strong className="text-[#1A080C]">Next Step:</strong> Click{" "}
+            <strong className="text-[#1A080C]">&ldquo;Investor Management&rdquo;</strong> to approve pending KYC identity checks, or{" "}
+            <strong className="text-[#1A080C]">&ldquo;Building Approvals&rdquo;</strong> to verify listings.
           </span>
         </div>
         <Link
           href="/glossary"
-          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
         >
           <span>What is KYC? See Guide</span>
           <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -197,7 +193,7 @@ export default function AdminPortalPage() {
       </div>
 
       {feedback && (
-        <div className="p-4 rounded-2xl bg-mint border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center gap-2 shadow-sm">
+        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2 shadow-sm">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
           <span>{feedback}</span>
         </div>
@@ -205,36 +201,36 @@ export default function AdminPortalPage() {
 
       {/* Admin KPI Ribbon */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] uppercase font-bold">Total Platform Volume</span>
-          <div className="text-2xl font-black text-[#1E1B4B]">$182,450,000</div>
-          <div className="text-[11px] text-emerald-600 font-bold">+14.2% Month-over-Month</div>
+        <div className="glass rounded-3xl p-6 space-y-1">
+          <span className="text-xs text-muted-se uppercase font-bold">Total Platform Volume</span>
+          <div className="text-2xl font-black text-[#1A080C]">$182,450,000</div>
+          <div className="text-[11px] text-emerald-700 font-bold">+14.2% Month-over-Month</div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] uppercase font-bold">Registered Investors</span>
-          <div className="text-2xl font-black text-[#7C4DFF]">48,512</div>
-          <div className="text-[11px] text-[#585375]">94% Identity check completed</div>
+        <div className="glass rounded-3xl p-6 space-y-1">
+          <span className="text-xs text-muted-se uppercase font-bold">Registered Investors</span>
+          <div className="text-2xl font-black text-accent-se">48,512</div>
+          <div className="text-[11px] text-secondary-se">94% Identity check completed</div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
-          <span className="text-xs text-[#8782A3] uppercase font-bold">Live Buildings</span>
-          <div className="text-2xl font-black text-[#1E1B4B]">{properties.length} Buildings</div>
-          <div className="text-[11px] text-emerald-600 font-bold">100% Ownership papers checked</div>
+        <div className="glass rounded-3xl p-6 space-y-1">
+          <span className="text-xs text-muted-se uppercase font-bold">Live Buildings</span>
+          <div className="text-2xl font-black text-[#1A080C]">{properties.length} Buildings</div>
+          <div className="text-[11px] text-emerald-700 font-bold">100% Ownership papers checked</div>
         </div>
 
-        <div className="bg-white p-6 rounded-3xl border border-[#E6D8F5] shadow-subtle space-y-1">
+        <div className="glass rounded-3xl p-6 space-y-1">
           <div className="flex items-center gap-1">
-            <span className="text-xs text-[#8782A3] uppercase font-bold">Emergency Reserve Fund</span>
+            <span className="text-xs text-muted-se uppercase font-bold">Emergency Reserve Fund</span>
             <InfoTooltip termId="escrow" size="sm" />
           </div>
-          <div className="text-2xl font-black text-emerald-600">$14,200,000</div>
-          <div className="text-[11px] text-[#585375]">Protected emergency backup</div>
+          <div className="text-2xl font-black text-emerald-700">$14,200,000</div>
+          <div className="text-[11px] text-secondary-se">Protected emergency backup</div>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#E6D8F5] pb-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-[#EADCDD] pb-2 overflow-x-auto no-scrollbar">
         {[
           { id: "overview", label: "Overview & Money Records" },
           { id: "investors", label: "Investor Management" },
@@ -246,8 +242,8 @@ export default function AdminPortalPage() {
             onClick={() => setActiveTab(tab.id as any)}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
               activeTab === tab.id
-                ? "bg-[#7C4DFF] text-white shadow-sm"
-                : "text-[#585375] hover:bg-[#F3EAFC]"
+                ? "bg-[var(--se-primary)] text-white shadow-sm"
+                : "text-secondary-se hover:bg-[#FAF5F5]"
             }`}
           >
             {tab.label}
@@ -257,36 +253,34 @@ export default function AdminPortalPage() {
 
       {/* TAB 1: OVERVIEW & ALL TRANSACTIONS */}
       {activeTab === "overview" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Platform Real-Time Transaction Oversight</h3>
-            <span className="text-xs text-[#8782A3]">Live secondary and escrow events</span>
+        <div className="glass rounded-3xl p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
+            <h3 className="font-bold text-base text-[#1A080C]">Platform Real-Time Transaction Oversight</h3>
+            <span className="text-xs text-muted-se">Live secondary and escrow events</span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="table-glass w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#E6D8F5] text-[#8782A3] uppercase text-[10px]">
-                  <th className="pb-3">Timestamp</th>
-                  <th className="pb-3">Type</th>
-                  <th className="pb-3">Property</th>
-                  <th className="pb-3">Amount</th>
-                  <th className="pb-3">Reference</th>
-                  <th className="pb-3 text-right">Audit</th>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Type</th>
+                  <th>Property</th>
+                  <th>Amount</th>
+                  <th>Reference</th>
+                  <th className="text-right">Audit</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3EAFC]">
+              <tbody>
                 {transactions.map((t) => (
-                  <tr key={t.id} className="hover:bg-[#F8F4FD] transition-colors">
-                    <td className="py-3 text-[#585375]">{t.timestamp}</td>
-                    <td className="py-3 font-bold text-[#1E1B4B]">{t.type}</td>
-                    <td className="py-3 text-[#585375]">{t.propertyTitle || "Demo Cash"}</td>
-                    <td className="py-3 font-semibold text-[#1E1B4B]">${t.amount.toLocaleString()}</td>
-                    <td className="py-3 font-mono text-[11px] text-[#8782A3]">{t.referenceCode}</td>
-                    <td className="py-3 text-right">
-                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-mint text-emerald-900">
-                        {t.status}
-                      </span>
+                  <tr key={t.id}>
+                    <td className="text-secondary-se">{t.timestamp}</td>
+                    <td className="font-bold text-[#1A080C]">{t.type}</td>
+                    <td className="text-secondary-se">{t.propertyTitle || "Demo Cash"}</td>
+                    <td className="font-semibold text-[#1A080C]">${t.amount.toLocaleString()}</td>
+                    <td className="font-mono text-[11px] text-muted-se">{t.referenceCode}</td>
+                    <td className="text-right">
+                      <span className="badge badge-success text-[10px]">{t.status}</span>
                     </td>
                   </tr>
                 ))}
@@ -298,43 +292,43 @@ export default function AdminPortalPage() {
 
       {/* TAB 2: INVESTOR MANAGEMENT & KYC */}
       {activeTab === "investors" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Investor Register & KYC Verification Status</h3>
-            <span className="text-xs text-[#8782A3]">AML / Anti-Fraud checks</span>
+        <div className="glass rounded-3xl p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
+            <h3 className="font-bold text-base text-[#1A080C]">Investor Register &amp; KYC Verification Status</h3>
+            <span className="text-xs text-muted-se">AML / Anti-Fraud checks</span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="table-glass w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#E6D8F5] text-[#8782A3] uppercase text-[10px]">
-                  <th className="pb-3">Investor Name</th>
-                  <th className="pb-3">Email</th>
-                  <th className="pb-3">Country</th>
-                  <th className="pb-3">Tier</th>
-                  <th className="pb-3">KYC Status</th>
-                  <th className="pb-3 text-right">Actions</th>
+                <tr>
+                  <th>Investor Name</th>
+                  <th>Email</th>
+                  <th>Country</th>
+                  <th>Tier</th>
+                  <th>KYC Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3EAFC]">
+              <tbody>
                 {investors.map((inv) => (
-                  <tr key={inv.id} className="hover:bg-[#F8F4FD] transition-colors">
-                    <td className="py-3 font-bold text-[#1E1B4B]">{inv.fullName}</td>
-                    <td className="py-3 text-[#585375]">{inv.email}</td>
-                    <td className="py-3 text-[#585375]">{inv.country}</td>
-                    <td className="py-3 font-semibold text-[#7C4DFF]">{inv.tier}</td>
-                    <td className="py-3">
+                  <tr key={inv.id}>
+                    <td className="font-bold text-[#1A080C]">{inv.fullName}</td>
+                    <td className="text-secondary-se">{inv.email}</td>
+                    <td className="text-secondary-se">{inv.country}</td>
+                    <td className="font-semibold text-accent-se">{inv.tier}</td>
+                    <td>
                       <span
                         className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full ${
                           inv.kycStatus === "Verified"
-                            ? "bg-mint text-emerald-900"
-                            : "bg-amber-100 text-amber-900"
+                            ? "badge badge-success"
+                            : "badge badge-warning"
                         }`}
                       >
                         {inv.kycStatus}
                       </span>
                     </td>
-                    <td className="py-3 text-right space-x-1.5">
+                    <td className="text-right space-x-1.5">
                       {inv.kycStatus !== "Verified" && (
                         <button
                           onClick={() => handleUpdateKyc(inv.id, "Verified")}
@@ -346,7 +340,7 @@ export default function AdminPortalPage() {
                       {inv.kycStatus === "Verified" && (
                         <button
                           onClick={() => handleUpdateKyc(inv.id, "Under Review")}
-                          className="px-2.5 py-1 rounded-lg bg-[#F8F4FD] text-[#585375] border border-[#E6D8F5] font-semibold text-[11px] hover:bg-[#F3EAFC]"
+                          className="btn btn-ghost text-[11px] py-1 px-2.5"
                         >
                           Request Review
                         </button>
@@ -362,46 +356,46 @@ export default function AdminPortalPage() {
 
       {/* TAB 3: PROPERTY APPROVAL QUEUE */}
       {activeTab === "approvals" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
-            <h3 className="font-bold text-base text-[#1E1B4B]">New Offering Submission Pipeline</h3>
-            <span className="text-xs text-[#8782A3]">Due diligence compliance queue</span>
+        <div className="glass rounded-3xl p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
+            <h3 className="font-bold text-base text-[#1A080C]">New Offering Submission Pipeline</h3>
+            <span className="text-xs text-muted-se">Due diligence compliance queue</span>
           </div>
 
-          <div className="divide-y divide-[#F3EAFC]">
+          <div className="divide-y divide-[#EADCDD]">
             {approvalQueue.map((item) => (
               <div key={item.id} className="py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-[#1E1B4B]">{item.propertyTitle}</span>
+                    <span className="font-bold text-sm text-[#1A080C]">{item.propertyTitle}</span>
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                         item.complianceReviewStatus === "Approved"
-                          ? "bg-mint text-emerald-900"
-                          : "bg-amber-100 text-amber-900"
+                          ? "badge badge-success"
+                          : "badge badge-warning"
                       }`}
                     >
                       {item.complianceReviewStatus}
                     </span>
                   </div>
-                  <div className="text-[#585375]">
-                    {item.city} â€¢ Developer: <strong>{item.developer}</strong> â€¢ Manager: {item.managerName}
+                  <div className="text-secondary-se">
+                    {item.city} &bull; Developer: <strong className="text-[#1A080C]">{item.developer}</strong> &bull; Manager: {item.managerName}
                   </div>
-                  <div className="text-[#8782A3] text-[11px]">
-                    Valuation: <strong>${item.proposedValuation.toLocaleString()}</strong> â€¢ Projected Net Yield: <strong>{item.projectedNetYield}%</strong>
+                  <div className="text-muted-se text-[11px]">
+                    Valuation: <strong className="text-[#1A080C]">${item.proposedValuation.toLocaleString()}</strong> &bull; Projected Net Yield: <strong className="text-[#1A080C]">{item.projectedNetYield}%</strong>
                   </div>
                 </div>
 
                 {item.complianceReviewStatus !== "Approved" ? (
                   <button
                     onClick={() => handleApproveProperty(item.id)}
-                    className="px-4 py-2 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs shadow-md transition-all"
+                    className="btn btn-primary text-xs"
                   >
                     Approve for Marketplace
                   </button>
                 ) : (
-                  <span className="text-xs font-bold text-emerald-700 bg-mint px-3 py-1 rounded-xl">
-                    âœ“ Approved Offering
+                  <span className="badge badge-success text-xs px-3 py-1 rounded-xl">
+                    ✓ Approved Offering
                   </span>
                 )}
               </div>
@@ -412,23 +406,23 @@ export default function AdminPortalPage() {
 
       {/* TAB 4: AUDIT LOGS */}
       {activeTab === "audit" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Platform Security & Compliance Audit Log</h3>
-            <span className="text-xs text-[#8782A3]">Append-only audit trail</span>
+        <div className="glass rounded-3xl p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
+            <h3 className="font-bold text-base text-[#1A080C]">Platform Security &amp; Compliance Audit Log</h3>
+            <span className="text-xs text-muted-se">Append-only audit trail</span>
           </div>
 
-          <div className="divide-y divide-[#F3EAFC]">
+          <div className="divide-y divide-[#EADCDD]">
             {INITIAL_LOGS.map((log) => (
               <div key={log.id} className="py-3 flex items-center justify-between text-xs">
                 <div>
-                  <div className="font-bold text-[#1E1B4B]">{log.action}</div>
-                  <div className="text-[11px] text-[#585375]">{log.details}</div>
-                  <div className="text-[10px] text-[#8782A3]">
-                    Actor: {log.actorName} ({log.actorRole}) â€¢ IP: {log.ipAddress}
+                  <div className="font-bold text-[#1A080C]">{log.action}</div>
+                  <div className="text-[11px] text-secondary-se">{log.details}</div>
+                  <div className="text-[10px] text-muted-se">
+                    Actor: {log.actorName} ({log.actorRole}) &bull; IP: {log.ipAddress}
                   </div>
                 </div>
-                <div className="text-right text-[11px] text-[#8782A3]">{log.timestamp}</div>
+                <div className="text-right text-[11px] text-muted-se">{log.timestamp}</div>
               </div>
             ))}
           </div>

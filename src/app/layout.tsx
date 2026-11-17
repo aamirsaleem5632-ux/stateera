@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./stateera-theme.css";
 import { BRAND_CONFIG } from "@/config/brand";
 import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { DemoProvider } from "@/context/DemoContext";
@@ -8,6 +9,8 @@ import { Footer } from "@/components/layout/Footer";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { StateEraAI } from "@/components/ai/StateEraAI";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
+import { ScrollProgressBar } from "@/components/scroll/ScrollProgressBar";
+import { BackToTop } from "@/components/scroll/BackToTop";
 
 export const metadata: Metadata = {
   title: `${BRAND_CONFIG.name} — Fractional Real Estate & Rental Yield Investment Platform`,
@@ -21,15 +24,17 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className="min-h-screen flex flex-col bg-[#F8F4FD] text-[#1E1B4B]">
+      <body className="min-h-screen flex flex-col text-[var(--se-text)] bg-[var(--se-bg)] font-sans antialiased">
         <LanguageProvider>
           <DemoProvider>
+            <ScrollProgressBar />
             <Navbar />
-            <main className="flex-1 overflow-x-hidden">{children}</main>
+            <main className="flex-1 overflow-x-hidden relative">{children}</main>
             <Footer />
             <BottomNav />
             <StateEraAI />
             <OnboardingModal />
+            <BackToTop />
           </DemoProvider>
         </LanguageProvider>
       </body>

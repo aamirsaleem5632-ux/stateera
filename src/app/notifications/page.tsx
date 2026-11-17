@@ -42,19 +42,17 @@ export default function NotificationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-mint text-emerald-900">
-              Notification Centre
-            </span>
+            <span className="badge badge-success">Notification Centre</span>
             {unreadNotificationCount > 0 && (
-              <span className="text-xs font-bold text-[#7C4DFF]">
+              <span className="text-xs font-bold text-accent-se">
                 {unreadNotificationCount} unread
               </span>
             )}
           </div>
-          <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Smart Alerts & Updates
+          <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
+            Smart Alerts &amp; Updates
           </h1>
-          <p className="text-xs sm:text-sm text-[#585375]">
+          <p className="text-xs sm:text-sm text-secondary-se">
             Real-time notifications for rental payouts, due diligence renewals, work orders, and execution events.
           </p>
         </div>
@@ -62,9 +60,9 @@ export default function NotificationsPage() {
         {unreadNotificationCount > 0 && (
           <button
             onClick={markAllNotificationsAsRead}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-[#E6D8F5] text-xs font-bold text-[#5B3A8C] hover:border-[#7C4DFF] shadow-sm transition-colors self-start sm:self-auto"
+            className="btn btn-ghost flex items-center gap-1.5 self-start sm:self-auto"
           >
-            <CheckCheck className="w-4 h-4 text-[#7C4DFF]" />
+            <CheckCheck className="w-4 h-4 text-accent-se" />
             <span>Mark All as Read</span>
           </button>
         )}
@@ -78,8 +76,8 @@ export default function NotificationsPage() {
             onClick={() => setFilterCategory(cat)}
             className={`px-3.5 py-1.5 rounded-xl font-bold transition-all ${
               filterCategory === cat
-                ? "bg-[#7C4DFF] text-white shadow-sm"
-                : "bg-white text-[#585375] border border-[#E6D8F5] hover:bg-[#F3EAFC]"
+                ? "bg-[var(--se-primary)] text-white shadow-sm"
+                : "bg-[#FAF5F5] text-secondary-se border border-[#EADCDD] hover:bg-[#F2E8E9]"
             }`}
           >
             {cat === "ALL" ? "All Alerts" : cat.replace("_", " ")}
@@ -88,7 +86,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle divide-y divide-[#F3EAFC]">
+      <div className="glass rounded-3xl p-6 sm:p-8 divide-y divide-[#EADCDD]">
         {filtered.length > 0 ? (
           filtered.map((n) => (
             <div
@@ -97,20 +95,20 @@ export default function NotificationsPage() {
                 markNotificationAsRead(n.id);
                 if (n.actionUrl) router.push(n.actionUrl);
               }}
-              className={`py-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[#F8F4FD] transition-colors rounded-xl px-2 ${
-                !n.read ? "bg-[#F3EAFC]/40 font-semibold" : ""
+              className={`py-4 flex items-start justify-between gap-4 cursor-pointer hover:bg-[#FAF5F5] transition-colors rounded-xl px-2 ${
+                !n.read ? "bg-[#FAF5F5] font-semibold" : ""
               }`}
             >
               <div className="flex items-start gap-3.5">
                 <div
-                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center flex-shrink-0 mt-0.5 border ${
                     n.category === "PAYOUT"
-                      ? "bg-mint text-emerald-800"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                       : n.category === "TRANSACTION"
-                      ? "bg-[#F3EAFC] text-[#7C4DFF]"
+                      ? "bg-[#FAF5F5] text-[#3B0F18] border-[#EADCDD]"
                       : n.category === "MAINTENANCE"
-                      ? "bg-amber-100 text-amber-800"
-                      : "bg-[#E0F2FE] text-sky-800"
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-blue-50 text-blue-700 border-blue-200"
                   }`}
                 >
                   {n.category === "PAYOUT" ? (
@@ -126,18 +124,18 @@ export default function NotificationsPage() {
 
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
-                    <h3 className="text-sm font-bold text-[#1E1B4B]">{n.title}</h3>
+                    <h3 className="text-sm font-bold text-[#1A080C]">{n.title}</h3>
                     {!n.read && (
-                      <span className="w-2 h-2 rounded-full bg-[#7C4DFF]" />
+                      <span className="w-2 h-2 rounded-full bg-[var(--se-primary)]" />
                     )}
                   </div>
-                  <p className="text-xs text-[#585375] leading-relaxed">{n.message}</p>
-                  <span className="text-[10px] text-[#8782A3] block pt-0.5">{n.timestamp}</span>
+                  <p className="text-xs text-secondary-se leading-relaxed">{n.message}</p>
+                  <span className="text-[10px] text-muted-se block pt-0.5">{n.timestamp}</span>
                 </div>
               </div>
 
               {n.actionUrl && (
-                <div className="text-xs text-[#7C4DFF] font-bold flex items-center gap-1 flex-shrink-0">
+                <div className="text-xs text-accent-se font-bold flex items-center gap-1 flex-shrink-0">
                   <span>Open</span>
                   <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
                 </div>
@@ -145,7 +143,7 @@ export default function NotificationsPage() {
             </div>
           ))
         ) : (
-          <div className="text-center py-12 text-xs text-[#8782A3]">
+          <div className="text-center py-12 text-xs text-muted-se">
             No alerts found in this category.
           </div>
         )}

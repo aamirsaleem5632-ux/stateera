@@ -3,194 +3,240 @@
 import React from "react";
 import Link from "next/link";
 import {
-  Building2,
   Mail,
-  Phone,
   MapPin,
-  ShieldAlert,
+  ShieldCheck,
   Globe,
-  ArrowUpRight,
-  Sparkles,
+  ExternalLink,
 } from "lucide-react";
+import { SkylineLogo } from "@/components/brand/SkylineLogo";
 import { BRAND_CONFIG } from "@/config/brand";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { SUPPORTED_LANGUAGES } from "@/lib/i18n/types";
+import { RevealGroup, Reveal } from "@/components/scroll/Reveal";
 
-export const Footer: React.FC = () => {
-  const { t, language, setLanguage, dir } = useLanguage();
+export default function Footer() {
+  const { t, dir } = useLanguage();
 
   return (
-    <footer className="bg-[#1E1B4B] text-white border-t border-[#332D56] pt-16 pb-24 md:pb-16 mt-20" dir={dir}>
+    <footer className="bg-[#FAF5F5] text-[#1A080C] border-t border-[#EADCDD] pt-16 pb-24 md:pb-16 mt-20" dir={dir}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#332D56]">
+        <RevealGroup
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10 pb-12 border-b border-[#EADCDD]"
+          stagger={0.08}
+          variant="fade-up"
+        >
           {/* Brand Column */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-1 space-y-4">
             <Link href="/" className="flex items-center gap-2.5">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#5B3A8C] to-[#7C4DFF] flex items-center justify-center text-white shadow-lg">
-                <Building2 className="w-5 h-5 text-white" />
+              <div className="w-9 h-9 rounded-lg bg-[#3B0F18] flex items-center justify-center overflow-hidden">
+                <SkylineLogo size={26} color="white" />
               </div>
-              <span className="text-2xl font-black tracking-tight text-white">
+              <span className="text-xl font-bold tracking-tight text-[#1A080C]">
                 {BRAND_CONFIG.name}
               </span>
             </Link>
-            <p className="text-sm text-[#A5A0C8] max-w-sm leading-relaxed">
-              {t.footer.intro}
+            <p className="text-xs text-[#5E4A4E] leading-relaxed">
+              Global PropTech platform empowering international investors with verified fractional ownership, automated monthly rental income, and full transparent Property Passports.
             </p>
-            <div className="pt-2 flex items-center gap-2 text-xs text-[#DCFCE7] bg-[#DCFCE7]/10 w-fit px-3 py-1.5 rounded-lg border border-[#DCFCE7]/20">
-              <Sparkles className="w-4 h-4 text-mint" />
-              <span>Institutional-Grade Fractional Real Estate Engine</span>
+            <div className="pt-1 flex items-center gap-2 text-xs font-semibold text-[#3B0F18] bg-white w-fit px-3 py-1.5 rounded-lg border border-[#EADCDD]">
+              <ShieldCheck className="w-4 h-4 text-[#3B0F18]" />
+              <span>Simulated Prototype &bull; Practice Funds</span>
             </div>
-            <div className="pt-2 text-xs text-[#A5A0C8] space-y-1">
+            <div className="pt-2 text-xs text-[#5E4A4E] space-y-1.5">
               <div className="flex items-center gap-2">
-                <MapPin className="w-3.5 h-3.5 text-[#7C4DFF]" />
+                <MapPin className="w-3.5 h-3.5 text-[#3B0F18] shrink-0" />
                 <span>{BRAND_CONFIG.contact.address}</span>
               </div>
               <div className="flex items-center gap-2">
-                <Mail className="w-3.5 h-3.5 text-[#7C4DFF]" />
+                <Mail className="w-3.5 h-3.5 text-[#3B0F18] shrink-0" />
                 <span>{BRAND_CONFIG.contact.supportEmail}</span>
               </div>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Column 1: Flagship Programs */}
           <div className="space-y-3">
-            <h4 className="text-xs uppercase font-bold tracking-wider text-mint">
-              {t.footer.quickLinks}
+            <h4 className="text-xs uppercase font-bold tracking-wider text-[#3B0F18]">
+              Flagship Pathways
             </h4>
-            <ul className="space-y-2 text-sm text-[#A5A0C8]">
+            <ul className="space-y-2 text-xs text-[#5E4A4E]">
               <li>
-                <Link href="/explore" className="hover:text-white transition-colors flex items-center gap-1">
-                  <span>{t.nav.explore}</span>
+                <Link href="/explore" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Explore 100+ Properties
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:text-white transition-colors">
-                  {t.nav.dashboard}
+                <Link href="/how-it-works" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  How StateEra Works
                 </Link>
               </li>
               <li>
-                <Link href="/wallet" className="hover:text-white transition-colors">
-                  {t.nav.wallet}
+                <Link href="/schemes" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Micro-Saver &amp; Schemes
                 </Link>
               </li>
               <li>
-                <Link href="/reports" className="hover:text-white transition-colors">
-                  {t.nav.reports}
+                <Link href="/trust" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Trust &amp; Verification Centre
                 </Link>
               </li>
               <li>
-                <Link href="/simulator" className="hover:text-white transition-colors">
-                  {t.nav.simulator}
+                <Link href="/fees-and-returns" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Fees &amp; Returns Schedule
+                </Link>
+              </li>
+              <li>
+                <Link href="/ai-features" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  AI Property Detective
+                </Link>
+              </li>
+              <li>
+                <Link href="/experts" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Human Expert Network
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Investor Resources */}
+          {/* Column 2: Insights & Community */}
           <div className="space-y-3">
-            <h4 className="text-xs uppercase font-bold tracking-wider text-mint">
-              {t.footer.investorResources}
+            <h4 className="text-xs uppercase font-bold tracking-wider text-[#3B0F18]">
+              Analytics &amp; Education
             </h4>
-            <ul className="space-y-2 text-sm text-[#A5A0C8]">
+            <ul className="space-y-2 text-xs text-[#5E4A4E]">
               <li>
-                <Link href="/glossary" className="hover:text-white transition-colors flex items-center gap-1 text-mint font-medium">
-                  <span>{t.nav.glossary}</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                <Link href="/reports" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Profit &amp; Loss Analytics
                 </Link>
               </li>
               <li>
-                <Link href="/governance" className="hover:text-white transition-colors">
-                  {t.common.ownersList} & {t.common.ownerUpdatesVoting}
+                <Link href="/learn" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Learn Centre Academy
                 </Link>
               </li>
               <li>
-                <Link href="/property/prop-dubai-marina-tower" className="hover:text-white transition-colors">
-                  {t.common.propertyChecks} (Is it safe?)
+                <Link href="/simulator" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Scenario Rent Simulator
                 </Link>
               </li>
               <li>
-                <Link href="/reports" className="hover:text-white transition-colors">
-                  {t.common.moneyRecordsList}
+                <Link href="/community-lab" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Community Property Lab
                 </Link>
               </li>
               <li>
-                <Link href="/#faq" className="hover:text-white transition-colors">
+                <Link href="/governance" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Investor Governance
+                </Link>
+              </li>
+              <li>
+                <Link href="/glossary" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Real Estate Glossary
+                </Link>
+              </li>
+              <li>
+                <Link href="/faq" className="hover:text-[#3B0F18] transition-colors font-medium">
                   Frequently Asked Questions
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Management & Portals */}
+          {/* Column 3: Company & Governance */}
           <div className="space-y-3">
-            <h4 className="text-xs uppercase font-bold tracking-wider text-mint">
-              Operations & Roles
+            <h4 className="text-xs uppercase font-bold tracking-wider text-[#3B0F18]">
+              Company &amp; Legal
             </h4>
-            <ul className="space-y-2 text-sm text-[#A5A0C8]">
+            <ul className="space-y-2 text-xs text-[#5E4A4E]">
               <li>
-                <Link href="/manager" className="hover:text-white transition-colors">
-                  {t.nav.roleManager}
+                <Link href="/about" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  About StateEra
                 </Link>
               </li>
               <li>
-                <Link href="/tenant" className="hover:text-white transition-colors">
-                  {t.nav.roleTenant}
+                <Link href="/support" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Support &amp; Help Desk
                 </Link>
               </li>
               <li>
-                <Link href="/admin" className="hover:text-white transition-colors">
-                  {t.nav.roleAdmin}
+                <Link href="/contact" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Contact Regional Desks
                 </Link>
               </li>
               <li>
-                <Link href="/notifications" className="hover:text-white transition-colors">
-                  Smart Notification Centre
+                <Link href="/legal" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Legal Centre Overview
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/terms" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Terms &amp; Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/privacy" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Privacy Policy
+                </Link>
+              </li>
+              <li>
+                <Link href="/legal/risks" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Risk Disclosures
                 </Link>
               </li>
             </ul>
-
-            <div className="pt-3">
-              <label className="text-[11px] font-semibold text-[#A5A0C8] block mb-1.5">
-                Interface Language:
-              </label>
-              <select
-                value={language}
-                onChange={(e) => setLanguage(e.target.value as any)}
-                aria-label="Select Interface Language"
-                className="bg-[#2D275A] border border-[#3E3672] text-xs text-white rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-[#7C4DFF]"
-              >
-                {SUPPORTED_LANGUAGES.map((l) => (
-                  <option key={l.code} value={l.code} className="bg-[#1E1B4B]">
-                    {l.flag} {l.name} ({l.nativeName})
-                  </option>
-                ))}
-              </select>
-            </div>
           </div>
-        </div>
 
-        {/* Legal Disclaimer Box */}
-        <div className="mt-8 p-4 rounded-xl bg-[#272252]/80 border border-[#3A336E] flex items-start gap-3">
-          <ShieldAlert className="w-5 h-5 text-[#F8D7E8] flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-[#C5BFE3] leading-relaxed">
-            <strong className="text-white font-semibold">Demo Practice Platform: </strong>
-            {BRAND_CONFIG.disclaimer} All rent payouts, property prices, share values, and transaction ledgers are for learning and practice only. StateEra is a technology demonstration and does not handle real investments, banking, or legal advice.
-          </p>
-        </div>
+          {/* Column 4: Platform Portals */}
+          <div className="space-y-3">
+            <h4 className="text-xs uppercase font-bold tracking-wider text-[#3B0F18]">
+              Role Portals
+            </h4>
+            <ul className="space-y-2 text-xs text-[#5E4A4E]">
+              <li>
+                <Link href="/dashboard" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Investor Dashboard
+                </Link>
+              </li>
+              <li>
+                <Link href="/wallet" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Wallet &amp; Ledger
+                </Link>
+              </li>
+              <li>
+                <Link href="/manager" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Property Manager Portal
+                </Link>
+              </li>
+              <li>
+                <Link href="/tenant" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Tenant Portal
+                </Link>
+              </li>
+              <li>
+                <Link href="/admin" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Admin &amp; KYC Compliance
+                </Link>
+              </li>
+              <li>
+                <Link href="/login" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Sign In / Create Account
+                </Link>
+              </li>
+            </ul>
+          </div>
+        </RevealGroup>
 
-        {/* Bottom Bar */}
-        <div className="mt-8 pt-6 border-t border-[#332D56] flex flex-col sm:flex-row items-center justify-between text-xs text-[#8782A3] gap-4">
+        {/* Bottom Disclaimer */}
+        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#8C7B7F]">
           <div>
-            © {new Date().getFullYear()} {BRAND_CONFIG.legalName}. {t.footer.rights}
+            &copy; {new Date().getFullYear()} {BRAND_CONFIG.name}. {t.footer.rights}
           </div>
-          <div className="flex items-center gap-6">
-            <span className="hover:text-white cursor-pointer">Privacy Policy</span>
-            <span className="hover:text-white cursor-pointer">Terms of Service</span>
-            <span className="hover:text-white cursor-pointer">Cookie Preferences</span>
-            <span className="hover:text-white cursor-pointer">Security Audits</span>
-          </div>
+          <p className="max-w-2xl text-center md:text-right leading-relaxed text-[11px]">
+            {BRAND_CONFIG.disclaimer} All properties, valuations, and payouts displayed in demo mode are simulated for academic prototype evaluation.
+          </p>
         </div>
       </div>
     </footer>
   );
-};
+}
+export { Footer };

@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
-  Building2,
   Globe,
   Bell,
   Wallet,
@@ -13,17 +12,14 @@ import {
   X,
   ChevronDown,
   UserCheck,
-  CheckCircle2,
-  Sparkles,
   Layers,
-  BarChart3,
-  Sliders,
   Shield,
   KeyRound,
 } from "lucide-react";
+import { SkylineLogo } from "@/components/brand/SkylineLogo";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
-import { SUPPORTED_LANGUAGES, SupportedLanguage } from "@/lib/i18n/types";
+import { SUPPORTED_LANGUAGES } from "@/lib/i18n/types";
 import { BRAND_CONFIG } from "@/config/brand";
 import { UserRole } from "@/types/admin";
 
@@ -45,6 +41,7 @@ export const Navbar: React.FC = () => {
   const [langDropdownOpen, setLangDropdownOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
+  const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
 
   const roles: { id: UserRole; label: string; desc: string; icon: any }[] = [
     { id: "investor", label: t.nav.roleInvestor, desc: "Explore, buy shares & collect rent", icon: UserCheck },
@@ -66,118 +63,220 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      {/* Top Demo Disclaimer Ribbon */}
-      <div className="bg-[#5B3A8C] text-white text-[11px] sm:text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2 relative z-50">
-        <span className="inline-block w-2 h-2 rounded-full bg-mint animate-pulse" />
-        <span className="font-semibold tracking-wide uppercase bg-[#7C4DFF] px-2 py-0.5 rounded text-[10px]">
-          {t.common.demoBadge}
+      {/* Slim white/soft-rose Practice Demo Mode ribbon */}
+      <div className="bg-[#FAF5F5] text-[#1A080C] text-[11px] sm:text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2 relative z-50 border-b border-[#EADCDD]">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
+        <span className="bg-[#3B0F18] text-white text-[10px] font-bold px-2 py-0.5 rounded">
+          Practice mode
         </span>
-        <span className="hidden sm:inline text-white/90">{BRAND_CONFIG.disclaimer}</span>
+        <span className="hidden sm:inline text-[#5E4A4E]">{BRAND_CONFIG.disclaimer}</span>
         <button
           onClick={() => {
             resetDemoData();
             alert("Demo data reset to default successfully!");
           }}
-          className="ml-2 inline-flex items-center gap-1 text-[11px] underline hover:text-mint transition-colors"
+          className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#3B0F18] underline hover:text-[#2A0A10] transition-colors"
         >
           <RotateCcw className="w-3 h-3" />
-          <span>{t.nav.resetDemo}</span>
+          <span>Reset practice data</span>
         </button>
       </div>
 
       {/* Main Header */}
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#E6D8F5] shadow-subtle">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between">
+      <header className="sticky top-0 z-40 bg-white border-b border-[#EADCDD] shadow-[0_1px_2px_rgba(26,8,12,0.04)]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[#5B3A8C] to-[#7C4DFF] flex items-center justify-center text-white shadow-md group-hover:scale-105 transition-transform">
-              <Building2 className="w-5 h-5 text-white" />
+            <div className="w-9 h-9 rounded-lg bg-[#3B0F18] flex items-center justify-center transition-transform group-hover:scale-105 overflow-hidden">
+              <SkylineLogo size={26} color="white" />
             </div>
             <div>
-              <span className="text-2xl font-black tracking-tight text-[#1E1B4B]">
+              <span className="text-xl font-bold tracking-tight text-[#1A080C]">
                 {BRAND_CONFIG.name}
               </span>
-              <span className="hidden sm:block text-[9px] uppercase font-semibold tracking-widest text-[#7C4DFF]">
-                Fractional PropTech
+              <span className="hidden sm:block text-[9px] uppercase font-semibold tracking-wider text-[#8C7B7F]">
+                Real Estate
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden xl:flex items-center gap-5 text-sm font-medium text-[#585375]">
+          <nav className="hidden xl:flex items-center gap-5 text-xs font-semibold text-[#5E4A4E]">
             <Link
               href="/"
-              className={`hover:text-[#7C4DFF] transition-colors ${
-                pathname === "/" ? "text-[#7C4DFF] font-semibold" : ""
+              className={`hover:text-[#3B0F18] transition-colors ${
+                pathname === "/" ? "text-[#3B0F18] font-bold" : ""
               }`}
             >
               {t.nav.home}
             </Link>
             <Link
               href="/explore"
-              className={`hover:text-[#7C4DFF] transition-colors ${
-                pathname === "/explore" ? "text-[#7C4DFF] font-semibold" : ""
+              className={`hover:text-[#3B0F18] transition-colors ${
+                pathname === "/explore" ? "text-[#3B0F18] font-bold" : ""
               }`}
             >
               {t.nav.explore}
             </Link>
             <Link
+              href="/how-it-works"
+              className={`hover:text-[#3B0F18] transition-colors ${
+                pathname === "/how-it-works" ? "text-[#3B0F18] font-bold" : ""
+              }`}
+            >
+              {t.nav.howItWorks}
+            </Link>
+            <Link
+              href="/schemes"
+              className={`hover:text-[#3B0F18] transition-colors ${
+                pathname === "/schemes" ? "text-[#3B0F18] font-bold" : ""
+              }`}
+            >
+              Schemes
+            </Link>
+            <Link
               href="/dashboard"
-              className={`hover:text-[#7C4DFF] transition-colors ${
-                pathname === "/dashboard" ? "text-[#7C4DFF] font-semibold" : ""
+              className={`hover:text-[#3B0F18] transition-colors ${
+                pathname === "/dashboard" ? "text-[#3B0F18] font-bold" : ""
               }`}
             >
               {t.nav.dashboard}
             </Link>
             <Link
               href="/reports"
-              className={`hover:text-[#7C4DFF] transition-colors ${
-                pathname === "/reports" ? "text-[#7C4DFF] font-semibold" : ""
+              className={`hover:text-[#3B0F18] transition-colors ${
+                pathname === "/reports" ? "text-[#3B0F18] font-bold" : ""
               }`}
             >
-              {t.nav.reports}
+              P&amp;L Analytics
             </Link>
             <Link
-              href="/simulator"
-              className={`hover:text-[#7C4DFF] transition-colors ${
-                pathname === "/simulator" ? "text-[#7C4DFF] font-semibold" : ""
+              href="/trust"
+              className={`hover:text-[#3B0F18] transition-colors ${
+                pathname === "/trust" ? "text-[#3B0F18] font-bold" : ""
               }`}
             >
-              {t.nav.simulator}
+              Trust Centre
             </Link>
-            <Link
-              href="/governance"
-              className={`hover:text-[#7C4DFF] transition-colors ${
-                pathname === "/governance" ? "text-[#7C4DFF] font-semibold" : ""
-              }`}
-            >
-              {t.nav.governance}
-            </Link>
-            <Link
-              href="/glossary"
-              className={`hover:text-[#7C4DFF] transition-colors ${
-                pathname === "/glossary" ? "text-[#7C4DFF] font-semibold" : ""
-              }`}
-            >
-              {t.nav.glossary}
-            </Link>
+
+            {/* More Ecosystem Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
+                className={`hover:text-[#3B0F18] transition-colors flex items-center gap-1 ${
+                  moreDropdownOpen ? "text-[#3B0F18] font-bold" : ""
+                }`}
+              >
+                <span>More</span>
+                <ChevronDown className="w-3 h-3" />
+              </button>
+
+              {moreDropdownOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#EADCDD] rounded-2xl shadow-xl py-2 z-50 text-xs divide-y divide-[#FAF5F5]">
+                  <div className="py-1">
+                    <Link
+                      href="/ai-features"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
+                    >
+                      AI Property Detective
+                    </Link>
+                    <Link
+                      href="/experts"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
+                    >
+                      Human Expert Network
+                    </Link>
+                    <Link
+                      href="/community-lab"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
+                    >
+                      Community Property Lab
+                    </Link>
+                    <Link
+                      href="/learn"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
+                    >
+                      Learn-to-Own Academy
+                    </Link>
+                  </div>
+                  <div className="py-1">
+                    <Link
+                      href="/fees-and-returns"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
+                    >
+                      Fees &amp; Returns Schedule
+                    </Link>
+                    <Link
+                      href="/simulator"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
+                    >
+                      Scenario Simulator
+                    </Link>
+                    <Link
+                      href="/governance"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
+                    >
+                      Investor Governance
+                    </Link>
+                    <Link
+                      href="/glossary"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
+                    >
+                      Real Estate Glossary
+                    </Link>
+                  </div>
+                  <div className="py-1">
+                    <Link
+                      href="/about"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
+                    >
+                      About StateEra
+                    </Link>
+                    <Link
+                      href="/faq"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
+                    >
+                      Frequently Asked Questions
+                    </Link>
+                    <Link
+                      href="/support"
+                      onClick={() => setMoreDropdownOpen(false)}
+                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
+                    >
+                      Support Desk
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
           </nav>
 
           {/* Right Action Icons & Controls */}
-          <div className="flex items-center gap-1.5 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
             {/* Demo Wallet Balance Pill */}
             <Link
               href="/wallet"
-              className="flex items-center gap-1 px-2.5 sm:px-3 py-1.5 rounded-xl bg-[#F3EAFC] hover:bg-[#E6D8F5] border border-[#E6D8F5] text-[#1E1B4B] text-xs font-semibold shadow-sm transition-all"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#FAF5F5] border border-[#EADCDD] text-[#1A080C] text-xs font-semibold hover:border-[#3B0F18] transition-all"
             >
-              <Wallet className="w-3.5 h-3.5 text-[#7C4DFF]" />
-              <span className="hidden sm:inline text-[#585375]">Demo:</span>
-              <span className="text-[#7C4DFF] font-bold text-[11px] sm:text-xs">
+              <Wallet className="w-3.5 h-3.5 text-[#3B0F18]" />
+              <span className="hidden sm:inline text-[#5E4A4E]">Demo:</span>
+              <span className="text-[#3B0F18] font-bold text-xs">
                 ${walletBalance >= 1000 ? `${(walletBalance / 1000).toFixed(1)}k` : walletBalance}
               </span>
             </Link>
 
-            {/* Role Switcher Dropdown (hidden on small mobile screens to prevent header overflow) */}
+            {/* Role Switcher Dropdown */}
             <div className="relative hidden md:block">
               <button
                 onClick={() => {
@@ -185,19 +284,19 @@ export const Navbar: React.FC = () => {
                   setLangDropdownOpen(false);
                   setNotifDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-[#E6D8F5] text-[#1E1B4B] text-xs font-medium hover:border-[#7C4DFF] shadow-sm transition-all"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#EADCDD] text-[#1A080C] text-xs font-medium hover:border-[#3B0F18] transition-all"
               >
-                <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                <span className="w-2 h-2 rounded-full bg-[#15803D]" />
                 <span className="capitalize font-semibold">{role}</span>
-                <ChevronDown className="w-3 h-3 text-[#585375]" />
+                <ChevronDown className="w-3 h-3 text-[#8C7B7F]" />
               </button>
 
               {roleDropdownOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-64 bg-white border border-[#E6D8F5] rounded-xl shadow-dropdown py-2 z-50 text-xs"
+                  className="absolute right-0 mt-2 w-64 bg-white border border-[#EADCDD] rounded-xl shadow-lg py-2 z-50 text-xs"
                   dir={dir}
                 >
-                  <div className="px-3 py-1.5 border-b border-[#E6D8F5] text-[10px] uppercase font-bold tracking-wider text-[#8782A3]">
+                  <div className="px-3 py-1.5 border-b border-[#FAF5F5] text-[10px] uppercase font-bold tracking-wider text-[#8C7B7F]">
                     Switch User Role View
                   </div>
                   {roles.map((r) => {
@@ -206,14 +305,14 @@ export const Navbar: React.FC = () => {
                       <button
                         key={r.id}
                         onClick={() => handleRoleSelect(r.id)}
-                        className={`w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-[#F3EAFC] transition-colors ${
-                          role === r.id ? "bg-[#F3EAFC] text-[#7C4DFF] font-semibold" : "text-[#1E1B4B]"
+                        className={`w-full text-left px-3 py-2 flex items-start gap-2.5 hover:bg-[#FAF5F5] transition-colors ${
+                          role === r.id ? "bg-[#FAF5F5] text-[#3B0F18] font-semibold" : "text-[#1A080C]"
                         }`}
                       >
-                        <Icon className="w-4 h-4 mt-0.5 text-[#7C4DFF]" />
+                        <Icon className="w-4 h-4 mt-0.5 text-[#3B0F18]" />
                         <div>
                           <div className="font-semibold">{r.label}</div>
-                          <div className="text-[10px] text-[#585375]">{r.desc}</div>
+                          <div className="text-[10px] text-[#5E4A4E]">{r.desc}</div>
                         </div>
                       </button>
                     );
@@ -230,12 +329,12 @@ export const Navbar: React.FC = () => {
                   setLangDropdownOpen(false);
                   setRoleDropdownOpen(false);
                 }}
-                className="p-2 rounded-xl bg-white border border-[#E6D8F5] hover:border-[#7C4DFF] text-[#585375] hover:text-[#7C4DFF] relative transition-colors shadow-sm"
+                className="p-2 rounded-lg bg-white border border-[#EADCDD] hover:border-[#3B0F18] text-[#5E4A4E] hover:text-[#3B0F18] relative transition-colors"
                 aria-label="Notifications"
               >
                 <Bell className="w-4 h-4" />
                 {unreadNotificationCount > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#7C4DFF] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#3B0F18] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
                     {unreadNotificationCount}
                   </span>
                 )}
@@ -243,20 +342,20 @@ export const Navbar: React.FC = () => {
 
               {notifDropdownOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-80 bg-white border border-[#E6D8F5] rounded-xl shadow-dropdown py-2 z-50 text-xs"
+                  className="absolute right-0 mt-2 w-80 bg-white border border-[#EADCDD] rounded-xl shadow-lg py-2 z-50 text-xs"
                   dir={dir}
                 >
-                  <div className="px-3 py-1.5 border-b border-[#E6D8F5] flex items-center justify-between text-[#1E1B4B] font-bold">
+                  <div className="px-3 py-1.5 border-b border-[#EADCDD] flex items-center justify-between text-[#1A080C] font-bold">
                     <span>Notifications ({unreadNotificationCount} unread)</span>
                     <Link
                       href="/notifications"
                       onClick={() => setNotifDropdownOpen(false)}
-                      className="text-[11px] text-[#7C4DFF] hover:underline"
+                      className="text-[11px] text-[#3B0F18] hover:underline"
                     >
                       View All
                     </Link>
                   </div>
-                  <div className="max-h-60 overflow-y-auto divide-y divide-[#E6D8F5]/50">
+                  <div className="max-h-60 overflow-y-auto divide-y divide-[#FAF5F5]">
                     {notifications.slice(0, 4).map((n) => (
                       <div
                         key={n.id}
@@ -267,15 +366,15 @@ export const Navbar: React.FC = () => {
                             router.push(n.actionUrl);
                           }
                         }}
-                        className={`p-3 cursor-pointer hover:bg-[#F3EAFC] transition-colors ${
-                          !n.read ? "bg-[#F3EAFC]/50" : ""
+                        className={`p-3 cursor-pointer hover:bg-[#FAF5F5] transition-colors ${
+                          !n.read ? "bg-[#FAF5F5]" : ""
                         }`}
                       >
-                        <div className="flex items-center justify-between font-semibold text-[#1E1B4B]">
+                        <div className="flex items-center justify-between font-semibold text-[#1A080C]">
                           <span>{n.title}</span>
-                          <span className="text-[10px] text-[#8782A3]">{n.timestamp}</span>
+                          <span className="text-[10px] text-[#8C7B7F]">{n.timestamp}</span>
                         </div>
-                        <p className="text-[11px] text-[#585375] mt-0.5 line-clamp-2">{n.message}</p>
+                        <p className="text-[11px] text-[#5E4A4E] mt-0.5 line-clamp-2">{n.message}</p>
                       </div>
                     ))}
                   </div>
@@ -283,7 +382,7 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            {/* Language Selector (hidden on small mobile screens to prevent overflow; available in mobile drawer) */}
+            {/* Language Selector */}
             <div className="relative hidden sm:block">
               <button
                 onClick={() => {
@@ -291,20 +390,20 @@ export const Navbar: React.FC = () => {
                   setRoleDropdownOpen(false);
                   setNotifDropdownOpen(false);
                 }}
-                className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl bg-white border border-[#E6D8F5] hover:border-[#7C4DFF] text-xs font-semibold shadow-sm transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white border border-[#EADCDD] hover:border-[#3B0F18] text-xs font-semibold transition-colors text-[#1A080C]"
                 aria-label="Language Selector"
               >
                 <span>{currentLang.flag}</span>
                 <span className="hidden sm:inline">{currentLang.name}</span>
-                <ChevronDown className="w-3 h-3 text-[#585375]" />
+                <ChevronDown className="w-3 h-3 text-[#8C7B7F]" />
               </button>
 
               {langDropdownOpen && (
                 <div
-                  className="absolute right-0 mt-2 w-44 bg-white border border-[#E6D8F5] rounded-xl shadow-dropdown py-1.5 z-50 text-xs"
+                  className="absolute right-0 mt-2 w-44 bg-white border border-[#EADCDD] rounded-xl shadow-lg py-1.5 z-50 text-xs"
                   dir={dir}
                 >
-                  <div className="px-3 py-1 border-b border-[#E6D8F5] text-[10px] uppercase font-bold tracking-wider text-[#8782A3]">
+                  <div className="px-3 py-1 border-b border-[#FAF5F5] text-[10px] uppercase font-bold tracking-wider text-[#8C7B7F]">
                     Select Language
                   </div>
                   {SUPPORTED_LANGUAGES.map((l) => (
@@ -314,34 +413,33 @@ export const Navbar: React.FC = () => {
                         setLanguage(l.code);
                         setLangDropdownOpen(false);
                       }}
-                      className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-[#F3EAFC] transition-colors ${
-                        language === l.code ? "bg-[#F3EAFC] text-[#7C4DFF] font-bold" : "text-[#1E1B4B]"
+                      className={`w-full text-left px-3 py-2 flex items-center justify-between hover:bg-[#FAF5F5] transition-colors ${
+                        language === l.code ? "bg-[#FAF5F5] text-[#3B0F18] font-bold" : "text-[#1A080C]"
                       }`}
                     >
                       <div className="flex items-center gap-2">
                         <span>{l.flag}</span>
                         <span>{l.name}</span>
                       </div>
-                      <span className="text-[10px] text-[#8782A3]">{l.nativeName}</span>
+                      <span className="text-[10px] text-[#8C7B7F]">{l.nativeName}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
 
-            {/* Try Interactive Demo CTA */}
+            {/* Try Interactive Demo CTA (Plain text, no sparkle icon) */}
             <Link
               href="/explore"
-              className="hidden 2xl:flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all"
+              className="hidden 2xl:inline-flex btn btn-primary text-xs"
             >
-              <Sparkles className="w-3.5 h-3.5 text-mint" />
               <span>{t.nav.tryDemo}</span>
             </Link>
 
             {/* Mobile / Tablet Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="xl:hidden p-2 rounded-xl text-[#585375] hover:bg-[#F3EAFC] hover:text-[#7C4DFF] transition-colors"
+              className="xl:hidden p-2 rounded-lg text-[#5E4A4E] hover:bg-[#FAF5F5] hover:text-[#3B0F18] transition-colors"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -351,105 +449,204 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile / Tablet Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="xl:hidden border-t border-[#E6D8F5] bg-white px-4 pt-3 pb-6 space-y-3" dir={dir}>
+          <div className="xl:hidden border-t border-[#EADCDD] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg" dir={dir}>
             <div className="grid grid-cols-2 gap-2 text-sm font-medium">
               <Link
                 href="/"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.home}
               </Link>
               <Link
+                href="/#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                {t.nav.howItWorks}
+              </Link>
+              <Link
                 href="/explore"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C] font-semibold"
               >
                 {t.nav.explore}
               </Link>
               <Link
+                href="/how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                How It Works
+              </Link>
+              <Link
+                href="/schemes"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                Micro-Saver Schemes
+              </Link>
+              <Link
+                href="/trust"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                Trust Centre
+              </Link>
+              <Link
+                href="/ai-features"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                AI Property Detective
+              </Link>
+              <Link
+                href="/experts"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                Human Expert Network
+              </Link>
+              <Link
+                href="/community-lab"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                Community Property Lab
+              </Link>
+              <Link
                 href="/dashboard"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.dashboard}
               </Link>
               <Link
                 href="/reports"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
-                {t.nav.reports}
+                P&amp;L Analytics
+              </Link>
+              <Link
+                href="/learn"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                Learn Centre
               </Link>
               <Link
                 href="/simulator"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.simulator}
               </Link>
               <Link
                 href="/governance"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.governance}
               </Link>
               <Link
                 href="/glossary"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.glossary}
               </Link>
               <Link
+                href="/about"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                About Us
+              </Link>
+              <Link
+                href="/faq"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                FAQ
+              </Link>
+              <Link
+                href="/support"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                Support Desk
+              </Link>
+              <Link
                 href="/manager"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.manager}
               </Link>
               <Link
                 href="/tenant"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.tenant}
               </Link>
               <Link
                 href="/admin"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.admin}
               </Link>
               <Link
                 href="/wallet"
                 onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-xl bg-[#F8F4FD] hover:bg-[#F3EAFC] text-[#1E1B4B]"
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
                 {t.nav.wallet}
               </Link>
             </div>
 
-            <div className="pt-2 border-t border-[#E6D8F5] flex flex-col gap-2">
-              <Link
-                href="/explore"
-                onClick={() => setMobileMenuOpen(false)}
-                className="w-full text-center py-2.5 rounded-xl bg-[#7C4DFF] text-white font-bold text-sm shadow-md"
-              >
-                {t.nav.tryDemo}
-              </Link>
-              <button
-                onClick={() => {
-                  resetDemoData();
-                  setMobileMenuOpen(false);
-                  alert("Demo data reset to default successfully!");
-                }}
-                className="w-full text-center py-2 rounded-xl bg-[#F3EAFC] text-[#5B3A8C] font-semibold text-xs border border-[#E6D8F5]"
-              >
-                {t.nav.resetDemo}
-              </button>
+            {/* Mobile Role Switcher */}
+            <div className="pt-2 border-t border-[#EADCDD]">
+              <span className="text-xs font-bold text-[#8C7B7F] uppercase tracking-wider block mb-2">Switch Role:</span>
+              <div className="grid grid-cols-2 gap-2">
+                {roles.map((r) => (
+                  <button
+                    key={r.id}
+                    onClick={() => {
+                      handleRoleSelect(r.id);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`p-2 rounded-lg text-xs font-medium text-left border ${
+                      role === r.id ? "bg-[#3B0F18] text-white border-[#3B0F18]" : "bg-[#FAF5F5] text-[#1A080C] border-[#EADCDD]"
+                    }`}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Language Switcher */}
+            <div className="pt-2 border-t border-[#EADCDD]">
+              <span className="text-xs font-bold text-[#8C7B7F] uppercase tracking-wider block mb-2">Language:</span>
+              <div className="flex flex-wrap gap-1.5">
+                {SUPPORTED_LANGUAGES.map((l) => (
+                  <button
+                    key={l.code}
+                    onClick={() => {
+                      setLanguage(l.code);
+                      setMobileMenuOpen(false);
+                    }}
+                    className={`px-2.5 py-1 rounded text-xs font-medium border ${
+                      language === l.code ? "bg-[#3B0F18] text-white border-[#3B0F18]" : "bg-[#FAF5F5] text-[#1A080C] border-[#EADCDD]"
+                    }`}
+                  >
+                    {l.flag} {l.name}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

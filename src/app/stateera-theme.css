@@ -1,0 +1,539 @@
+/* ==========================================================================
+   StateEra — Clean White Editorial Theme
+   --------------------------------------------------------------------------
+   Tokens & utilities for an editorial, minimal, bespoke real-estate platform.
+   - Clean #FFFFFF page background
+   - Soft #FAF5F5 alternate sections & table headers
+   - Crisp 1px #EADCDD borders (no blur, no glass)
+   - Primary: Deep Maroon #3B0F18 (hover #2A0A10, pressed #1A080C)
+   - Secondary: White with 1px #3B0F18 border, maroon text
+   - Accent: Rose #E8909A (used sparingly)
+   - Status: Success #15803D on #DCFCE7, Warning #B45309 on #FEF3C7,
+             Error #B91C1C on #FEE2E2, Info #1D4ED8 on #DBEAFE
+   ========================================================================== */
+
+/* ---------- 1. DESIGN TOKENS ---------- */
+:root {
+  /* Base Backgrounds */
+  --se-bg: #ffffff;
+  --se-bg-deep: #faf5f5;
+  --se-bg-soft: #faf5f5;
+
+  /* Rose Accent (used very sparingly) */
+  --se-rose-500: #e8909a;
+  --se-rose-400: #e8909a;
+  --se-rose-300: #f4c2c7;
+  --se-rose-200: #fae2e5;
+  --se-accent: #e8909a;
+
+  /* Card Surfaces & Borders (no blur, no glass) */
+  --se-glass: #ffffff;
+  --se-glass-strong: #ffffff;
+  --se-glass-rose: #faf5f5;
+  --se-glass-hover: #ffffff;
+  --se-glass-border: #eadcdd;
+  --se-glass-border-soft: #f0e6e7;
+  --se-blur: 0px;
+
+  /* Typography */
+  --se-text: #1a080c;
+  --se-text-2: #5e4a4e;
+  --se-text-muted: #8c7b7f;
+  --se-text-on-primary: #ffffff;
+
+  /* Actions — Deep Maroon */
+  --se-primary: #3b0f18;
+  --se-primary-hover: #2a0a10;
+  --se-primary-active: #1a080c;
+  --se-ring: rgba(59, 15, 24, 0.25);
+
+  /* Status Colors (Chips & Indicators) */
+  --se-success: #15803d;
+  --se-success-bg: #dcfce7;
+  --se-warning: #b45309;
+  --se-warning-bg: #fef3c7;
+  --se-error: #b91c1c;
+  --se-error-bg: #fee2e2;
+  --se-info: #1d4ed8;
+  --se-info-bg: #dbeafe;
+
+  /* Charts */
+  --se-chart-1: #3b0f18;
+  --se-chart-2: #e8909a;
+  --se-chart-3: #1d4ed8;
+  --se-chart-4: #15803d;
+  --se-chart-5: #b45309;
+  --se-chart-grid: #eadcdd;
+  --se-chart-axis: #8c7b7f;
+
+  /* Radius (12px for cards & inputs, 10px for buttons, 999px for small chips) */
+  --se-r-sm: 8px;
+  --se-r-md: 12px;
+  --se-r-lg: 16px;
+  --se-r-pill: 999px;
+
+  /* Shadows (minimal, editorial) */
+  --se-shadow: 0 4px 12px rgba(26, 8, 12, 0.08);
+  --se-shadow-soft: 0 1px 2px rgba(26, 8, 12, 0.06);
+
+  /* Sidebar */
+  --se-sidebar-w: 260px;
+  --se-sidebar-w-collapsed: 72px;
+
+  /* Motion */
+  --se-ease: cubic-bezier(0.22, 1, 0.36, 1);
+  --se-fast: 160ms;
+  --se-med: 280ms;
+}
+
+/* ---------- 2. PAGE BACKGROUND (Pure white, editorial) ---------- */
+html,
+body {
+  background-color: var(--se-bg);
+  color: var(--se-text);
+  min-height: 100%;
+}
+
+body {
+  background-image: none !important;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Wave background removed */
+.se-waves {
+  display: none !important;
+}
+
+/* ---------- 3. SURFACES & CARDS (Clean editorial white with 1px border) ---------- */
+.glass {
+  background: var(--se-glass);
+  border: 1px solid var(--se-glass-border);
+  border-radius: var(--se-r-md);
+  box-shadow: var(--se-shadow-soft);
+  color: var(--se-text);
+}
+
+.glass-strong {
+  background: var(--se-glass-strong);
+  border: 1px solid var(--se-glass-border);
+  border-radius: var(--se-r-md);
+  box-shadow: var(--se-shadow);
+  color: var(--se-text);
+}
+
+.glass-rose {
+  background: var(--se-glass-rose);
+  border: 1px solid var(--se-glass-border);
+  border-radius: var(--se-r-md);
+  color: var(--se-text);
+}
+
+.glass-hover {
+  transition: border-color var(--se-fast) var(--se-ease), transform var(--se-fast) var(--se-ease), box-shadow var(--se-fast) var(--se-ease);
+}
+.glass-hover:hover {
+  border-color: #c7b3b6;
+  box-shadow: 0 3px 8px rgba(26, 8, 12, 0.07);
+  transform: translateY(-1px);
+}
+
+/* ---------- 4. TYPOGRAPHY HELPERS ---------- */
+.text-primary-se { color: var(--se-text); }
+.text-secondary-se { color: var(--se-text-2); }
+.text-muted-se { color: var(--se-text-muted); }
+.text-accent-se { color: var(--se-primary); }
+
+/* ---------- 5. BUTTONS (10px radius, clean text) ---------- */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: background var(--se-fast) var(--se-ease), border-color var(--se-fast) var(--se-ease), color var(--se-fast) var(--se-ease);
+}
+.btn:active { transform: scale(0.99); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--se-primary);
+  color: var(--se-text-on-primary);
+  border-color: var(--se-primary);
+}
+.btn-primary:hover {
+  background: var(--se-primary-hover);
+  border-color: var(--se-primary-hover);
+  color: #ffffff;
+}
+.btn-primary:active {
+  background: var(--se-primary-active);
+  border-color: var(--se-primary-active);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--se-primary);
+  border: 1px solid var(--se-primary);
+}
+.btn-secondary:hover {
+  background: #faf5f5;
+  color: var(--se-primary-hover);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: var(--se-text-2);
+  border: 1px solid transparent;
+}
+.btn-ghost:hover {
+  background: #faf5f5;
+  color: var(--se-text);
+  border-color: var(--se-glass-border);
+}
+
+.btn-danger {
+  background: #fee2e2;
+  color: var(--se-error);
+  border-color: #fca5a5;
+}
+.btn-danger:hover {
+  background: #fecaca;
+}
+
+/* ---------- 6. FORM FIELDS (12px radius, white, 1px border) ---------- */
+.input,
+.select,
+.textarea {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 14px;
+  color: var(--se-text);
+  background: #ffffff;
+  border: 1px solid var(--se-glass-border);
+  border-radius: var(--se-r-md);
+  font-size: 0.875rem;
+  transition: border-color var(--se-fast), box-shadow var(--se-fast);
+}
+.input::placeholder,
+.textarea::placeholder {
+  color: var(--se-text-muted);
+}
+.input:focus,
+.select:focus,
+.textarea:focus {
+  outline: none;
+  border-color: var(--se-primary);
+  box-shadow: 0 0 0 2px var(--se-ring);
+  background: #ffffff;
+}
+.input[aria-invalid="true"] { border-color: var(--se-error); }
+.select option { background: #ffffff; color: var(--se-text); }
+
+label.se-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--se-text);
+}
+
+/* ---------- 7. BADGES / STATUS CHIPS (Pill radius 999px only for chips) ---------- */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: var(--se-r-pill);
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: #faf5f5;
+  border: 1px solid var(--se-glass-border);
+  color: var(--se-text-2);
+}
+.badge-success {
+  color: var(--se-success);
+  background: var(--se-success-bg);
+  border-color: transparent;
+}
+.badge-warning {
+  color: var(--se-warning);
+  background: var(--se-warning-bg);
+  border-color: transparent;
+}
+.badge-error {
+  color: var(--se-error);
+  background: var(--se-error-bg);
+  border-color: transparent;
+}
+.badge-info {
+  color: var(--se-info);
+  background: var(--se-info-bg);
+  border-color: transparent;
+}
+.badge-demo {
+  color: #ffffff;
+  background: var(--se-primary);
+  border-color: transparent;
+}
+
+/* ---------- 8. TABLES (White rows, #FAF5F5 headers, subtle row hover) ---------- */
+.table-glass {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--se-text);
+}
+.table-glass thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  text-align: start;
+  padding: 12px 16px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--se-text-2);
+  background: #faf5f5;
+  border-bottom: 1px solid var(--se-glass-border);
+}
+.table-glass tbody td {
+  padding: 13px 16px;
+  border-bottom: 1px solid var(--se-glass-border-soft);
+  background: #ffffff;
+}
+.table-glass tbody tr {
+  transition: background var(--se-fast);
+}
+.table-glass tbody tr:hover td {
+  background: #faf5f5;
+}
+
+/* ---------- 9. IMAGE OVERLAY (Very light, only when text sits on image) ---------- */
+.img-overlay {
+  position: relative;
+  overflow: hidden;
+  border-radius: inherit;
+}
+.img-overlay::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(to top, rgba(26, 8, 12, 0.55) 0%, rgba(26, 8, 12, 0.12) 28%, transparent 50%);
+}
+.img-overlay > .img-overlay-content {
+  position: absolute;
+  inset-inline: 16px;
+  bottom: 14px;
+  z-index: 1;
+}
+
+/* ---------- 10. DASHBOARD SIDEBAR (Solid deep maroon #3B0F18 panel with white text) ---------- */
+.glass-sidebar {
+  position: sticky;
+  top: 16px;
+  height: calc(100vh - 32px);
+  width: var(--se-sidebar-w);
+  display: flex;
+  flex-direction: column;
+  padding: 18px 12px;
+  margin: 16px;
+  background: #3b0f18;
+  border: 1px solid #2a0a10;
+  border-radius: var(--se-r-lg);
+  box-shadow: 0 4px 16px rgba(26, 8, 12, 0.12);
+  color: #ffffff;
+  transition: width var(--se-med) var(--se-ease);
+}
+.glass-sidebar[data-collapsed="true"] { width: var(--se-sidebar-w-collapsed); }
+
+.sidebar-divider {
+  height: 1px;
+  margin: 12px 8px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 0;
+}
+.sidebar-section-label {
+  padding: 0 14px;
+  margin-bottom: 6px;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sidebar-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 42px;
+  padding: 0 14px;
+  border-radius: var(--se-r-sm);
+  color: rgba(255, 255, 255, 0.8);
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--se-fast) var(--se-ease), color var(--se-fast) var(--se-ease);
+}
+.glass-sidebar[data-collapsed="true"] .sidebar-item { justify-content: center; padding: 0; }
+.sidebar-item:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+}
+
+.sidebar-item[aria-current="page"] {
+  background: #4e1420;
+  color: #ffffff;
+  font-weight: 600;
+}
+/* Active indicator bar: thin white indicator bar */
+.sidebar-item[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: -12px;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 3px;
+  background: #ffffff;
+}
+/* Unread notification dot */
+.sidebar-item .dot {
+  width: 8px;
+  height: 8px;
+  margin-inline-start: auto;
+  border-radius: 50%;
+  background: #e8909a;
+}
+.glass-sidebar[data-collapsed="true"] .sidebar-item .dot {
+  position: absolute;
+  top: 10px;
+  inset-inline-end: 12px;
+  margin: 0;
+}
+
+.sidebar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  margin-top: auto;
+  border-radius: var(--se-r-md);
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+}
+
+/* ---------- 11. MOBILE BOTTOM NAV (White bar with thin border, active icon in maroon) ---------- */
+.glass-bottom-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  height: 60px;
+  padding: 0 8px max(env(safe-area-inset-bottom), 6px);
+  background: #ffffff;
+  border-top: 1px solid var(--se-glass-border);
+  box-shadow: 0 -2px 10px rgba(26, 8, 12, 0.04);
+}
+.glass-bottom-nav a[aria-current="page"] {
+  color: var(--se-primary);
+}
+
+/* StateEra AI FAB button */
+.se-ai-fab {
+  position: fixed;
+  inset-inline-end: 16px;
+  bottom: 24px;
+  z-index: 50;
+}
+@media (max-width: 767px) {
+  .se-ai-fab { bottom: calc(60px + 16px + env(safe-area-inset-bottom)); }
+}
+
+/* ---------- 12. MODALS, TOASTS, TOOLTIPS (Clean white cards with 1px border) ---------- */
+.modal-backdrop {
+  background: rgba(26, 8, 12, 0.4);
+}
+.modal-glass {
+  background: #ffffff;
+  border: 1px solid var(--se-glass-border);
+  border-radius: var(--se-r-lg);
+  box-shadow: 0 12px 36px rgba(26, 8, 12, 0.12);
+  color: var(--se-text);
+}
+.toast-glass {
+  background: #ffffff;
+  border: 1px solid var(--se-glass-border);
+  border-radius: var(--se-r-md);
+  box-shadow: 0 4px 12px rgba(26, 8, 12, 0.08);
+  color: var(--se-text);
+}
+.tooltip-glass {
+  background: #ffffff;
+  border: 1px solid var(--se-glass-border);
+  border-radius: var(--se-r-sm);
+  padding: 8px 12px;
+  font-size: 0.75rem;
+  color: var(--se-text);
+  max-width: 280px;
+  box-shadow: 0 4px 16px rgba(26, 8, 12, 0.1);
+}
+
+/* ---------- 13. RECHARTS HELPERS (White card tooltips, maroon & rose series) ---------- */
+.recharts-cartesian-grid line { stroke: var(--se-chart-grid); }
+.recharts-cartesian-axis-tick-value { fill: var(--se-chart-axis); font-size: 11px; }
+.recharts-legend-item-text { color: var(--se-text-2) !important; font-size: 12px; }
+.recharts-default-tooltip {
+  background: #ffffff !important;
+  border: 1px solid var(--se-glass-border) !important;
+  border-radius: var(--se-r-sm) !important;
+  color: var(--se-text) !important;
+  box-shadow: 0 4px 12px rgba(26, 8, 12, 0.08) !important;
+}
+.recharts-tooltip-label { color: var(--se-text) !important; font-weight: 600; }
+
+/* ---------- 14. SCROLLBAR + SELECTION + FOCUS ---------- */
+::selection { background: #fae2e5; color: var(--se-primary); }
+* { scrollbar-width: thin; scrollbar-color: #d1c1c3 transparent; }
+*::-webkit-scrollbar { width: 7px; height: 7px; }
+*::-webkit-scrollbar-thumb { background: #d1c1c3; border-radius: 6px; }
+*::-webkit-scrollbar-thumb:hover { background: #3b0f18; }
+
+:focus-visible {
+  outline: 2px solid var(--se-primary);
+  outline-offset: 2px;
+}
+
+/* ---------- 15. SECTION HELPERS (No gradients on headings) ---------- */
+.section-dark {
+  background: #faf5f5;
+  color: var(--se-text);
+}
+.gradient-text {
+  background: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  color: var(--se-text) !important;
+}
+
+/* ---------- 16. REDUCED MOTION ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

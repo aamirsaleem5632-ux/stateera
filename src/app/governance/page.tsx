@@ -94,30 +94,28 @@ export default function GovernancePage() {
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 mb-1">
-          <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-mint text-emerald-900">
-            Owner Voting & Decisions
-          </span>
-          <span className="text-xs text-[#8782A3]">SIMULATED RECORDS</span>
+          <span className="badge badge-success">Owner Voting &amp; Decisions</span>
+          <span className="text-xs text-muted-se">SIMULATED RECORDS</span>
         </div>
-        <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-          Owner Updates & Big Decisions
+        <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
+          Owner Updates &amp; Big Decisions
         </h1>
-        <p className="text-xs sm:text-sm text-[#585375]">
+        <p className="text-xs sm:text-sm text-secondary-se">
           As a part-owner of buildings, you get a vote on big decisions like solar panel upgrades and building manager contracts.
         </p>
       </div>
 
       {/* Friendly Next Step Hint */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+      <div className="glass rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-secondary-se">
         <div className="flex items-center gap-2">
           <span className="font-bold text-base">💡</span>
           <span>
-            <strong>How voting works:</strong> 1 share = 1 vote. If you own 10 shares, your vote counts as 10 votes. Click <strong>"Vote YES"</strong> or <strong>"Vote NO"</strong> below to test.
+            <strong className="text-[#1A080C]">How voting works:</strong> 1 share = 1 vote. If you own 10 shares, your vote counts as 10 votes. Click <strong className="text-[#1A080C]">&ldquo;Vote YES&rdquo;</strong> or <strong className="text-[#1A080C]">&ldquo;Vote NO&rdquo;</strong> below to test.
           </span>
         </div>
         <Link
           href="/glossary"
-          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
         >
           <span>See Simple Terms Guide</span>
           <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -125,7 +123,7 @@ export default function GovernancePage() {
       </div>
 
       {feedback && (
-        <div className="p-4 rounded-2xl bg-mint border border-emerald-300 text-emerald-900 text-xs font-semibold flex items-center gap-2 shadow-sm">
+        <div className="toast-glass p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 shadow-sm border border-emerald-200 bg-emerald-50 text-emerald-800">
           <CheckCircle2 className="w-5 h-5 text-emerald-600 flex-shrink-0" />
           <span>{feedback}</span>
         </div>
@@ -135,10 +133,10 @@ export default function GovernancePage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
-            <h2 className="text-xl font-bold text-[#1E1B4B]">Decisions That Need Your Vote</h2>
+            <h2 className="text-xl font-bold text-[#1A080C]">Decisions That Need Your Vote</h2>
             <InfoTooltip termId="governance" size="sm" />
           </div>
-          <span className="text-xs text-[#8782A3]">Weighted by how many shares you own</span>
+          <span className="text-xs text-muted-se">Weighted by how many shares you own</span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -149,43 +147,43 @@ export default function GovernancePage() {
             return (
               <div
                 key={prop.id}
-                className="bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4 flex flex-col justify-between"
+                className="glass rounded-3xl p-6 sm:p-7 space-y-4 flex flex-col justify-between"
               >
                 <div className="space-y-3">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-bold text-[#7C4DFF] bg-[#F3EAFC] px-2.5 py-1 rounded-full">
+                    <span className="font-bold text-[#3B0F18] bg-[#FAF5F5] border border-[#EADCDD] px-2.5 py-0.5 rounded-full">
                       {prop.category}
                     </span>
-                    <span className="text-[#8782A3] flex items-center gap-1">
+                    <span className="text-muted-se flex items-center gap-1">
                       <Clock className="w-3.5 h-3.5" />
                       Deadline: {prop.deadline}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-xs text-[#8782A3] block font-semibold">{prop.propertyTitle}</span>
-                    <h3 className="font-bold text-base text-[#1E1B4B] mt-0.5">{prop.title}</h3>
+                    <span className="text-xs text-muted-se block font-semibold">{prop.propertyTitle}</span>
+                    <h3 className="font-bold text-base text-[#1A080C] mt-0.5">{prop.title}</h3>
                   </div>
 
-                  <p className="text-xs text-[#585375] leading-relaxed">{prop.description}</p>
+                  <p className="text-xs text-secondary-se leading-relaxed">{prop.description}</p>
                 </div>
 
                 {/* Voting Progress */}
-                <div className="space-y-3 pt-3 border-t border-[#F3EAFC]">
+                <div className="space-y-3 pt-3 border-t border-[#EADCDD]">
                   <div className="space-y-1 text-xs">
                     <div className="flex justify-between">
                       <span className="font-bold text-emerald-700">Yes: {yesPercent.toFixed(1)}% ({prop.votesYes.toLocaleString()} shares)</span>
-                      <span className="font-bold text-red-500">No: {(100 - yesPercent).toFixed(1)}%</span>
+                      <span className="font-bold text-red-700">No: {(100 - yesPercent).toFixed(1)}%</span>
                     </div>
                     <div className="w-full bg-red-100 h-2.5 rounded-full overflow-hidden flex">
-                      <div className="bg-emerald-500 h-full transition-all" style={{ width: `${yesPercent}%` }} />
-                      <div className="bg-red-400 h-full transition-all" style={{ width: `${100 - yesPercent}%` }} />
+                      <div className="bg-emerald-600 h-full transition-all" style={{ width: `${yesPercent}%` }} />
+                      <div className="bg-red-500 h-full transition-all" style={{ width: `${100 - yesPercent}%` }} />
                     </div>
                   </div>
 
                   {/* Actions */}
                   {prop.userVote ? (
-                    <div className="p-2.5 bg-[#F8F4FD] rounded-xl text-xs font-bold text-[#7C4DFF] text-center border border-[#E6D8F5]">
+                    <div className="bg-[#FAF5F5] rounded-xl text-xs font-bold text-[#3B0F18] text-center p-2.5 border border-[#EADCDD]">
                       ✓ You voted {prop.userVote} on this resolution
                     </div>
                   ) : (
@@ -199,7 +197,7 @@ export default function GovernancePage() {
                       </button>
                       <button
                         onClick={() => handleVote(prop.id, "NO")}
-                        className="py-2.5 rounded-xl bg-red-500 hover:bg-red-600 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors shadow-sm"
+                        className="btn btn-danger py-2.5 text-xs flex items-center justify-center gap-1.5"
                       >
                         <ThumbsDown className="w-3.5 h-3.5" />
                         <span>Vote NO</span>
@@ -214,39 +212,37 @@ export default function GovernancePage() {
       </div>
 
       {/* Property Shareholder Registry Table */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-        <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
+      <div className="glass rounded-3xl p-6 sm:p-8 space-y-4">
+        <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
           <div>
             <div className="flex items-center gap-1.5">
-              <h3 className="font-bold text-base text-[#1E1B4B]">List of Building Owners & Shares</h3>
+              <h3 className="font-bold text-base text-[#1A080C]">List of Building Owners &amp; Shares</h3>
               <InfoTooltip termId="owners-list" size="sm" />
             </div>
-            <p className="text-xs text-[#585375]">Shows how parts (shares) of each building are divided between investors:</p>
+            <p className="text-xs text-secondary-se">Shows how parts (shares) of each building are divided between investors:</p>
           </div>
-          <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-mint text-emerald-900">
-            Digital Record
-          </span>
+          <span className="badge badge-success">Digital Record</span>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
+          <table className="table-glass w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#E6D8F5] text-[#8782A3] uppercase text-[10px]">
-                <th className="pb-3">Building Name</th>
-                <th className="pb-3">Total Shares</th>
-                <th className="pb-3">Big Investors</th>
-                <th className="pb-3">Community Members</th>
-                <th className="pb-3 text-right">Shares Left to Buy</th>
+              <tr>
+                <th>Building Name</th>
+                <th>Total Shares</th>
+                <th>Big Investors</th>
+                <th>Community Members</th>
+                <th className="text-right">Shares Left to Buy</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F3EAFC]">
+            <tbody>
               {properties.map((p) => (
-                <tr key={p.id} className="hover:bg-[#F8F4FD] transition-colors">
-                  <td className="py-3 font-bold text-[#1E1B4B]">{p.title}</td>
-                  <td className="py-3 text-[#585375]">{p.totalShares.toLocaleString()} shares</td>
-                  <td className="py-3 font-semibold text-[#1E1B4B]">{Math.round(p.totalShares * 0.4).toLocaleString()} shares (40%)</td>
-                  <td className="py-3 font-semibold text-[#7C4DFF]">{Math.round(p.totalShares * 0.6).toLocaleString()} shares (60%)</td>
-                  <td className="py-3 text-right font-black text-emerald-600">{(100 - p.fundedPercentage).toFixed(1)}% Available</td>
+                <tr key={p.id}>
+                  <td className="font-bold text-[#1A080C]">{p.title}</td>
+                  <td className="text-secondary-se">{p.totalShares.toLocaleString()} shares</td>
+                  <td className="font-semibold text-[#1A080C]">{Math.round(p.totalShares * 0.4).toLocaleString()} shares (40%)</td>
+                  <td className="font-semibold text-accent-se">{Math.round(p.totalShares * 0.6).toLocaleString()} shares (60%)</td>
+                  <td className="text-right font-black text-emerald-700">{(100 - p.fundedPercentage).toFixed(1)}% Available</td>
                 </tr>
               ))}
             </tbody>

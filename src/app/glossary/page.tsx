@@ -5,7 +5,6 @@ import Link from "next/link";
 import {
   BookOpen,
   Search,
-  Sparkles,
   ArrowRight,
   HelpCircle,
   TrendingUp,
@@ -46,43 +45,42 @@ export default function GlossaryPage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-10" dir={dir}>
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3EAFC] text-[#5B3A8C] text-xs font-bold uppercase tracking-wider">
-          <BookOpen className="w-3.5 h-3.5 text-[#7C4DFF]" />
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#FAF5F5] border border-[#EADCDD] text-accent-se text-xs font-bold uppercase tracking-wider">
+          <BookOpen className="w-3.5 h-3.5" />
           <span>Simple Real Estate Guide</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-[#1E1B4B] tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black text-[#1A080C] tracking-tight">
           Every Property Term Explained in Plain English
         </h1>
-        <p className="text-sm sm:text-base text-[#585375] leading-relaxed">
+        <p className="text-sm sm:text-base text-secondary-se leading-relaxed">
           No finance jargon, no confusing formulas. Here is exactly what every number and word means on StateEra, explained the way you would explain it to a friend.
         </p>
       </div>
 
       {/* Quick 3-Step Summary Card */}
-      <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-        <h2 className="text-lg font-black text-[#1E1B4B] flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-[#7C4DFF]" />
+      <div className="glass rounded-3xl p-6 sm:p-8 space-y-4">
+        <h2 className="text-lg font-black text-[#1A080C] flex items-center gap-2">
           <span>The 60-Second Property Investing Summary</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 rounded-2xl bg-[#F8F4FD] border border-[#E6D8F5] space-y-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-[#7C4DFF]">Concept 1</span>
-            <h3 className="font-bold text-sm text-[#1E1B4B]">You Own a Piece</h3>
-            <p className="text-[#585375] leading-relaxed">
+          <div className="p-4 rounded-2xl bg-white border border-[#EADCDD] space-y-1.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-accent-se">Concept 1</span>
+            <h3 className="font-bold text-sm text-[#1A080C]">You Own a Piece</h3>
+            <p className="text-secondary-se leading-relaxed">
               Instead of needing $1,000,000 to buy an entire building, the building is sliced into 10,000 small shares of $100. You buy only what you can afford.
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-[#DCFCE7]/50 border border-emerald-200 space-y-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-800">Concept 2</span>
+          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">Concept 2</span>
             <h3 className="font-bold text-sm text-emerald-950">You Collect Rent</h3>
-            <p className="text-emerald-900 leading-relaxed">
+            <p className="text-emerald-800 leading-relaxed">
               Real tenants live or work in the building and pay monthly rent. After paying building bills, the net profit is split and sent straight to your wallet.
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-[#E0F2FE]/50 border border-sky-200 space-y-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-sky-800">Concept 3</span>
-            <h3 className="font-bold text-sm text-sky-950">You Can Sell Anytime</h3>
-            <p className="text-sky-900 leading-relaxed">
+          <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-1.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-blue-700">Concept 3</span>
+            <h3 className="font-bold text-sm text-blue-950">You Can Sell Anytime</h3>
+            <p className="text-blue-800 leading-relaxed">
               If you ever want your money back, you can sell your shares to other investors on the secondary market without waiting years to sell the whole building.
             </p>
           </div>
@@ -90,15 +88,15 @@ export default function GlossaryPage() {
       </div>
 
       {/* Search and Category Filters */}
-      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#E6D8F5] shadow-subtle space-y-4">
+      <div className="glass rounded-2xl p-4 sm:p-5 space-y-4">
         <div className="relative">
-          <Search className="w-4 h-4 text-[#8782A3] absolute left-3.5 top-1/2 -translate-y-1/2" />
+          <Search className="w-4 h-4 text-muted-se absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search any term (e.g. 'Net Yield', 'Shares', 'NOI', 'Safety checks')..."
-            className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl pl-10 pr-4 py-2.5 text-sm text-[#1E1B4B] placeholder-[#8782A3] focus:outline-none focus:border-[#7C4DFF]"
+            className="input pl-10"
           />
         </div>
 
@@ -110,8 +108,8 @@ export default function GlossaryPage() {
               onClick={() => setActiveCategory(c.id)}
               className={`px-3 py-1.5 rounded-xl font-bold whitespace-nowrap transition-all ${
                 activeCategory === c.id
-                  ? "bg-[#7C4DFF] text-white shadow-xs"
-                  : "bg-[#F8F4FD] text-[#585375] hover:bg-[#F3EAFC]"
+                  ? "bg-[var(--se-primary)] text-white shadow-xs"
+                  : "bg-[#FAF5F5] text-secondary-se border border-[#EADCDD] hover:bg-[#F2E8E9]"
               }`}
             >
               {c.label}
@@ -126,29 +124,29 @@ export default function GlossaryPage() {
           <div
             key={item.id}
             id={item.id}
-            className="stateera-card rounded-2xl p-6 sm:p-7 space-y-3 border border-[#E6D8F5] hover:border-[#7C4DFF]/40 transition-all bg-white"
+            className="glass rounded-2xl p-6 sm:p-7 space-y-3 hover:border-[#3B0F18]/30 transition-all"
           >
-            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-[#F3EAFC] pb-3">
+            <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-2 border-b border-[#EADCDD] pb-3">
               <div>
-                <span className="text-xs uppercase font-bold tracking-wider text-[#7C4DFF] bg-[#F3EAFC] px-2.5 py-0.5 rounded-md inline-block mb-1">
+                <span className="text-xs uppercase font-bold tracking-wider text-accent-se bg-[#FAF5F5] border border-[#EADCDD] px-2.5 py-0.5 rounded-md inline-block mb-1">
                   Plain word: {item.simpleTerm}
                 </span>
-                <h3 className="text-xl font-black text-[#1E1B4B]">{item.term}</h3>
+                <h3 className="text-xl font-black text-[#1A080C]">{item.term}</h3>
               </div>
-              <span className="text-xs text-[#8782A3] capitalize font-medium">Category: {item.category}</span>
+              <span className="text-xs text-muted-se capitalize font-medium">Category: {item.category}</span>
             </div>
 
-            <p className="text-sm font-semibold text-[#1E1B4B] leading-relaxed">
+            <p className="text-sm font-semibold text-[#1A080C] leading-relaxed">
               {item.shortExplanation}
             </p>
 
-            <p className="text-xs text-[#585375] leading-relaxed">
+            <p className="text-xs text-secondary-se leading-relaxed">
               {item.detailedExplanation}
             </p>
 
             {item.example && (
-              <div className="p-3.5 bg-mint/40 border border-emerald-200 rounded-xl text-xs text-emerald-950 font-medium">
-                <strong className="text-emerald-900 block mb-0.5 font-bold">Real-life example:</strong>
+              <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 font-medium">
+                <strong className="text-emerald-800 block mb-0.5 font-bold">Real-life example:</strong>
                 {item.example}
               </div>
             )}
@@ -156,16 +154,16 @@ export default function GlossaryPage() {
         ))}
 
         {filtered.length === 0 && (
-          <div className="text-center py-12 bg-white rounded-2xl border border-[#E6D8F5] p-6 space-y-2">
-            <HelpCircle className="w-8 h-8 text-[#8782A3] mx-auto" />
-            <h4 className="font-bold text-[#1E1B4B]">No terms matched "{search}"</h4>
-            <p className="text-xs text-[#585375]">Try searching for "rent", "yield", "shares", or clear your search.</p>
+          <div className="text-center py-12 glass rounded-2xl p-6 space-y-2">
+            <HelpCircle className="w-8 h-8 text-muted-se mx-auto" />
+            <h4 className="font-bold text-[#1A080C]">No terms matched &ldquo;{search}&rdquo;</h4>
+            <p className="text-xs text-secondary-se">Try searching for &ldquo;rent&rdquo;, &ldquo;yield&rdquo;, &ldquo;shares&rdquo;, or clear your search.</p>
             <button
               onClick={() => {
                 setSearch("");
                 setActiveCategory("all");
               }}
-              className="mt-2 px-4 py-2 rounded-xl bg-[#7C4DFF] text-white text-xs font-bold"
+              className="btn btn-primary mt-2 text-xs"
             >
               Show all terms
             </button>
@@ -174,22 +172,16 @@ export default function GlossaryPage() {
       </div>
 
       {/* Bottom CTA */}
-      <div className="bg-gradient-to-r from-[#5B3A8C] to-[#7C4DFF] text-white rounded-3xl p-8 sm:p-10 text-center space-y-4 shadow-lg">
-        <h2 className="text-2xl font-black">Ready to test it with free demo cash?</h2>
-        <p className="text-xs sm:text-sm text-white/80 max-w-xl mx-auto">
+      <div className="bg-[#FAF5F5] border border-[#EADCDD] rounded-3xl p-8 sm:p-10 text-center space-y-4 shadow-sm">
+        <h2 className="text-2xl font-black text-[#1A080C]">Ready to test it with free demo cash?</h2>
+        <p className="text-xs sm:text-sm text-secondary-se max-w-xl mx-auto">
           StateEra includes a practice wallet with $25,000 in simulated demo money. Pick a building, buy a few shares, and watch your monthly rent calculation in real-time.
         </p>
         <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-          <Link
-            href="/explore"
-            className="px-6 py-3 rounded-xl bg-white text-[#5B3A8C] font-bold text-xs shadow-md hover:bg-[#F3EAFC] transition-all"
-          >
+          <Link href="/explore" className="btn btn-primary text-xs">
             Explore Properties Now
           </Link>
-          <Link
-            href="/dashboard"
-            className="px-6 py-3 rounded-xl bg-[#1E1B4B] text-white font-bold text-xs hover:bg-[#2D275A] border border-white/20 transition-all"
-          >
+          <Link href="/dashboard" className="btn btn-secondary text-xs">
             Open My Investments
           </Link>
         </div>

@@ -13,7 +13,6 @@ import {
   AlertCircle,
   Coins,
   Wallet,
-  Sparkles,
   BarChart2,
   ChevronDown,
   Info,
@@ -122,27 +121,27 @@ export default function TradePropertyPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
         <div>
-          <div className="flex items-center gap-2 mb-1 text-xs">
-            <Link href="/explore" className="text-[#8782A3] hover:text-[#7C4DFF]">Explore</Link>
-            <span className="text-[#8782A3]">/</span>
-            <span className="text-[#7C4DFF] font-semibold">Buy & Sell Shares</span>
+          <div className="flex items-center gap-2 mb-1 text-xs text-muted-se">
+            <Link href="/explore" className="hover:text-accent-se">Explore</Link>
+            <span>/</span>
+            <span className="text-accent-se font-semibold">Buy &amp; Sell Shares</span>
           </div>
-          <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Buy & Sell Property Shares
+          <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
+            Buy &amp; Sell Property Shares
           </h1>
-          <p className="text-xs sm:text-sm text-[#585375]">
+          <p className="text-xs sm:text-sm text-secondary-se">
             Pick how many shares you want to buy or sell. Real math with zero financial risk.
           </p>
         </div>
 
         {/* Property Switcher */}
         <div className="flex items-center gap-2">
-          <label className="text-xs text-[#8782A3]">Choose Property:</label>
+          <label className="text-xs text-muted-se">Choose Property:</label>
           <select
             value={property.id}
             onChange={(e) => router.push(`/trade/${e.target.value}`)}
             aria-label="Choose Property"
-            className="bg-white border border-[#E6D8F5] text-xs font-bold text-[#1E1B4B] rounded-xl px-3 py-2 shadow-sm focus:outline-none focus:border-[#7C4DFF]"
+            className="select text-xs font-bold w-auto"
           >
             {properties.map((p) => (
               <option key={p.id} value={p.id}>
@@ -154,16 +153,16 @@ export default function TradePropertyPage() {
       </div>
 
       {/* Friendly Next Step Hint */}
-      <div className="mb-6 p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+      <div className="mb-6 p-3 rounded-xl bg-[#FAF5F5] border border-[#EADCDD] flex items-center justify-between gap-3 text-xs text-[#5E4A4E]">
         <div className="flex items-center gap-2">
           <span className="font-bold text-base">💡</span>
           <span>
-            <strong>Next Step:</strong> Choose <strong>"Buy Shares"</strong> or <strong>"Sell Shares"</strong> on the right, type your quantity, and click the purple button to test.
+            <strong className="text-[#1A080C]">Next Step:</strong> Choose <strong>&quot;Buy Shares&quot;</strong> or <strong>&quot;Sell Shares&quot;</strong> on the right, type your quantity, and click the button to test.
           </span>
         </div>
         <Link
           href="/glossary"
-          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
         >
           <span>Market vs Limit Guide</span>
           <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -175,43 +174,43 @@ export default function TradePropertyPage() {
         {/* Left Column (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Asset Price Banner */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="glass rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className="relative w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-[#F3EAFC]">
+              <div className="relative w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-[#FAF5F5] border border-[#EADCDD]">
                 <Image src={property.coverImage} alt={property.title} fill className="object-cover" />
               </div>
               <div>
-                <span className="text-xs uppercase font-bold tracking-wider text-[#7C4DFF]">
+                <span className="text-xs uppercase font-bold tracking-wider text-accent-se">
                   {property.category}
                 </span>
-                <h2 className="text-xl font-bold text-[#1E1B4B] line-clamp-1">{property.title}</h2>
-                <div className="text-xs text-[#8782A3]">{property.city}, {property.country}</div>
+                <h2 className="text-xl font-bold text-[#1A080C] line-clamp-1">{property.title}</h2>
+                <div className="text-xs text-muted-se">{property.city}, {property.country}</div>
               </div>
             </div>
 
             <div className="text-left sm:text-right">
-              <span className="text-[10px] uppercase font-bold text-[#8782A3]">Current Share Price</span>
-              <div className="text-3xl font-black text-[#1E1B4B]">${property.sharePrice.toFixed(2)}</div>
-              <span className="text-xs font-bold text-emerald-700 bg-mint px-2 py-0.5 rounded-full inline-block mt-0.5">
+              <span className="text-[10px] uppercase font-bold text-muted-se">Current Share Price</span>
+              <div className="text-3xl font-black text-[#1A080C]">${property.sharePrice.toFixed(2)}</div>
+              <span className="text-xs font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full inline-block mt-0.5">
                 +{property.netYield}% Net Rental Yield
               </span>
             </div>
           </div>
 
           {/* Interactive Trading Chart */}
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EADCDD] shadow-sm space-y-4">
             {/* Chart Toolbar */}
-            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#F3EAFC]">
+            <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-[#EADCDD]">
               {/* Timeframes */}
-              <div className="flex items-center gap-1 bg-[#F8F4FD] p-1 rounded-xl border border-[#E6D8F5]">
+              <div className="flex items-center gap-1 bg-[#FAF5F5] p-1 rounded-xl border border-[#EADCDD]">
                 {(["5m", "15m", "30m", "4h", "1D", "1M"] as const).map((tf) => (
                   <button
                     key={tf}
                     onClick={() => setTimeframe(tf)}
                     className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
                       timeframe === tf
-                        ? "bg-[#7C4DFF] text-white shadow-sm"
-                        : "text-[#585375] hover:text-[#7C4DFF]"
+                        ? "bg-[#3B0F18] text-white shadow-sm"
+                        : "text-secondary-se hover:text-[#1A080C]"
                     }`}
                   >
                     {tf}
@@ -220,11 +219,11 @@ export default function TradePropertyPage() {
               </div>
 
               {/* Mode */}
-              <div className="flex items-center gap-1.5 text-xs text-[#585375]">
+              <div className="flex items-center gap-1.5 text-xs text-secondary-se">
                 <button
                   onClick={() => setChartType("area")}
                   className={`px-2.5 py-1 rounded-lg font-semibold ${
-                    chartType === "area" ? "bg-[#F3EAFC] text-[#7C4DFF]" : "text-[#8782A3]"
+                    chartType === "area" ? "bg-[#FAF5F5] text-[#3B0F18] border border-[#EADCDD]" : "text-muted-se"
                   }`}
                 >
                   Area
@@ -232,7 +231,7 @@ export default function TradePropertyPage() {
                 <button
                   onClick={() => setChartType("candle")}
                   className={`px-2.5 py-1 rounded-lg font-semibold ${
-                    chartType === "candle" ? "bg-[#F3EAFC] text-[#7C4DFF]" : "text-[#8782A3]"
+                    chartType === "candle" ? "bg-[#FAF5F5] text-[#3B0F18] border border-[#EADCDD]" : "text-muted-se"
                   }`}
                 >
                   Candle Simulation
@@ -247,49 +246,51 @@ export default function TradePropertyPage() {
                   <AreaChart data={priceChartData}>
                     <defs>
                       <linearGradient id="tradePriceGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#7C4DFF" stopOpacity={0.4} />
-                        <stop offset="95%" stopColor="#7C4DFF" stopOpacity={0.0} />
+                        <stop offset="5%" stopColor="#3B0F18" stopOpacity={0.25} />
+                        <stop offset="95%" stopColor="#3B0F18" stopOpacity={0.0} />
                       </linearGradient>
                     </defs>
-                    <XAxis dataKey="time" stroke="#8782A3" fontSize={11} />
-                    <YAxis stroke="#8782A3" fontSize={11} domain={["auto", "auto"]} tickFormatter={(v) => `$${v}`} />
+                    <XAxis dataKey="time" stroke="#8C7B7F" fontSize={11} />
+                    <YAxis stroke="#8C7B7F" fontSize={11} domain={["auto", "auto"]} tickFormatter={(v) => `$${v}`} />
                     <Tooltip
                       formatter={(v: any) => [`$${v}`, "Share Price"]}
                       contentStyle={{
-                        backgroundColor: "#1E1B4B",
-                        borderRadius: "0.75rem",
-                        color: "#fff",
+                        backgroundColor: "#FFFFFF",
+                        borderRadius: "8px",
+                        color: "#1A080C",
+                        border: "1px solid #EADCDD",
                         fontSize: "12px",
+                        boxShadow: "0 4px 12px rgba(26,8,12,0.08)",
                       }}
                     />
                     <Area
                       type="monotone"
                       dataKey="price"
-                      stroke="#7C4DFF"
+                      stroke="#3B0F18"
                       strokeWidth={2.5}
                       fill="url(#tradePriceGrad)"
                     />
                   </AreaChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="w-full h-full flex flex-col justify-end relative bg-gradient-to-t from-[#F3EAFC]/50 to-transparent rounded-2xl p-4 overflow-hidden border border-[#E6D8F5]">
+                <div className="w-full h-full flex flex-col justify-end relative bg-gradient-to-t from-[#FAF5F5] to-transparent rounded-2xl p-4 overflow-hidden border border-[#EADCDD]">
                   <svg className="w-full h-40" viewBox="0 0 500 150" preserveAspectRatio="none">
                     <defs>
                       <linearGradient id="fallbackGrad" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stopColor="#7C4DFF" stopOpacity="0.4" />
-                        <stop offset="100%" stopColor="#7C4DFF" stopOpacity="0.0" />
+                        <stop offset="0%" stopColor="#3B0F18" stopOpacity="0.25" />
+                        <stop offset="100%" stopColor="#3B0F18" stopOpacity="0.0" />
                       </linearGradient>
                     </defs>
                     <path d="M0,130 Q100,100 200,110 T350,60 T500,40 L500,150 L0,150 Z" fill="url(#fallbackGrad)" />
-                    <path d="M0,130 Q100,100 200,110 T350,60 T500,40" fill="none" stroke="#7C4DFF" strokeWidth="3" />
+                    <path d="M0,130 Q100,100 200,110 T350,60 T500,40" fill="none" stroke="#3B0F18" strokeWidth="3" />
                   </svg>
-                  <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-2.5 py-1 rounded-lg text-xs font-bold text-[#5B3A8C] border border-[#E6D8F5]">
+                  <div className="absolute top-4 left-4 bg-white px-2.5 py-1 rounded-lg text-xs font-bold text-[#1A080C] border border-[#EADCDD] shadow-sm">
                     Share Price: ${property.sharePrice.toFixed(2)}
                   </div>
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between text-[11px] text-[#8782A3] pt-2">
+            <div className="flex items-center justify-between text-[11px] text-muted-se pt-2 border-t border-[#EADCDD]">
               <span>Market Cap: ${(property.totalValuation).toLocaleString()}</span>
               <span>Available Shares: {property.availableShares.toLocaleString()}</span>
               <span>Total Shares: {property.totalShares.toLocaleString()}</span>
@@ -299,14 +300,14 @@ export default function TradePropertyPage() {
 
         {/* Right Column: Order Execution Card (4 cols) */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-card space-y-5">
+          <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EADCDD] shadow-sm space-y-5">
             {/* Buy / Sell Tabs */}
-            <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#F8F4FD] border border-[#E6D8F5] rounded-2xl">
+            <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl">
               <button
                 type="button"
                 onClick={() => setOrderSide("BUY")}
                 className={`py-2 rounded-xl text-xs font-bold transition-all ${
-                  orderSide === "BUY" ? "bg-[#7C4DFF] text-white shadow-sm" : "text-[#585375]"
+                  orderSide === "BUY" ? "bg-[#3B0F18] text-white shadow-sm" : "text-secondary-se hover:text-[#1A080C]"
                 }`}
               >
                 Buy Shares
@@ -315,7 +316,7 @@ export default function TradePropertyPage() {
                 type="button"
                 onClick={() => setOrderSide("SELL")}
                 className={`py-2 rounded-xl text-xs font-bold transition-all ${
-                  orderSide === "SELL" ? "bg-red-500 text-white shadow-sm" : "text-[#585375]"
+                  orderSide === "SELL" ? "bg-[#B91C1C] text-white shadow-sm" : "text-secondary-se hover:text-[#1A080C]"
                 }`}
               >
                 Sell Shares
@@ -323,14 +324,14 @@ export default function TradePropertyPage() {
             </div>
 
             {/* Wallet & Holding Status */}
-            <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5] text-xs space-y-1">
-              <div className="flex justify-between text-[#585375]">
+            <div className="p-3 bg-[#FAF5F5] rounded-xl border border-[#EADCDD] text-xs space-y-1">
+              <div className="flex justify-between text-secondary-se">
                 <span>Demo Cash Balance:</span>
                 <strong className="text-emerald-700 font-bold">${walletBalance.toLocaleString()}</strong>
               </div>
-              <div className="flex justify-between text-[#585375]">
+              <div className="flex justify-between text-secondary-se">
                 <span>Shares You Own:</span>
-                <strong className="text-[#1E1B4B]">{sharesOwned} shares</strong>
+                <strong className="text-[#1A080C]">{sharesOwned} shares</strong>
               </div>
             </div>
 
@@ -339,7 +340,7 @@ export default function TradePropertyPage() {
               {/* Order Type */}
               <div className="space-y-1.5">
                 <div className="flex items-center gap-1">
-                  <label className="text-xs font-bold text-[#1E1B4B]">How do you want to set the price?</label>
+                  <label className="text-xs font-bold text-[#1A080C]">How do you want to set the price?</label>
                   <InfoTooltip termId="market-order" size="sm" />
                 </div>
                 <div className="grid grid-cols-2 gap-2 text-xs">
@@ -348,8 +349,8 @@ export default function TradePropertyPage() {
                     onClick={() => setOrderType("Market")}
                     className={`py-2 px-2 rounded-xl font-semibold border flex items-center justify-center gap-1 ${
                       orderType === "Market"
-                        ? "border-[#7C4DFF] bg-[#F3EAFC] text-[#7C4DFF]"
-                        : "border-[#E6D8F5] text-[#585375]"
+                        ? "border-[#3B0F18] bg-[#FAF5F5] text-[#3B0F18] font-bold"
+                        : "border-[#EADCDD] text-secondary-se hover:bg-[#FAF5F5]"
                     }`}
                   >
                     <span>Today's Price</span>
@@ -359,8 +360,8 @@ export default function TradePropertyPage() {
                     onClick={() => setOrderType("Limit")}
                     className={`py-2 px-2 rounded-xl font-semibold border flex items-center justify-center gap-1 ${
                       orderType === "Limit"
-                        ? "border-[#7C4DFF] bg-[#F3EAFC] text-[#7C4DFF]"
-                        : "border-[#E6D8F5] text-[#585375]"
+                        ? "border-[#3B0F18] bg-[#FAF5F5] text-[#3B0F18] font-bold"
+                        : "border-[#EADCDD] text-secondary-se hover:bg-[#FAF5F5]"
                     }`}
                   >
                     <span>Only at My Price</span>
@@ -372,7 +373,7 @@ export default function TradePropertyPage() {
               {orderType === "Limit" && (
                 <div className="space-y-1.5">
                   <div className="flex items-center gap-1">
-                    <label className="text-xs font-bold text-[#1E1B4B]">My Maximum Price per Share ($)</label>
+                    <label className="text-xs font-bold text-[#1A080C]">My Maximum Price per Share ($)</label>
                     <InfoTooltip termId="limit-order" size="sm" />
                   </div>
                   <input
@@ -381,9 +382,9 @@ export default function TradePropertyPage() {
                     min="1"
                     value={limitPrice}
                     onChange={(e) => setLimitPrice(Number(e.target.value))}
-                    className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#1E1B4B] focus:outline-none focus:border-[#7C4DFF]"
+                    className="input w-full px-3.5 py-2.5 text-sm font-bold text-[#1A080C]"
                   />
-                  <p className="text-[10px] text-[#8782A3]">We will only buy if the price is at or below this amount.</p>
+                  <p className="text-[10px] text-muted-se">We will only buy if the price is at or below this amount.</p>
                 </div>
               )}
 
@@ -391,10 +392,10 @@ export default function TradePropertyPage() {
               <div className="space-y-1.5">
                 <div className="flex justify-between items-center text-xs">
                   <div className="flex items-center gap-1">
-                    <label className="font-bold text-[#1E1B4B]">How many shares?</label>
+                    <label className="font-bold text-[#1A080C]">How many shares?</label>
                     <InfoTooltip termId="fractional-shares" size="sm" />
                   </div>
-                  <span className="text-[#8782A3]">Max: {orderSide === "BUY" ? property.availableShares : sharesOwned}</span>
+                  <span className="text-muted-se">Max: {orderSide === "BUY" ? property.availableShares : sharesOwned}</span>
                 </div>
                 <input
                   type="number"
@@ -402,17 +403,17 @@ export default function TradePropertyPage() {
                   max={orderSide === "BUY" ? property.availableShares : sharesOwned}
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, Number(e.target.value)))}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 text-sm font-bold text-[#1E1B4B] focus:outline-none focus:border-[#7C4DFF]"
+                  className="input w-full px-3.5 py-2.5 text-sm font-bold text-[#1A080C]"
                 />
               </div>
 
               {/* Order Calculations */}
-              <div className="p-3 bg-[#F3EAFC]/70 rounded-xl border border-[#E6D8F5] text-xs space-y-1.5">
-                <div className="flex justify-between text-[#585375]">
+              <div className="p-3 bg-[#FAF5F5] rounded-xl border border-[#EADCDD] text-xs space-y-1.5">
+                <div className="flex justify-between text-secondary-se">
                   <span>Total {orderSide === "BUY" ? "Cost" : "You Receive"}:</span>
-                  <strong className="text-sm font-black text-[#1E1B4B]">${orderTotalValue.toLocaleString()}</strong>
+                  <strong className="text-sm font-black text-[#1A080C]">${orderTotalValue.toLocaleString()}</strong>
                 </div>
-                <div className="flex justify-between text-[#585375]">
+                <div className="flex justify-between text-secondary-se">
                   <span>Estimated Monthly Rent:</span>
                   <strong className="text-emerald-700 font-bold">
                     {orderSide === "BUY" ? "+" : "-"}${estMonthlyRentalIncome.toFixed(2)} / mo
@@ -423,10 +424,10 @@ export default function TradePropertyPage() {
               {/* Execute Button */}
               <button
                 type="submit"
-                className={`w-full py-3.5 rounded-xl text-white font-bold text-sm shadow-md transition-all ${
+                className={`w-full py-3.5 rounded-xl text-white font-bold text-sm shadow-sm transition-all ${
                   orderSide === "BUY"
-                    ? "bg-[#7C4DFF] hover:bg-[#6C3CE9]"
-                    : "bg-red-500 hover:bg-red-600"
+                    ? "bg-[#3B0F18] hover:bg-[#2A0A10]"
+                    : "bg-[#B91C1C] hover:bg-[#991B1B]"
                 }`}
               >
                 {orderSide === "BUY"
@@ -440,8 +441,8 @@ export default function TradePropertyPage() {
               <div
                 className={`p-3.5 rounded-xl text-xs font-semibold flex items-start gap-2 border ${
                   feedback.success
-                    ? "bg-mint border-emerald-300 text-emerald-900"
-                    : "bg-red-50 border-red-200 text-red-900"
+                    ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                    : "bg-red-50 border-red-200 text-red-800"
                 }`}
               >
                 {feedback.success ? (

@@ -3,47 +3,81 @@
 @tailwind utilities;
 
 :root {
-  --color-lavender-light: #F3EAFC;
-  --color-lavender-default: #E6D8F5;
-  --color-blush-light: #FCE7F3;
-  --color-blush-default: #F8D7E8;
-  --color-mint-default: #DCFCE7;
-  --color-sky-default: #E0F2FE;
-  --color-white-card: #FFFFFF;
-  --color-purple: #7C4DFF;
-  --color-indigo: #5B3A8C;
+  --color-lavender-light: var(--se-glass);
+  --color-lavender-default: var(--se-glass-border);
+  --color-blush-light: var(--se-glass-rose);
+  --color-blush-default: var(--se-rose-400);
+  --color-mint-default: var(--se-success);
+  --color-sky-default: var(--se-info);
+  --color-white-card: var(--se-glass);
+  --color-purple: var(--se-primary);
+  --color-indigo: var(--se-primary-hover);
 
-  --bg-main: #F8F4FD;
-  --text-primary: #1E1B4B;
-  --text-secondary: #585375;
-  --text-muted: #8782A3;
-  --border-subtle: #E6D8F5;
+  --bg-main: var(--se-bg);
+  --text-primary: var(--se-text);
+  --text-secondary: var(--se-text-2);
+  --text-muted: var(--se-text-muted);
+  --border-subtle: var(--se-glass-border);
+}
+
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 80px;
+}
+
+/* Do NOT apply smooth-scroll hijacking inside dashboards, modals, tables, chat panel, or map */
+.modal-glass,
+.table-glass,
+.chat-messages,
+table,
+[role="dialog"] {
+  scroll-behavior: auto !important;
 }
 
 html,
 body {
-  color: var(--text-primary);
-  background-color: var(--bg-main);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+  color: var(--se-text);
+  background-color: var(--se-bg);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   overflow-x: hidden;
   max-width: 100vw;
   -webkit-font-smoothing: antialiased;
 }
 
-/* Custom scrollbars */
+/* Respect prefers-reduced-motion: disable smooth scroll and all transitions */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Clip slide-in animations to prevent horizontal overflow */
+.reveal-clip {
+  overflow-x: clip;
+}
+
+/* Clean editorial scrollbars */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 7px;
+  height: 7px;
 }
 ::-webkit-scrollbar-track {
-  background: #F3EAFC;
+  background: #faf5f5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #D4BEEB;
+  background: #d1c1c3;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #7C4DFF;
+  background: var(--se-primary);
 }
 
 /* RTL layout helpers */
@@ -56,34 +90,34 @@ body {
   transform: scaleX(-1);
 }
 
-/* Interactive card transitions */
+/* Interactive card transitions mapped to clean white cards */
 .stateera-card {
-  background-color: #FFFFFF;
-  border: 1px solid rgba(230, 216, 245, 0.7);
-  box-shadow: 0 4px 20px rgba(91, 58, 140, 0.05);
-  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  background: var(--se-glass);
+  border: 1px solid var(--se-glass-border);
+  box-shadow: var(--se-shadow-soft);
+  color: var(--se-text);
+  border-radius: var(--se-r-md);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .stateera-card:hover {
-  border-color: rgba(124, 77, 255, 0.3);
-  box-shadow: 0 8px 30px rgba(91, 58, 140, 0.09);
-  transform: translateY(-2px);
+  border-color: #c7b3b6;
+  box-shadow: var(--se-shadow);
 }
 
 .stateera-button-primary {
-  background-color: #7C4DFF;
-  color: #FFFFFF;
+  background: var(--se-primary);
+  color: var(--se-text-on-primary);
   font-weight: 600;
-  border-radius: 0.75rem;
-  transition: all 0.2s ease;
+  border-radius: 10px;
+  transition: background 0.16s ease;
 }
 
 .stateera-button-primary:hover {
-  background-color: #6C3CE9;
-  box-shadow: 0 4px 14px rgba(124, 77, 255, 0.35);
+  background: var(--se-primary-hover);
 }
 
 .stateera-button-primary:active {
-  background-color: #5B3A8C;
-  transform: scale(0.98);
+  background: var(--se-primary-active);
+  transform: scale(0.99);
 }

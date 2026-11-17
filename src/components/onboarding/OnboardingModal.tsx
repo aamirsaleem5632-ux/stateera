@@ -4,7 +4,6 @@ import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2,
-  Sparkles,
   PieChart,
   ShieldCheck,
   Coins,
@@ -21,7 +20,6 @@ export const OnboardingModal: React.FC = () => {
   const [step, setStep] = useState(0);
 
   useEffect(() => {
-    // Check if user has seen onboarding
     try {
       const seen = localStorage.getItem("stateera_onboarding_completed");
       if (!seen) {
@@ -45,30 +43,30 @@ export const OnboardingModal: React.FC = () => {
     {
       icon: Building2,
       badge: "Welcome to " + BRAND_CONFIG.name,
-      title: "Invest in Global Real Estate from $50",
-      description: "StateEra transforms institutional property investing. Own legally segregated fractional shares in prime residential and commercial assets worldwide.",
-      highlight: "No million-dollar down payments or mortgages required.",
+      title: "Invest in Global Real Estate from $25",
+      description: "StateEra simplifies property investing. Own legally segregated fractional shares in prime residential and commercial assets worldwide.",
+      highlight: "No million-dollar down payments or mortgage debt required.",
     },
     {
       icon: Coins,
       badge: "Automated Income",
       title: "Earn Monthly Rental Yields",
       description: "Collect automated monthly rental income credited directly to your digital demo wallet. Real-time net yield calculations reflect actual tenant collections.",
-      highlight: "Estimated yields range from 7.5% to 11.8% annual net returns.",
+      highlight: "Projected net yields range from 8% to 13% annual returns.",
     },
     {
       icon: ShieldCheck,
-      badge: "Institutional Due Diligence",
-      title: "Audited Legal Documents & AI Valuation",
-      description: "Every asset features verified land registry titles, Bureau Veritas engineering inspections, and continuous AI algorithmic valuations.",
-      highlight: "Complete transparency with downloadable legal registries.",
+      badge: "Audited Due Diligence",
+      title: "Independent Title Checks & Inspection Audits",
+      description: "Every asset features verified land registry titles, structural engineering inspections, and continuous algorithmic valuations.",
+      highlight: "Complete transparency with downloadable certificates.",
     },
     {
       icon: PieChart,
       badge: "Secondary Market Liquidity",
       title: "Trade Fractional Shares Seamlessly",
       description: "Enjoy flexible liquidity by trading shares on our simulated exchange with market and limit order execution.",
-      highlight: "Start exploring the full interactive platform now with $25,000 demo cash.",
+      highlight: "Test the platform risk-free with $25,000 in simulated demo cash.",
     },
   ];
 
@@ -79,17 +77,17 @@ export const OnboardingModal: React.FC = () => {
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#1E1B4B]/60 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 modal-backdrop">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.96 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-3xl border border-[#E6D8F5] shadow-2xl max-w-lg w-full p-6 sm:p-8 relative overflow-hidden"
+          exit={{ opacity: 0, scale: 0.96 }}
+          className="bg-white rounded-2xl shadow-xl max-w-lg w-full p-6 sm:p-8 relative overflow-hidden border border-[#EADCDD]"
         >
           {/* Skip / Close Button */}
           <button
             onClick={handleClose}
-            className="absolute top-5 right-5 text-[#8782A3] hover:text-[#1E1B4B] p-1 rounded-full hover:bg-[#F3EAFC] transition-colors"
+            className="absolute top-5 right-5 text-[#8C7B7F] hover:text-[#1A080C] p-1.5 rounded-lg hover:bg-[#FAF5F5] transition-colors"
             aria-label="Skip Onboarding"
           >
             <X className="w-5 h-5" />
@@ -101,7 +99,7 @@ export const OnboardingModal: React.FC = () => {
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-300 ${
-                  i === step ? "w-8 bg-[#7C4DFF]" : i < step ? "w-3 bg-mint" : "w-3 bg-[#E6D8F5]"
+                  i === step ? "w-8 bg-[#3B0F18]" : i < step ? "w-3 bg-[#15803D]" : "w-3 bg-[#EADCDD]"
                 }`}
               />
             ))}
@@ -109,33 +107,32 @@ export const OnboardingModal: React.FC = () => {
 
           {/* Content */}
           <div className="space-y-4">
-            <div className="w-14 h-14 rounded-2xl bg-[#F3EAFC] border border-[#E6D8F5] text-[#7C4DFF] flex items-center justify-center shadow-sm">
-              <Icon className="w-7 h-7" />
+            <div className="w-12 h-12 rounded-xl bg-[#FAF5F5] border border-[#EADCDD] text-[#3B0F18] flex items-center justify-center">
+              <Icon className="w-6 h-6 text-[#3B0F18]" />
             </div>
 
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#7C4DFF] bg-[#F3EAFC] px-2.5 py-1 rounded-full">
+              <span className="badge text-xs font-semibold">
                 {current.badge}
               </span>
-              <h3 className="text-2xl font-black text-[#1E1B4B] tracking-tight mt-2.5">
+              <h3 className="text-xl sm:text-2xl font-bold text-[#1A080C] tracking-tight mt-2">
                 {current.title}
               </h3>
-              <p className="text-sm text-[#585375] leading-relaxed mt-2">
+              <p className="text-sm text-[#5E4A4E] leading-relaxed mt-2">
                 {current.description}
               </p>
             </div>
 
-            <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5] text-xs font-semibold text-[#5B3A8C] flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#7C4DFF] flex-shrink-0" />
-              <span>{current.highlight}</span>
+            <div className="p-3 bg-[#FAF5F5] rounded-xl border border-[#EADCDD] text-xs font-semibold text-[#3B0F18]">
+              {current.highlight}
             </div>
           </div>
 
           {/* Action Buttons */}
-          <div className="mt-8 pt-4 border-t border-[#E6D8F5] flex items-center justify-between">
+          <div className="mt-8 pt-4 border-t border-[#EADCDD] flex items-center justify-between">
             <button
               onClick={handleClose}
-              className="text-xs font-bold text-[#8782A3] hover:text-[#5B3A8C] transition-colors"
+              className="text-xs font-semibold text-[#8C7B7F] hover:text-[#1A080C] transition-colors"
             >
               Skip Introduction
             </button>
@@ -143,7 +140,7 @@ export const OnboardingModal: React.FC = () => {
             {step < steps.length - 1 ? (
               <button
                 onClick={() => setStep(step + 1)}
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white text-xs font-bold shadow-md transition-all"
+                className="btn btn-primary text-xs"
               >
                 <span>Continue</span>
                 <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
@@ -151,9 +148,9 @@ export const OnboardingModal: React.FC = () => {
             ) : (
               <button
                 onClick={handleClose}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-gradient-to-r from-[#7C4DFF] to-[#5B3A8C] text-white text-xs font-bold shadow-md hover:shadow-lg transition-all"
+                className="btn btn-primary text-xs"
               >
-                <Check className="w-4 h-4 text-mint" />
+                <Check className="w-4 h-4" />
                 <span>Start Exploring StateEra</span>
               </button>
             )}

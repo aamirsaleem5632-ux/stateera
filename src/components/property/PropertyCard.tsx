@@ -6,12 +6,9 @@ import Link from "next/link";
 import {
   MapPin,
   TrendingUp,
-  Percent,
   Bookmark,
   ShieldCheck,
-  Building,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { Property } from "@/types/property";
 import { useDemo } from "@/context/DemoContext";
@@ -36,9 +33,9 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   const isSaved = isWatchlisted(property.id);
 
   return (
-    <div className="stateera-card rounded-2xl overflow-hidden flex flex-col group h-full">
+    <div className="bg-white border border-[#EADCDD] rounded-xl overflow-hidden flex flex-col group h-full transition-all duration-200 hover:border-[#3B0F18]/50 hover:shadow-sm">
       {/* Property Cover Image */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F3EAFC]">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#FAF5F5]">
         <Image
           src={property.coverImage}
           alt={property.title}
@@ -48,15 +45,14 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
         />
 
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
           <div className="flex items-center gap-1.5 pointer-events-auto">
-            <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-white/90 backdrop-blur-md text-[#1E1B4B] shadow-sm">
+            <span className="badge text-[10px] uppercase tracking-wider font-semibold">
               {property.category}
             </span>
             {featured && (
-              <span className="text-[10px] uppercase font-bold tracking-wider px-2.5 py-1 rounded-full bg-[#7C4DFF] text-white shadow-sm flex items-center gap-1">
-                <Sparkles className="w-3 h-3 text-mint" />
-                <span>Featured</span>
+              <span className="bg-[#3B0F18] text-white text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full">
+                Featured
               </span>
             )}
           </div>
@@ -68,8 +64,8 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
             }}
             className={`pointer-events-auto w-8 h-8 rounded-full flex items-center justify-center transition-all ${
               isSaved
-                ? "bg-[#7C4DFF] text-white shadow-md"
-                : "bg-white/80 backdrop-blur-md text-[#585375] hover:bg-white hover:text-[#7C4DFF]"
+                ? "bg-[#3B0F18] text-white shadow-sm"
+                : "bg-white/90 text-[#5E4A4E] hover:text-[#3B0F18] border border-[#EADCDD]"
             }`}
             aria-label="Add to watchlist"
           >
@@ -77,16 +73,16 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
           </button>
         </div>
 
-        {/* Bottom image overlay with Net Yield Pill */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none">
-          <div className="bg-[#1E1B4B]/80 backdrop-blur-md text-white px-2.5 py-1 rounded-lg text-xs font-semibold flex items-center gap-1">
-            <MapPin className="w-3.5 h-3.5 text-mint" />
+        {/* Bottom subtle overlay with Net Yield Pill */}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between pointer-events-none z-10">
+          <div className="bg-white/95 border border-[#EADCDD] px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 text-[#1A080C] shadow-sm">
+            <MapPin className="w-3.5 h-3.5 text-[#3B0F18]" />
             <span>{property.city}, {property.country}</span>
           </div>
 
-          <div className="bg-mint text-emerald-900 font-bold px-2.5 py-1 rounded-lg text-xs shadow-sm flex items-center gap-1">
-            <TrendingUp className="w-3.5 h-3.5 text-emerald-700" />
-            <span>{property.netYield}% Yearly Return</span>
+          <div className="badge badge-success font-bold text-xs flex items-center gap-1 shadow-sm">
+            <TrendingUp className="w-3.5 h-3.5 text-[#15803D]" />
+            <span>{property.netYield}% Return</span>
           </div>
         </div>
       </div>
@@ -95,91 +91,85 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
           <Link href={`/property/${property.id}`}>
-            <h3 className="font-bold text-lg text-[#1E1B4B] hover:text-[#7C4DFF] transition-colors line-clamp-1">
+            <h3 className="font-bold text-base sm:text-lg text-[#1A080C] hover:text-[#3B0F18] transition-colors line-clamp-1">
               {property.title}
             </h3>
           </Link>
-          <p className="text-xs text-[#585375] line-clamp-2 mt-1">
+          <p className="text-xs text-[#5E4A4E] line-clamp-2 mt-1 leading-relaxed">
             {property.headline}
           </p>
         </div>
 
         {/* Key Metrics Grid */}
-        <div className="grid grid-cols-3 gap-2 py-2.5 px-3 rounded-xl bg-[#F8F4FD] border border-[#E6D8F5] text-xs">
+        <div className="grid grid-cols-3 gap-2 py-2.5 px-3 rounded-lg bg-[#FAF5F5] border border-[#EADCDD] text-xs">
           <div>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-[#8782A3] block uppercase font-medium">1 Share</span>
+              <span className="text-[10px] text-[#8C7B7F] block uppercase font-medium">1 Share</span>
               <InfoTooltip termId="fractional-shares" size="sm" />
             </div>
-            <span className="font-bold text-[#1E1B4B]">${property.sharePrice}</span>
-            <span className="text-[9px] text-[#8782A3] block">Entry price</span>
+            <span className="font-bold text-[#1A080C]">${property.sharePrice}</span>
+            <span className="text-[9px] text-[#8C7B7F] block">Entry price</span>
           </div>
           <div>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-[#8782A3] block uppercase font-medium">Rent / Mo</span>
+              <span className="text-[10px] text-[#8C7B7F] block uppercase font-medium">Rent / Mo</span>
               <InfoTooltip termId="rent-payments" size="sm" />
             </div>
-            <span className="font-bold text-emerald-700">${property.estimatedMonthlyRent.toLocaleString()}</span>
-            <span className="text-[9px] text-[#8782A3] block">Whole property</span>
+            <span className="font-bold text-[#15803D]">${property.estimatedMonthlyRent.toLocaleString()}</span>
+            <span className="text-[9px] text-[#8C7B7F] block">Whole property</span>
           </div>
           <div>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-[#8782A3] block uppercase font-medium">Safe Check</span>
+              <span className="text-[10px] text-[#8C7B7F] block uppercase font-medium">Audit</span>
               <InfoTooltip termId="property-checks" size="sm" />
             </div>
-            <span className="font-bold text-[#7C4DFF] flex items-center gap-0.5">
+            <span className="font-bold text-[#3B0F18] flex items-center gap-0.5">
               <ShieldCheck className="w-3.5 h-3.5" />
               {property.aiValuationConfidence}%
             </span>
-            <span className="text-[9px] text-[#8782A3] block">Confidence</span>
+            <span className="text-[9px] text-[#8C7B7F] block">Score</span>
           </div>
         </div>
 
         {/* Funding Progress Bar */}
-        <div className="space-y-1">
-          <div className="flex items-center justify-between text-[11px] text-[#585375]">
-            <span>Invested: <strong className="text-[#1E1B4B]">{property.fundedPercentage}%</strong></span>
-            <span>Shares left: <strong className="text-[#7C4DFF]">{property.availableShares.toLocaleString()}</strong></span>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between text-[11px]">
+            <span className="text-[#5E4A4E]">
+              <strong>{property.availableShares.toLocaleString()}</strong> shares left
+            </span>
+            <span className="font-semibold text-[#1A080C]">
+              {property.fundedPercentage}% Funded
+            </span>
           </div>
-          <div className="w-full bg-[#E6D8F5] h-2 rounded-full overflow-hidden">
+          <div className="w-full bg-[#FAF5F5] border border-[#EADCDD] h-2 rounded-full overflow-hidden">
             <div
-              className="bg-[#7C4DFF] h-full rounded-full transition-all duration-500"
+              className="bg-[#3B0F18] h-full rounded-full transition-all duration-700"
               style={{ width: `${property.fundedPercentage}%` }}
             />
           </div>
         </div>
 
-        {/* Action Buttons */}
-        <div className="pt-2 flex items-center gap-2">
+        {/* Bottom Action Footer */}
+        <div className="pt-2 border-t border-[#EADCDD] flex items-center justify-between gap-2">
           {onCompareToggle && (
             <button
-              type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onCompareToggle();
-              }}
-              className={`py-2 px-2.5 rounded-xl text-xs font-bold transition-all border ${
+              onClick={onCompareToggle}
+              className={`text-xs px-2.5 py-1.5 rounded-lg border transition-all ${
                 isCompared
-                  ? "bg-[#7C4DFF] text-white border-[#7C4DFF]"
-                  : "bg-white text-[#585375] border-[#E6D8F5] hover:bg-[#F3EAFC]"
+                  ? "bg-[#3B0F18] text-white border-[#3B0F18]"
+                  : "bg-white text-[#5E4A4E] border-[#EADCDD] hover:border-[#3B0F18]"
               }`}
             >
-              {isCompared ? "✓ Selected" : "Compare"}
+              {isCompared ? "Compared" : "Compare"}
             </button>
           )}
+
           <Link
             href={`/property/${property.id}`}
-            className="flex-1 py-2.5 px-3 rounded-xl bg-[#F3EAFC] hover:bg-[#E6D8F5] text-[#5B3A8C] text-xs font-bold text-center transition-colors flex items-center justify-center gap-1"
+            className="flex-1 btn btn-secondary text-xs flex items-center justify-center gap-1"
           >
-            <span>{t.common.viewDetails}</span>
+            <span>View Details</span>
             <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
-          </Link>
-          <Link
-            href={`/trade/${property.id}`}
-            className="py-2.5 px-4 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white text-xs font-bold text-center transition-colors shadow-sm"
-          >
-            {t.common.buyShares}
           </Link>
         </div>
       </div>

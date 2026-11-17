@@ -1,4 +1,16 @@
-export type PropertyCategory = "residential" | "commercial" | "villa" | "waterfront" | "luxury";
+export type PropertyCategory =
+  | "residential"
+  | "commercial"
+  | "villa"
+  | "waterfront"
+  | "luxury"
+  | "retail"
+  | "office"
+  | "student"
+  | "hospitality"
+  | "logistics"
+  | "mixed-use"
+  | "affordable";
 
 export type PropertyStatus = "active" | "funded" | "coming_soon";
 
@@ -108,4 +120,12 @@ export interface Property {
     avgLeaseMonths: number;
     onTimePaymentRate: number;
   };
+
+  // StateEra Property Passport & Transparency
+  propertyPassportId?: string;
+  transparencyScore?: number; // 0 - 100
+  countryCode?: string;
+  lastInspectionDate?: string;
+  legalReviewStatus?: "Verified" | "Approved" | "Under Review";
+  isDemo?: boolean;
 }

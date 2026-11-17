@@ -109,33 +109,31 @@ export default function PropertyManagerPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-[#F3EAFC] text-[#5B3A8C]">
-              Building Manager Portal
-            </span>
-            <span className="text-xs text-emerald-700 bg-mint px-2 py-0.5 rounded-full font-bold">
-              License #MGR-44910
-            </span>
+            <span className="badge badge-info">Building Manager Portal</span>
+            <span className="badge badge-success">License #MGR-44910</span>
           </div>
-          <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
+          <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
             Building Manager Portal
           </h1>
-          <p className="text-xs sm:text-sm text-[#585375]">
+          <p className="text-xs sm:text-sm text-secondary-se">
             Record rent collected from tenants, schedule repair jobs, and keep building records accurate.
           </p>
         </div>
       </div>
 
       {/* Friendly Next Step Hint */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+      <div className="glass rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-secondary-se">
         <div className="flex items-center gap-2">
           <span className="font-bold text-base">💡</span>
           <span>
-            <strong>Next Step:</strong> Click <strong>"Record Rent Collected"</strong> to log incoming tenant rent, or <strong>"Repair Jobs"</strong> to track fixing building issues.
+            <strong className="text-[#1A080C]">Next Step:</strong> Click{" "}
+            <strong className="text-[#1A080C]">&ldquo;Record Rent Collected&rdquo;</strong> to log incoming tenant rent, or{" "}
+            <strong className="text-[#1A080C]">&ldquo;Repair Jobs&rdquo;</strong> to track fixing building issues.
           </span>
         </div>
         <Link
           href="/glossary"
-          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
         >
           <span>See Simple Terms Guide</span>
           <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -146,7 +144,9 @@ export default function PropertyManagerPage() {
       {feedback && (
         <div
           className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 shadow-sm ${
-            feedback.success ? "bg-mint border border-emerald-300 text-emerald-900" : "bg-red-50 border border-red-200 text-red-900"
+            feedback.success
+              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+              : "bg-red-50 border border-red-200 text-red-800"
           }`}
         >
           {feedback.success ? (
@@ -159,7 +159,7 @@ export default function PropertyManagerPage() {
       )}
 
       {/* Tab Navigation */}
-      <div className="flex items-center gap-2 border-b border-[#E6D8F5] pb-2 overflow-x-auto no-scrollbar">
+      <div className="flex items-center gap-2 border-b border-[#EADCDD] pb-2 overflow-x-auto no-scrollbar">
         {[
           { id: "overview", label: "My Buildings" },
           { id: "rent-collection", label: "Record Rent Collected" },
@@ -171,8 +171,8 @@ export default function PropertyManagerPage() {
             onClick={() => setActiveTab(tab.id as any)}
             className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all whitespace-nowrap ${
               activeTab === tab.id
-                ? "bg-[#7C4DFF] text-white shadow-sm"
-                : "text-[#585375] hover:bg-[#F3EAFC]"
+                ? "bg-[var(--se-primary)] text-white shadow-sm"
+                : "text-secondary-se hover:bg-[#FAF5F5]"
             }`}
           >
             {tab.label}
@@ -185,36 +185,36 @@ export default function PropertyManagerPage() {
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {properties.slice(0, 3).map((p) => (
-              <div key={p.id} className="stateera-card rounded-2xl p-5 space-y-4">
+              <div key={p.id} className="glass rounded-2xl p-5 space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-[#F3EAFC]">
+                  <div className="relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 bg-[#FAF5F5] border border-[#EADCDD]">
                     <Image src={p.coverImage} alt={p.title} fill className="object-cover" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-[#1E1B4B] line-clamp-1">{p.title}</h3>
-                    <span className="text-xs text-[#8782A3]">{p.city}, {p.country}</span>
+                    <h3 className="font-bold text-sm text-[#1A080C] line-clamp-1">{p.title}</h3>
+                    <span className="text-xs text-muted-se">{p.city}, {p.country}</span>
                     <div className="text-xs text-emerald-700 font-bold mt-0.5">
                       {p.occupancyRate}% Occupied
                     </div>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[#F3EAFC]">
-                  <div className="p-2 bg-[#F8F4FD] rounded-lg">
-                    <span className="text-[10px] text-[#8782A3] block uppercase">Monthly Rent</span>
-                    <strong className="text-[#1E1B4B]">${p.estimatedMonthlyRent.toLocaleString()}</strong>
+                <div className="grid grid-cols-2 gap-2 text-xs pt-2 border-t border-[#EADCDD]">
+                  <div className="p-2 bg-[#FAF5F5] rounded-lg border border-[#EADCDD]">
+                    <span className="text-[10px] text-muted-se block uppercase">Monthly Rent</span>
+                    <strong className="text-[#1A080C]">${p.estimatedMonthlyRent.toLocaleString()}</strong>
                   </div>
-                  <div className="p-2 bg-[#F8F4FD] rounded-lg">
-                    <span className="text-[10px] text-[#8782A3] block uppercase">Total Units</span>
-                    <strong className="text-[#1E1B4B]">{p.tenantMetrics.totalUnits} Units</strong>
+                  <div className="p-2 bg-[#FAF5F5] rounded-lg border border-[#EADCDD]">
+                    <span className="text-[10px] text-muted-se block uppercase">Total Units</span>
+                    <strong className="text-[#1A080C]">{p.tenantMetrics.totalUnits} Units</strong>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-between text-xs pt-1">
-                  <span className="text-[#8782A3]">On-time Rent: <strong>{p.tenantMetrics.onTimePaymentRate}%</strong></span>
+                  <span className="text-muted-se">On-time Rent: <strong className="text-[#1A080C]">{p.tenantMetrics.onTimePaymentRate}%</strong></span>
                   <Link
                     href={`/property/${p.id}`}
-                    className="text-[#7C4DFF] font-semibold hover:underline"
+                    className="text-accent-se font-semibold hover:underline"
                   >
                     View Details →
                   </Link>
@@ -227,21 +227,21 @@ export default function PropertyManagerPage() {
 
       {/* TAB 2: LOG RENT COLLECTION */}
       {activeTab === "rent-collection" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle max-w-2xl space-y-5">
+        <div className="glass rounded-3xl p-6 sm:p-8 max-w-2xl space-y-5">
           <div>
-            <h3 className="text-xl font-bold text-[#1E1B4B]">Log Monthly Tenant Rent Collection</h3>
-            <p className="text-xs text-[#585375]">
+            <h3 className="text-xl font-bold text-[#1A080C]">Log Monthly Tenant Rent Collection</h3>
+            <p className="text-xs text-secondary-se">
               Upload collections to credit the escrow account for monthly investor dividend distributions.
             </p>
           </div>
 
           <form onSubmit={handleCollectRent} className="space-y-4 text-xs">
             <div className="space-y-1">
-              <label className="font-bold text-[#1E1B4B]">Select Assigned Property</label>
+              <label className="font-bold text-[#1A080C]">Select Assigned Property</label>
               <select
                 value={rentPropertyId}
                 onChange={(e) => setRentPropertyId(e.target.value)}
-                className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 font-semibold text-[#1E1B4B]"
+                className="select font-semibold"
               >
                 {properties.map((p) => (
                   <option key={p.id} value={p.id}>
@@ -253,40 +253,37 @@ export default function PropertyManagerPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1">
-                <label className="font-bold text-[#1E1B4B]">Gross Rent Collected ($)</label>
+                <label className="font-bold text-[#1A080C]">Gross Rent Collected ($)</label>
                 <input
                   type="number"
                   value={rentAmount}
                   onChange={(e) => setRentAmount(Number(e.target.value))}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 font-bold text-[#1E1B4B]"
+                  className="input font-bold text-[#1A080C]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-[#1E1B4B]">Collection Month</label>
+                <label className="font-bold text-[#1A080C]">Collection Month</label>
                 <input
                   type="text"
                   value={rentMonth}
                   onChange={(e) => setRentMonth(e.target.value)}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 font-semibold text-[#1E1B4B]"
+                  className="input font-semibold text-[#1A080C]"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-[#1E1B4B]">Tenant / Escrow Source</label>
+              <label className="font-bold text-[#1A080C]">Tenant / Escrow Source</label>
               <input
                 type="text"
                 value={rentTenantName}
                 onChange={(e) => setRentTenantName(e.target.value)}
-                className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2.5 font-semibold text-[#1E1B4B]"
+                className="input font-semibold text-[#1A080C]"
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-3 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs shadow-md transition-all"
-            >
+            <button type="submit" className="btn btn-primary w-full text-xs">
               Confirm and Reconcile Rent Deposit
             </button>
           </form>
@@ -297,29 +294,29 @@ export default function PropertyManagerPage() {
       {activeTab === "maintenance" && (
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* Create Work Order Form (5 cols) */}
-          <div className="lg:col-span-5 bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Create Maintenance Work Order</h3>
+          <div className="lg:col-span-5 glass rounded-3xl p-6 sm:p-7 space-y-4">
+            <h3 className="font-bold text-base text-[#1A080C]">Create Maintenance Work Order</h3>
 
             <form onSubmit={handleCreateWorkOrder} className="space-y-3.5 text-xs">
               <div className="space-y-1">
-                <label className="font-bold text-[#1E1B4B]">Task Title</label>
+                <label className="font-bold text-[#1A080C]">Task Title</label>
                 <input
                   type="text"
                   placeholder="e.g. HVAC Filter Replacement & Sensor Tune-up"
                   value={maintTitle}
                   onChange={(e) => setMaintTitle(e.target.value)}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3 py-2 text-[#1E1B4B]"
+                  className="input text-[#1A080C]"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-2">
                 <div className="space-y-1">
-                  <label className="font-bold text-[#1E1B4B]">Category</label>
+                  <label className="font-bold text-[#1A080C]">Category</label>
                   <select
                     value={maintCategory}
                     onChange={(e) => setMaintCategory(e.target.value as any)}
-                    className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3 py-2 text-[#1E1B4B]"
+                    className="select text-[#1A080C]"
                   >
                     <option value="Plumbing">Plumbing</option>
                     <option value="Electrical">Electrical</option>
@@ -330,11 +327,11 @@ export default function PropertyManagerPage() {
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-[#1E1B4B]">Priority</label>
+                  <label className="font-bold text-[#1A080C]">Priority</label>
                   <select
                     value={maintPriority}
                     onChange={(e) => setMaintPriority(e.target.value as any)}
-                    className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3 py-2 text-[#1E1B4B]"
+                    className="select text-[#1A080C]"
                   >
                     <option value="Low">Low</option>
                     <option value="Medium">Medium</option>
@@ -345,62 +342,59 @@ export default function PropertyManagerPage() {
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-[#1E1B4B]">Estimated Repair Cost ($)</label>
+                <label className="font-bold text-[#1A080C]">Estimated Repair Cost ($)</label>
                 <input
                   type="number"
                   value={maintCost}
                   onChange={(e) => setMaintCost(Number(e.target.value))}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3 py-2 text-[#1E1B4B]"
+                  className="input text-[#1A080C]"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-[#1E1B4B]">Description</label>
+                <label className="font-bold text-[#1A080C]">Description</label>
                 <textarea
                   rows={2}
                   placeholder="Details of inspection and repair required..."
                   value={maintDesc}
                   onChange={(e) => setMaintDesc(e.target.value)}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3 py-2 text-[#1E1B4B]"
+                  className="textarea text-[#1A080C]"
                 />
               </div>
 
-              <button
-                type="submit"
-                className="w-full py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs shadow-md transition-all"
-              >
+              <button type="submit" className="btn btn-primary w-full text-xs">
                 Assign Work Order
               </button>
             </form>
           </div>
 
           {/* Active Work Orders List (7 cols) */}
-          <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Active Maintenance & Repairs</h3>
+          <div className="lg:col-span-7 glass rounded-3xl p-6 sm:p-7 space-y-4">
+            <h3 className="font-bold text-base text-[#1A080C]">Active Maintenance &amp; Repairs</h3>
 
-            <div className="divide-y divide-[#F3EAFC]">
+            <div className="divide-y divide-[#EADCDD]">
               {maintenanceRequests.map((m) => (
                 <div key={m.id} className="py-3.5 space-y-1.5 text-xs">
                   <div className="flex items-center justify-between">
-                    <span className="font-bold text-sm text-[#1E1B4B]">{m.title}</span>
+                    <span className="font-bold text-sm text-[#1A080C]">{m.title}</span>
                     <span
                       className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                         m.status === "Completed"
-                          ? "bg-mint text-emerald-900"
+                          ? "badge badge-success"
                           : m.priority === "Emergency"
-                          ? "bg-red-100 text-red-800"
-                          : "bg-amber-100 text-amber-800"
+                          ? "badge badge-error"
+                          : "badge badge-warning"
                       }`}
                     >
-                      {m.status} • {m.priority}
+                      {m.status} &bull; {m.priority}
                     </span>
                   </div>
-                  <p className="text-xs text-[#585375]">{m.description}</p>
-                  <div className="flex items-center justify-between text-[11px] text-[#8782A3] pt-1">
+                  <p className="text-xs text-secondary-se">{m.description}</p>
+                  <div className="flex items-center justify-between text-[11px] text-muted-se pt-1">
                     <span>
-                      {m.propertyTitle} ({m.unitNumber}) • Vendor: {m.assignedVendor || "Assigned"}
+                      {m.propertyTitle} ({m.unitNumber}) &bull; Vendor: {m.assignedVendor || "Assigned"}
                     </span>
-                    <strong className="text-[#1E1B4B]">Est: ${m.estimatedCost}</strong>
+                    <strong className="text-[#1A080C]">Est: ${m.estimatedCost}</strong>
                   </div>
                 </div>
               ))}
@@ -411,40 +405,40 @@ export default function PropertyManagerPage() {
 
       {/* TAB 4: PROPERTY ACCOUNTING LEDGER */}
       {activeTab === "ledger" && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
-            <h3 className="font-bold text-base text-[#1E1B4B]">General Operational Ledger</h3>
-            <span className="text-xs text-[#8782A3]">All entries audited</span>
+        <div className="glass rounded-3xl p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
+            <h3 className="font-bold text-base text-[#1A080C]">General Operational Ledger</h3>
+            <span className="text-xs text-muted-se">All entries audited</span>
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="table-glass w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#E6D8F5] text-[#8782A3] uppercase text-[10px]">
-                  <th className="pb-3">Date</th>
-                  <th className="pb-3">Property</th>
-                  <th className="pb-3">Category</th>
-                  <th className="pb-3">Description</th>
-                  <th className="pb-3">Amount</th>
-                  <th className="pb-3 text-right">Status</th>
+                <tr>
+                  <th>Date</th>
+                  <th>Property</th>
+                  <th>Category</th>
+                  <th>Description</th>
+                  <th>Amount</th>
+                  <th className="text-right">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F3EAFC]">
+              <tbody>
                 {accountingLedger.map((led) => (
-                  <tr key={led.id} className="hover:bg-[#F8F4FD] transition-colors">
-                    <td className="py-3 text-[#585375]">{led.date}</td>
-                    <td className="py-3 font-semibold text-[#1E1B4B]">{led.propertyTitle}</td>
-                    <td className="py-3 text-[#5B3A8C] font-medium">{led.category}</td>
-                    <td className="py-3 text-[#585375] max-w-xs truncate">{led.description}</td>
+                  <tr key={led.id}>
+                    <td className="text-secondary-se">{led.date}</td>
+                    <td className="font-semibold text-[#1A080C]">{led.propertyTitle}</td>
+                    <td className="text-accent-se font-medium">{led.category}</td>
+                    <td className="text-secondary-se max-w-xs truncate">{led.description}</td>
                     <td
-                      className={`py-3 font-bold ${
-                        led.type === "INCOME" ? "text-emerald-600" : "text-red-500"
+                      className={`font-bold ${
+                        led.type === "INCOME" ? "text-emerald-700" : "text-red-700"
                       }`}
                     >
                       {led.type === "INCOME" ? "+" : "-"}${led.amount.toLocaleString()}
                     </td>
-                    <td className="py-3 text-right">
-                      <span className="text-[10px] bg-mint text-emerald-900 font-bold px-2 py-0.5 rounded">
+                    <td className="text-right">
+                      <span className="badge badge-success text-[10px]">
                         {led.reconciled ? "Reconciled" : "Pending"}
                       </span>
                     </td>

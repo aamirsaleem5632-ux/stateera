@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useRef, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import {
   Search,
   Filter,
@@ -11,7 +12,6 @@ import {
   TrendingUp,
   LayoutGrid,
   List,
-  Sparkles,
   Map as MapIcon,
   X,
   ChevronDown,
@@ -28,14 +28,21 @@ import { Property, PropertyCategory } from "@/types/property";
 import { PropertyCard } from "@/components/property/PropertyCard";
 import { BeginnerGuideBanner } from "@/components/common/BeginnerGuideBanner";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
+import { Reveal } from "@/components/scroll/Reveal";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useIsMobile } from "@/hooks/useIsMobile";
+
+const EASING = [0.22, 1, 0.36, 1] as const;
 
 export default function ExplorePage() {
   const { properties, isWatchlisted, toggleWatchlist } = useDemo();
   const { t, dir } = useLanguage();
 
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState<string>("all");
+  const [selectedCity, setSelectedCity] = useState<string>("all");
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [minYield, setMinYield] = useState<number>(7.0);
+  const [minYield, setMinYield] = useState<number>(5.0);
   const [maxSharePrice, setMaxSharePrice] = useState<number>(250);
   const [sortBy, setSortBy] = useState<"yield" | "price-asc" | "price-desc" | "valuation">("yield");
   const [viewMode, setViewMode] = useState<"grid" | "list" | "map">("grid");
@@ -46,16 +53,48 @@ export default function ExplorePage() {
   const categories = [
     { id: "all", label: "All Properties" },
     { id: "residential", label: "Residential" },
-    { id: "commercial", label: "Commercial" },
-    { id: "waterfront", label: "Waterfront" },
     { id: "luxury", label: "Luxury Penthouses" },
-    { id: "villa", label: "Villas" },
+    { id: "villa", label: "Villas & Homes" },
+    { id: "waterfront", label: "Waterfront" },
+    { id: "commercial", label: "Commercial" },
+    { id: "office", label: "Office Towers" },
+    { id: "retail", label: "Retail Spaces" },
+    { id: "student", label: "Student Housing" },
+    { id: "hospitality", label: "Hospitality & Resorts" },
+    { id: "logistics", label: "Logistics & Warehouses" },
+    { id: "mixed-use", label: "Mixed-Use" },
+    { id: "affordable", label: "Affordable Housing" },
   ];
+
+  // Distinct countries and cities derived dynamically from properties
+  const availableCountries = useMemo(() => {
+    const set = new Set<string>();
+    properties.forEach((p) => {
+      if (p.country) set.add(p.country);
+    });
+    return Array.from(set).sort();
+  }, [properties]);
+
+  const availableCities = useMemo(() => {
+    const set = new Set<string>();
+    properties.forEach((p) => {
+      if (selectedCountry === "all" || p.country === selectedCountry) {
+        if (p.city) set.add(p.city);
+      }
+    });
+    return Array.from(set).sort();
+  }, [properties, selectedCountry]);
 
   // Compare mode state — allows selecting up to 3 properties for comparison
   const [compareMode, setCompareMode] = useState(false);
   const [compareList, setCompareList] = useState<string[]>([]);
   const [showCompareModal, setShowCompareModal] = useState(false);
+
+  // Progressive Load More State & Motion
+  const reducedMotion = useReducedMotion();
+  const isMobile = useIsMobile();
+  const [visibleCount, setVisibleCount] = useState<number>(12);
+  const prevCountRef = useRef<number>(0);
 
   const toggleCompare = (id: string) => {
     setCompareList((prev) => {
@@ -73,14 +112,22 @@ export default function ExplorePage() {
           p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
           p.country.toLowerCase().includes(searchQuery.toLowerCase());
+        
+        const matchesCountry =
+          selectedCountry === "all" || p.country.toLowerCase() === selectedCountry.toLowerCase();
+
+        const matchesCity =
+          selectedCity === "all" || p.city.toLowerCase() === selectedCity.toLowerCase();
+
         // Case-insensitive category matching
         const matchesCategory =
           selectedCategory === "all" ||
           p.category.toLowerCase() === selectedCategory.toLowerCase();
+        
         const matchesYield = p.netYield >= minYield;
         const matchesPrice = p.sharePrice <= maxSharePrice;
 
-        return matchesSearch && matchesCategory && matchesYield && matchesPrice;
+        return matchesSearch && matchesCountry && matchesCity && matchesCategory && matchesYield && matchesPrice;
       })
       .sort((a, b) => {
         if (sortBy === "yield") return b.netYield - a.netYield;
@@ -89,22 +136,33 @@ export default function ExplorePage() {
         if (sortBy === "valuation") return b.totalValuation - a.totalValuation;
         return 0;
       });
-  }, [properties, searchQuery, selectedCategory, minYield, maxSharePrice, sortBy]);
+  }, [properties, searchQuery, selectedCountry, selectedCity, selectedCategory, minYield, maxSharePrice, sortBy]);
 
   const mapSelectedProp = properties.find((p) => p.id === mapSelectedPropertyId) || properties[0];
 
   const clearFilters = () => {
     setSearchQuery("");
+    setSelectedCountry("all");
+    setSelectedCity("all");
     setSelectedCategory("all");
-    setMinYield(7.0);
+    setMinYield(5.0);
     setMaxSharePrice(250);
     setSortBy("yield");
+    setVisibleCount(12);
+    prevCountRef.current = 0;
+  };
+
+  const handleLoadMore = () => {
+    prevCountRef.current = visibleCount;
+    setVisibleCount((prev) => Math.min(prev + 12, filteredProperties.length));
   };
 
   const isFiltered =
     searchQuery !== "" ||
+    selectedCountry !== "all" ||
+    selectedCity !== "all" ||
     selectedCategory !== "all" ||
-    minYield > 7.0 ||
+    minYield > 5.0 ||
     maxSharePrice < 250;
 
   return (
@@ -114,28 +172,27 @@ export default function ExplorePage() {
 
       {/* Header */}
       <div className="mb-6">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F3EAFC] text-[#5B3A8C] text-xs font-bold uppercase tracking-wider mb-2">
-          <Sparkles className="w-3.5 h-3.5 text-[#7C4DFF]" />
+        <div className="badge badge-demo mb-2 inline-flex items-center gap-1.5">
           <span>{t.nav.explore}</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-[#1E1B4B] tracking-tight">
+        <h1 className="text-3xl sm:text-4xl font-black text-[#1A080C] tracking-tight">
           Find Properties to Invest In
         </h1>
-        <p className="text-sm sm:text-base text-[#585375] mt-1">
+        <p className="text-sm sm:text-base text-secondary-se mt-1">
           Browse real buildings, inspect their photos and paperwork, and buy small shares to start collecting monthly rent.
         </p>
 
         {/* Friendly Next Step Hint */}
-        <div className="mt-4 p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+        <div className="mt-4 p-3 rounded-xl bg-[#FAF5F5] border border-[#EADCDD] flex items-center justify-between gap-3 text-xs text-[#5E4A4E]">
           <div className="flex items-center gap-2">
             <span className="font-bold text-base">💡</span>
             <span>
-              <strong>Next Step:</strong> Click on any property below to see its photos, monthly rent payouts, and safety checks.
+              <strong className="text-[#1A080C]">Next Step:</strong> Click on any property below to see its photos, monthly rent payouts, and safety checks.
             </span>
           </div>
           <Link
             href="/glossary"
-            className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+            className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
           >
             <span>Confused by terms? See Guide</span>
             <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -144,37 +201,65 @@ export default function ExplorePage() {
       </div>
 
       {/* Search & Filter Toolbar */}
-      <div className="bg-white p-4 sm:p-5 rounded-2xl border border-[#E6D8F5] shadow-subtle mb-8 space-y-4">
-        {/* Search Input & View Toggles */}
-        <div className="flex flex-col md:flex-row items-center gap-3">
+      <div className="glass p-4 sm:p-5 mb-8 space-y-4">
+        {/* Search Input, Country, City & View Toggles */}
+        <div className="flex flex-col lg:flex-row items-center gap-3">
           <div className="relative flex-1 w-full">
-            <Search className="w-4 h-4 text-[#8782A3] absolute left-3.5 top-1/2 -translate-y-1/2 rtl:left-auto rtl:right-3.5" />
+            <Search className="w-4 h-4 text-muted-se absolute left-3.5 top-1/2 -translate-y-1/2 rtl:left-auto rtl:right-3.5" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by property name, city (Dubai, New York, London...) or country"
-              className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl pl-10 pr-4 py-2.5 rtl:pr-10 rtl:pl-4 text-sm text-[#1E1B4B] placeholder-[#8782A3] focus:outline-none focus:border-[#7C4DFF]"
+              placeholder="Search by property name, neighborhood, city or country..."
+              className="input pl-10 pr-10 rtl:pr-10 rtl:pl-10 text-sm"
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[#8782A3] hover:text-[#1E1B4B]"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-se hover:text-[#1A080C]"
               >
                 <X className="w-4 h-4" />
               </button>
             )}
           </div>
 
-          <div className="flex items-center gap-2 w-full md:w-auto justify-between md:justify-end">
+          <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto justify-between lg:justify-end">
+            {/* Country Selector */}
+            <select
+              value={selectedCountry}
+              onChange={(e) => {
+                setSelectedCountry(e.target.value);
+                setSelectedCity("all");
+              }}
+              aria-label="Filter by Country"
+              className="select text-xs font-semibold px-3 py-2.5 w-auto"
+            >
+              <option value="all">All Countries ({availableCountries.length})</option>
+              {availableCountries.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
+
+            {/* City Selector */}
+            <select
+              value={selectedCity}
+              onChange={(e) => setSelectedCity(e.target.value)}
+              aria-label="Filter by City"
+              className="select text-xs font-semibold px-3 py-2.5 w-auto"
+            >
+              <option value="all">All Cities ({availableCities.length})</option>
+              {availableCities.map((city) => (
+                <option key={city} value={city}>{city}</option>
+              ))}
+            </select>
+
             {/* Sort Selector */}
-            <div className="flex items-center gap-1.5 text-xs text-[#585375]">
-              <span className="hidden sm:inline">Sort:</span>
+            <div className="flex items-center gap-1.5 text-xs text-secondary-se">
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as any)}
                 aria-label="Sort Properties"
-                className="bg-[#F8F4FD] border border-[#E6D8F5] text-xs text-[#1E1B4B] font-semibold rounded-xl px-3 py-2.5 focus:outline-none focus:border-[#7C4DFF]"
+                className="select text-xs font-semibold px-3 py-2.5 w-auto"
               >
                 <option value="yield">Highest Yearly Rent Return</option>
                 <option value="price-asc">Share Price: Low to High</option>
@@ -184,11 +269,11 @@ export default function ExplorePage() {
             </div>
 
             {/* View Mode Toggle */}
-            <div className="flex items-center p-1 bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl">
+            <div className="flex items-center p-1 bg-[#FAF5F5] border border-[#EADCDD] rounded-xl">
               <button
                 onClick={() => setViewMode("grid")}
                 className={`p-1.5 rounded-lg transition-colors ${
-                  viewMode === "grid" ? "bg-white text-[#7C4DFF] shadow-sm" : "text-[#8782A3]"
+                  viewMode === "grid" ? "bg-[var(--se-primary)] text-white shadow-sm" : "text-muted-se hover:text-[#1A080C]"
                 }`}
                 title="Grid View"
               >
@@ -197,7 +282,7 @@ export default function ExplorePage() {
               <button
                 onClick={() => setViewMode("list")}
                 className={`p-1.5 rounded-lg transition-colors ${
-                  viewMode === "list" ? "bg-white text-[#7C4DFF] shadow-sm" : "text-[#8782A3]"
+                  viewMode === "list" ? "bg-[var(--se-primary)] text-white shadow-sm" : "text-muted-se hover:text-[#1A080C]"
                 }`}
                 title="List View"
               >
@@ -206,7 +291,7 @@ export default function ExplorePage() {
               <button
                 onClick={() => setViewMode("map")}
                 className={`p-1.5 rounded-lg transition-colors ${
-                  viewMode === "map" ? "bg-white text-[#7C4DFF] shadow-sm" : "text-[#8782A3]"
+                  viewMode === "map" ? "bg-[var(--se-primary)] text-white shadow-sm" : "text-muted-se hover:text-[#1A080C]"
                 }`}
                 title="Interactive Map View"
               >
@@ -217,7 +302,7 @@ export default function ExplorePage() {
         </div>
 
         {/* Category Pills & Sliders */}
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2 border-t border-[#F3EAFC]">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pt-2 border-t border-[var(--se-glass-border-soft)]">
           {/* Categories */}
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
             {categories.map((c) => (
@@ -226,8 +311,8 @@ export default function ExplorePage() {
                 onClick={() => setSelectedCategory(c.id)}
                 className={`text-xs px-3 py-1.5 rounded-xl whitespace-nowrap font-semibold transition-all ${
                   selectedCategory === c.id
-                    ? "bg-[#7C4DFF] text-white shadow-sm"
-                    : "bg-[#F8F4FD] text-[#585375] hover:bg-[#F3EAFC]"
+                    ? "btn-primary shadow-sm"
+                    : "bg-[#FAF5F5] hover:bg-[#F2E8E9] text-secondary-se border border-[#EADCDD]"
                 }`}
               >
                 {c.label}
@@ -236,11 +321,11 @@ export default function ExplorePage() {
           </div>
 
           {/* Sliders */}
-          <div className="flex flex-wrap items-center gap-4 text-xs text-[#585375]">
+          <div className="flex flex-wrap items-center gap-4 text-xs text-secondary-se">
             <div className="flex items-center gap-1.5">
               <span>Min Yearly Rent:</span>
               <InfoTooltip termId="net-rental-yield" size="sm" />
-              <strong className="text-[#1E1B4B] w-10">{minYield}%</strong>
+              <strong className="text-accent-se w-10">{minYield}%</strong>
               <input
                 type="range"
                 min="7.0"
@@ -249,30 +334,30 @@ export default function ExplorePage() {
                 value={minYield}
                 onChange={(e) => setMinYield(Number(e.target.value))}
                 aria-label="Minimum Yearly Rent"
-                className="w-20 sm:w-24 h-1.5 bg-[#E6D8F5] rounded appearance-none accent-[#7C4DFF] cursor-pointer"
+                className="w-20 sm:w-24 h-1.5 bg-[#FAF5F5] border border-[#EADCDD] rounded appearance-none accent-[var(--se-primary)] cursor-pointer"
               />
             </div>
 
             <div className="flex items-center gap-1.5">
               <span>Max Share Price:</span>
               <InfoTooltip termId="fractional-shares" size="sm" />
-              <strong className="text-[#1E1B4B] w-12">${maxSharePrice}</strong>
+              <strong className="text-accent-se w-12">${maxSharePrice}</strong>
               <input
                 type="range"
-                min="50"
+                min="25"
                 max="250"
                 step="25"
                 value={maxSharePrice}
                 onChange={(e) => setMaxSharePrice(Number(e.target.value))}
                 aria-label="Maximum Share Price"
-                className="w-20 sm:w-24 h-1.5 bg-[#E6D8F5] rounded appearance-none accent-[#7C4DFF] cursor-pointer"
+                className="w-20 sm:w-24 h-1.5 bg-[#FAF5F5] border border-[#EADCDD] rounded appearance-none accent-[var(--se-primary)] cursor-pointer"
               />
             </div>
 
             {isFiltered && (
               <button
                 onClick={clearFilters}
-                className="text-xs font-semibold text-[#7C4DFF] hover:underline flex items-center gap-1"
+                className="text-xs font-semibold text-accent-se hover:underline flex items-center gap-1"
               >
                 <X className="w-3.5 h-3.5" />
                 <span>Reset Filters</span>
@@ -284,19 +369,17 @@ export default function ExplorePage() {
 
       {/* Results Header */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-3">
-        <span className="text-xs text-[#585375]">
-          Showing <strong>{filteredProperties.length}</strong> of {properties.length} available properties
+        <span className="text-xs text-secondary-se">
+          Showing <strong className="text-[#1A080C]">{filteredProperties.length}</strong> of {properties.length} available properties
         </span>
         <div className="flex items-center gap-2">
-          <span className="text-[11px] text-[#8782A3] hidden sm:inline">
+          <span className="text-[11px] text-muted-se hidden sm:inline">
             Simulated institutional assets • All transactions illustrative
           </span>
           <button
             onClick={() => { setCompareMode(!compareMode); if (compareMode) setCompareList([]); }}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all border ${
-              compareMode
-                ? "bg-[#7C4DFF] text-white border-[#7C4DFF] shadow-sm"
-                : "bg-white text-[#585375] border-[#E6D8F5] hover:border-[#7C4DFF]"
+            className={`btn btn-secondary text-xs py-1.5 px-3 min-h-[36px] ${
+              compareMode ? "!bg-[var(--se-primary)] !text-white border-transparent" : ""
             }`}
           >
             <GitCompare className="w-3.5 h-3.5" />
@@ -305,7 +388,7 @@ export default function ExplorePage() {
           {compareMode && compareList.length >= 2 && (
             <button
               onClick={() => setShowCompareModal(true)}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm"
+              className="btn btn-primary text-xs py-1.5 px-3 min-h-[36px]"
             >
               <CheckCircle2 className="w-3.5 h-3.5" />
               <span>View Comparison</span>
@@ -316,9 +399,9 @@ export default function ExplorePage() {
 
       {/* Compare Mode Banner */}
       {compareMode && (
-        <div className="mb-5 p-3 rounded-xl bg-[#F3EAFC] border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-2 text-[#5B3A8C] font-semibold">
-            <GitCompare className="w-4 h-4 text-[#7C4DFF]" />
+        <div className="mb-5 p-3 rounded-xl bg-[#FAF5F5] border border-[#EADCDD] flex items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-2 text-[#1A080C] font-semibold">
+            <GitCompare className="w-4 h-4 text-accent-se" />
             <span>
               {compareList.length === 0
                 ? "Select 2–3 properties to compare side-by-side."
@@ -328,7 +411,7 @@ export default function ExplorePage() {
             </span>
           </div>
           {compareList.length > 0 && (
-            <button onClick={() => setCompareList([])} className="text-[#7C4DFF] hover:underline font-bold flex items-center gap-1">
+            <button onClick={() => setCompareList([])} className="text-accent-se hover:underline font-bold flex items-center gap-1">
               <X className="w-3 h-3" /> Clear
             </button>
           )}
@@ -337,16 +420,16 @@ export default function ExplorePage() {
 
       {/* Compare Modal */}
       {showCompareModal && compareList.length >= 2 && (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl max-h-[90vh] overflow-y-auto border border-[#E6D8F5]">
-            <div className="sticky top-0 bg-white z-10 px-6 pt-6 pb-4 border-b border-[#E6D8F5] flex items-center justify-between">
+        <div className="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+          <div className="modal-glass w-full max-w-5xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white z-10 px-6 pt-6 pb-4 border-b border-[#EADCDD] flex items-center justify-between">
               <div>
-                <h2 className="text-xl font-black text-[#1E1B4B]">Property Comparison</h2>
-                <p className="text-xs text-[#585375] mt-0.5">Side-by-side financial and operational metrics</p>
+                <h2 className="text-xl font-black text-[#1A080C]">Property Comparison</h2>
+                <p className="text-xs text-secondary-se mt-0.5">Side-by-side financial and operational metrics</p>
               </div>
               <button
                 onClick={() => setShowCompareModal(false)}
-                className="p-2 rounded-xl bg-[#F3EAFC] hover:bg-[#E6D8F5] text-[#5B3A8C] transition-colors"
+                className="p-2 rounded-xl border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -357,15 +440,15 @@ export default function ExplorePage() {
                   const p = properties.find((x) => x.id === id);
                   if (!p) return null;
                   return (
-                    <div key={id} className="bg-[#F8F4FD] rounded-2xl p-4 border border-[#E6D8F5] space-y-4">
-                      <div className="relative aspect-[16/10] rounded-xl overflow-hidden bg-[#E6D8F5]">
+                    <div key={id} className="glass rounded-2xl p-4 space-y-4">
+                      <div className="relative aspect-[16/10] rounded-xl overflow-hidden img-overlay bg-[#FAF5F5]">
                         <Image src={p.coverImage} alt={p.title} fill className="object-cover" />
                       </div>
                       <div>
-                        <span className="text-[10px] uppercase font-bold tracking-wider text-[#8782A3] bg-white px-2 py-0.5 rounded-md border border-[#E6D8F5]">{p.category}</span>
-                        <h3 className="font-black text-[#1E1B4B] text-sm mt-2 leading-tight">{p.title}</h3>
-                        <p className="text-[11px] text-[#585375] flex items-center gap-1 mt-1">
-                          <MapPin className="w-3 h-3 text-[#7C4DFF]" /> {p.city}, {p.country}
+                        <span className="badge badge-demo text-[10px] uppercase font-bold tracking-wider">{p.category}</span>
+                        <h3 className="font-black text-[#1A080C] text-sm mt-2 leading-tight">{p.title}</h3>
+                        <p className="text-[11px] text-secondary-se flex items-center gap-1 mt-1">
+                          <MapPin className="w-3 h-3 text-accent-se" /> {p.city}, {p.country}
                         </p>
                       </div>
                       <div className="space-y-2 text-xs">
@@ -380,15 +463,15 @@ export default function ExplorePage() {
                           { label: "Funded", value: `${p.fundedPercentage}%` },
                           { label: "Shares Available", value: p.availableShares.toLocaleString() },
                         ].map((row) => (
-                          <div key={row.label} className={`flex justify-between items-center px-2.5 py-1.5 rounded-lg ${row.highlight ? "bg-mint/60 font-bold" : "bg-white"} border border-[#E6D8F5]`}>
-                            <span className="text-[#8782A3]">{row.label}</span>
-                            <span className={`font-bold ${row.highlight ? "text-emerald-700 text-sm" : "text-[#1E1B4B]"}`}>{row.value}</span>
+                          <div key={row.label} className={`flex justify-between items-center px-2.5 py-1.5 rounded-lg ${row.highlight ? "bg-[#FAF5F5] font-bold" : "bg-white"} border border-[#EADCDD]`}>
+                            <span className="text-[#5E4A4E]">{row.label}</span>
+                            <span className={`font-bold ${row.highlight ? "text-[#3B0F18] text-sm" : "text-[#1A080C]"}`}>{row.value}</span>
                           </div>
                         ))}
                       </div>
                       <div className="pt-1 flex gap-2">
-                        <Link href={`/property/${p.id}`} onClick={() => setShowCompareModal(false)} className="flex-1 py-2 rounded-xl bg-[#F3EAFC] hover:bg-[#E6D8F5] text-[#5B3A8C] text-xs font-bold text-center transition-colors">View Details</Link>
-                        <Link href={`/trade/${p.id}`} onClick={() => setShowCompareModal(false)} className="flex-1 py-2 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white text-xs font-bold text-center transition-colors">Buy Shares</Link>
+                        <Link href={`/property/${p.id}`} onClick={() => setShowCompareModal(false)} className="btn btn-secondary flex-1 text-xs min-h-[38px]">View Details</Link>
+                        <Link href={`/trade/${p.id}`} onClick={() => setShowCompareModal(false)} className="btn btn-primary flex-1 text-xs min-h-[38px]">Buy Shares</Link>
                       </div>
                     </div>
                   );
@@ -401,111 +484,210 @@ export default function ExplorePage() {
 
       {/* Content View Based on viewMode */}
       {viewMode === "grid" && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {filteredProperties.map((property) => (
-            <PropertyCard
-              key={property.id}
-              property={property}
-              onCompareToggle={compareMode ? () => toggleCompare(property.id) : undefined}
-              isCompared={compareList.includes(property.id)}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {filteredProperties.slice(0, visibleCount).map((property, idx) => {
+              const isInitialBatch = prevCountRef.current === 0;
+              const isNewFromLoadMore = idx >= prevCountRef.current && prevCountRef.current > 0;
+
+              if (isInitialBatch) {
+                return (
+                  <Reveal
+                    key={property.id}
+                    variant="fade-up"
+                    delay={Math.min(idx * 0.08, 0.4)}
+                    duration={0.5}
+                  >
+                    <PropertyCard
+                      property={property}
+                      onCompareToggle={compareMode ? () => toggleCompare(property.id) : undefined}
+                      isCompared={compareList.includes(property.id)}
+                    />
+                  </Reveal>
+                );
+              }
+
+              if (isNewFromLoadMore) {
+                return (
+                  <motion.div
+                    key={property.id}
+                    initial={reducedMotion ? false : { opacity: 0, y: isMobile ? 14 : 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: (idx - prevCountRef.current) * 0.08,
+                      ease: EASING,
+                    }}
+                  >
+                    <PropertyCard
+                      property={property}
+                      onCompareToggle={compareMode ? () => toggleCompare(property.id) : undefined}
+                      isCompared={compareList.includes(property.id)}
+                    />
+                  </motion.div>
+                );
+              }
+
+              return (
+                <div key={property.id}>
+                  <PropertyCard
+                    property={property}
+                    onCompareToggle={compareMode ? () => toggleCompare(property.id) : undefined}
+                    isCompared={compareList.includes(property.id)}
+                  />
+                </div>
+              );
+            })}
+          </div>
+
+          {visibleCount < filteredProperties.length && (
+            <div className="text-center pt-8">
+              <button
+                onClick={handleLoadMore}
+                className="btn btn-secondary px-8 py-3.5 text-sm"
+              >
+                Load More Properties ({filteredProperties.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {viewMode === "list" && (
-        <div className="space-y-4">
-          {filteredProperties.map((property) => (
-            <div
-              key={property.id}
-              className="stateera-card rounded-2xl p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-6"
-            >
-              <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
-                <div className="relative w-full sm:w-44 h-32 rounded-xl overflow-hidden flex-shrink-0 bg-[#F3EAFC]">
-                  <Image
-                    src={property.coverImage}
-                    alt={property.title}
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute top-2 left-2 bg-[#1E1B4B]/80 text-white text-[10px] font-bold px-2 py-0.5 rounded">
-                    {property.category}
+        <>
+          <div className="space-y-4">
+            {filteredProperties.slice(0, visibleCount).map((property, idx) => {
+              const isInitialBatch = prevCountRef.current === 0;
+              const isNewFromLoadMore = idx >= prevCountRef.current && prevCountRef.current > 0;
+
+              const cardContent = (
+                <div className="glass glass-hover p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
+                    <div className="relative w-full sm:w-44 h-32 rounded-xl overflow-hidden flex-shrink-0 img-overlay bg-[#FAF5F5]">
+                      <Image
+                        src={property.coverImage}
+                        alt={property.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute top-2 left-2 badge badge-demo text-[10px]">
+                        {property.category}
+                      </div>
+                    </div>
+
+                    <div className="space-y-1 text-center sm:text-left">
+                      <div className="text-xs text-muted-se flex items-center justify-center sm:justify-start gap-1">
+                        <MapPin className="w-3.5 h-3.5 text-accent-se" />
+                        <span>{property.city}, {property.country}</span>
+                      </div>
+                      <Link href={`/property/${property.id}`}>
+                        <h3 className="font-bold text-lg text-[#1A080C] hover:text-accent-se transition-colors">
+                          {property.title}
+                        </h3>
+                      </Link>
+                      <p className="text-xs text-secondary-se line-clamp-1 max-w-md">
+                        {property.headline}
+                      </p>
+                      <div className="text-xs text-secondary-se pt-1">
+                        Funded: <strong className="text-[#1A080C]">{property.fundedPercentage}%</strong> ({property.availableShares.toLocaleString()} shares remaining)
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Metrics & Actions */}
+                  <div className="flex flex-wrap sm:flex-nowrap items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-[var(--se-glass-border-soft)]">
+                    <div className="text-center sm:text-right">
+                      <span className="text-[10px] text-muted-se uppercase block font-medium">Net Yield</span>
+                      <span className="text-lg font-black text-accent-se">
+                        {property.netYield}%
+                      </span>
+                    </div>
+
+                    <div className="text-center sm:text-right">
+                      <span className="text-[10px] text-muted-se uppercase block font-medium">Share Price</span>
+                      <span className="text-lg font-black text-[#1A080C]">
+                        ${property.sharePrice}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <Link
+                        href={`/property/${property.id}`}
+                        className="btn btn-secondary text-xs px-4 py-2 min-h-[38px]"
+                      >
+                        View
+                      </Link>
+                      <Link
+                        href={`/trade/${property.id}`}
+                        className="btn btn-primary text-xs px-4 py-2 min-h-[38px]"
+                      >
+                        Buy
+                      </Link>
+                    </div>
                   </div>
                 </div>
+              );
 
-                <div className="space-y-1 text-center sm:text-left">
-                  <div className="text-xs text-[#8782A3] flex items-center justify-center sm:justify-start gap-1">
-                    <MapPin className="w-3.5 h-3.5 text-[#7C4DFF]" />
-                    <span>{property.city}, {property.country}</span>
-                  </div>
-                  <Link href={`/property/${property.id}`}>
-                    <h3 className="font-bold text-lg text-[#1E1B4B] hover:text-[#7C4DFF] transition-colors">
-                      {property.title}
-                    </h3>
-                  </Link>
-                  <p className="text-xs text-[#585375] line-clamp-1 max-w-md">
-                    {property.headline}
-                  </p>
-                  <div className="text-xs text-[#585375] pt-1">
-                    Funded: <strong>{property.fundedPercentage}%</strong> ({property.availableShares.toLocaleString()} shares remaining)
-                  </div>
-                </div>
-              </div>
+              if (isInitialBatch) {
+                return (
+                  <Reveal key={property.id} variant="fade-up" delay={Math.min(idx * 0.08, 0.4)} duration={0.5}>
+                    {cardContent}
+                  </Reveal>
+                );
+              }
 
-              {/* Metrics & Actions */}
-              <div className="flex flex-wrap sm:flex-nowrap items-center gap-6 w-full md:w-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-[#F3EAFC]">
-                <div className="text-center sm:text-right">
-                  <span className="text-[10px] text-[#8782A3] uppercase block font-medium">Net Yield</span>
-                  <span className="text-lg font-black text-emerald-600">
-                    {property.netYield}%
-                  </span>
-                </div>
-
-                <div className="text-center sm:text-right">
-                  <span className="text-[10px] text-[#8782A3] uppercase block font-medium">Share Price</span>
-                  <span className="text-lg font-black text-[#1E1B4B]">
-                    ${property.sharePrice}
-                  </span>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Link
-                    href={`/property/${property.id}`}
-                    className="px-4 py-2.5 rounded-xl bg-[#F3EAFC] hover:bg-[#E6D8F5] text-[#5B3A8C] text-xs font-bold transition-colors"
+              if (isNewFromLoadMore) {
+                return (
+                  <motion.div
+                    key={property.id}
+                    initial={reducedMotion ? false : { opacity: 0, y: isMobile ? 14 : 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: (idx - prevCountRef.current) * 0.08,
+                      ease: EASING,
+                    }}
                   >
-                    View
-                  </Link>
-                  <Link
-                    href={`/trade/${property.id}`}
-                    className="px-4 py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white text-xs font-bold transition-colors shadow-sm"
-                  >
-                    Buy
-                  </Link>
-                </div>
-              </div>
+                    {cardContent}
+                  </motion.div>
+                );
+              }
+
+              return <div key={property.id}>{cardContent}</div>;
+            })}
+          </div>
+
+          {visibleCount < filteredProperties.length && (
+            <div className="text-center pt-8">
+              <button
+                onClick={handleLoadMore}
+                className="btn btn-secondary px-8 py-3.5 text-sm"
+              >
+                Load More Properties ({filteredProperties.length - visibleCount} remaining)
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* Interactive Demo Map View */}
       {viewMode === "map" && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 bg-white rounded-3xl border border-[#E6D8F5] p-5 shadow-card overflow-hidden">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 glass p-5 overflow-hidden">
           {/* Simulated Interactive World / Regional Map */}
-          <div className="lg:col-span-8 bg-[#EBF3FB] rounded-2xl min-h-[460px] relative overflow-hidden flex flex-col justify-between p-4 border border-[#BAE6FD]">
+          <div className="lg:col-span-8 bg-[#FAF5F5] rounded-2xl min-h-[460px] relative overflow-hidden flex flex-col justify-between p-4 border border-[#EADCDD]">
             {/* Top Map Bar */}
             <div className="flex items-center justify-between relative z-10">
-              <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl shadow-sm text-xs font-bold text-[#1E1B4B] flex items-center gap-1.5 border border-[#BAE6FD]">
-                <MapIcon className="w-4 h-4 text-[#7C4DFF]" />
+              <div className="bg-white px-3 py-1.5 rounded-xl text-xs font-bold text-[#1A080C] flex items-center gap-1.5 border border-[#EADCDD] shadow-sm">
+                <MapIcon className="w-4 h-4 text-accent-se" />
                 <span>Interactive Global Map Simulation</span>
               </div>
-              <span className="text-[11px] text-[#585375] bg-white/80 px-2.5 py-1 rounded-lg">
+              <span className="text-[11px] text-secondary-se bg-white border border-[#EADCDD] px-2.5 py-1 rounded-lg">
                 Click pin to inspect asset
               </span>
             </div>
 
             {/* Simulated Map Graphical Background with Stylized Geographies */}
-            <div className="absolute inset-0 opacity-15 pointer-events-none bg-[radial-gradient(#7C4DFF_1px,transparent_1px)] [background-size:16px_16px]" />
+            <div className="absolute inset-0 opacity-20 pointer-events-none bg-[radial-gradient(var(--se-rose-400)_1px,transparent_1px)] [background-size:16px_16px]" />
 
             {/* Clickable Property Pins */}
             <div className="relative z-10 w-full h-80 my-auto">
@@ -518,6 +700,11 @@ export default function ExplorePage() {
                 { id: "prop-paris-champs-elysees", top: "31%", left: "49%", city: "Paris", yield: "7.9%" },
                 { id: "prop-miami-biscayne-bay", top: "44%", left: "26%", city: "Miami", yield: "9.8%" },
                 { id: "prop-tokyo-ginza-residences", top: "36%", left: "84%", city: "Tokyo", yield: "7.5%" },
+                { id: "prop-pk-dha-karachi-tower", top: "54%", left: "64%", city: "Karachi", yield: "10.2%" },
+                { id: "prop-pk-gulberg-lahore-plaza", top: "46%", left: "66%", city: "Lahore", yield: "11.4%" },
+                { id: "prop-pk-bahria-town-islamabad", top: "42%", left: "65%", city: "Islamabad", yield: "9.8%" },
+                { id: "prop-pk-multan-agri-warehouse", top: "49%", left: "64.5%", city: "Multan", yield: "13.1%" },
+                { id: "prop-pk-pcw-peshawar-business", top: "41%", left: "63%", city: "Peshawar", yield: "11.9%" },
               ].map((pin) => {
                 const isSelected = mapSelectedPropertyId === pin.id;
                 return (
@@ -527,13 +714,13 @@ export default function ExplorePage() {
                     style={{ top: pin.top, left: pin.left }}
                     className={`absolute -translate-x-1/2 -translate-y-1/2 flex items-center gap-1.5 px-2.5 py-1.5 rounded-full text-xs font-bold transition-all shadow-md ${
                       isSelected
-                        ? "bg-[#7C4DFF] text-white scale-110 ring-4 ring-[#7C4DFF]/30 z-20"
-                        : "bg-white text-[#1E1B4B] hover:bg-[#F3EAFC] z-10"
+                        ? "bg-[var(--se-primary)] text-white scale-110 ring-4 ring-[var(--se-ring)] z-20"
+                        : "bg-white text-[#1A080C] border border-[#EADCDD] hover:bg-[#FAF5F5] z-10"
                     }`}
                   >
-                    <MapPin className={`w-3.5 h-3.5 ${isSelected ? "text-mint" : "text-[#7C4DFF]"}`} />
+                    <MapPin className={`w-3.5 h-3.5 ${isSelected ? "text-white" : "text-accent-se"}`} />
                     <span>{pin.city}</span>
-                    <span className="text-[10px] bg-mint text-emerald-900 px-1.5 py-0.2 rounded font-extrabold">
+                    <span className="text-[10px] bg-[#FAF5F5] text-[#1A080C] px-1.5 py-0.2 rounded font-extrabold border border-[#EADCDD]">
                       {pin.yield}
                     </span>
                   </button>
@@ -542,7 +729,7 @@ export default function ExplorePage() {
             </div>
 
             {/* Bottom Map Note */}
-            <div className="relative z-10 text-[10px] text-[#585375] bg-white/80 backdrop-blur-md p-2 rounded-lg border border-[#BAE6FD] max-w-sm">
+            <div className="relative z-10 text-[10px] text-secondary-se bg-white p-2 rounded-lg border border-[#EADCDD] max-w-sm">
               Coordinates plotted for simulation testing. Select any pin to preview financial metrics.
             </div>
           </div>
@@ -552,56 +739,56 @@ export default function ExplorePage() {
             {mapSelectedProp && (
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs uppercase font-bold tracking-wider text-[#7C4DFF] bg-[#F3EAFC] px-2.5 py-1 rounded-full">
+                  <span className="text-xs uppercase font-bold tracking-wider badge badge-demo">
                     Selected Asset Preview
                   </span>
-                  <span className="text-xs font-bold text-emerald-700 bg-mint px-2 py-0.5 rounded-md">
+                  <span className="text-xs font-bold badge badge-success">
                     {mapSelectedProp.netYield}% Net Yield
                   </span>
                 </div>
 
-                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-[#F3EAFC]">
+                <div className="relative aspect-[16/10] rounded-2xl overflow-hidden img-overlay bg-[#FAF5F5]">
                   <Image
                     src={mapSelectedProp.coverImage}
                     alt={mapSelectedProp.title}
                     fill
                     className="object-cover"
                   />
-                  <div className="absolute bottom-2 left-2 bg-[#1E1B4B]/80 text-white text-xs px-2.5 py-1 rounded-lg">
+                  <div className="absolute bottom-2 left-2 bg-white/90 text-[#1A080C] text-xs px-2.5 py-1 rounded-lg border border-[#EADCDD] font-medium">
                     {mapSelectedProp.city}, {mapSelectedProp.country}
                   </div>
                 </div>
 
                 <div>
-                  <h3 className="font-bold text-lg text-[#1E1B4B]">
+                  <h3 className="font-bold text-lg text-[#1A080C]">
                     {mapSelectedProp.title}
                   </h3>
-                  <p className="text-xs text-[#585375] line-clamp-2 mt-1">
+                  <p className="text-xs text-secondary-se line-clamp-2 mt-1">
                     {mapSelectedProp.headline}
                   </p>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div className="p-2.5 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-                    <span className="text-[10px] text-[#8782A3] block uppercase">Share Price</span>
-                    <span className="font-bold text-[#1E1B4B]">${mapSelectedProp.sharePrice}</span>
+                  <div className="p-2.5 glass rounded-xl">
+                    <span className="text-[10px] text-muted-se block uppercase">Share Price</span>
+                    <span className="font-bold text-[#1A080C]">${mapSelectedProp.sharePrice}</span>
                   </div>
-                  <div className="p-2.5 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-                    <span className="text-[10px] text-[#8782A3] block uppercase">Monthly Rent</span>
-                    <span className="font-bold text-emerald-700">${mapSelectedProp.estimatedMonthlyRent.toLocaleString()}</span>
+                  <div className="p-2.5 glass rounded-xl">
+                    <span className="text-[10px] text-muted-se block uppercase">Monthly Rent</span>
+                    <span className="font-bold text-accent-se">${mapSelectedProp.estimatedMonthlyRent.toLocaleString()}</span>
                   </div>
                 </div>
 
                 <div className="pt-2 flex items-center gap-2">
                   <Link
                     href={`/property/${mapSelectedProp.id}`}
-                    className="flex-1 py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs text-center transition-colors shadow-sm"
+                    className="btn btn-primary flex-1 text-xs min-h-[40px]"
                   >
                     Open Full Details
                   </Link>
                   <Link
                     href={`/trade/${mapSelectedProp.id}`}
-                    className="px-4 py-2.5 rounded-xl bg-[#F3EAFC] hover:bg-[#E6D8F5] text-[#5B3A8C] font-bold text-xs transition-colors"
+                    className="btn btn-secondary px-4 text-xs min-h-[40px]"
                   >
                     Trade Shares
                   </Link>
@@ -614,15 +801,15 @@ export default function ExplorePage() {
 
       {/* Empty State */}
       {filteredProperties.length === 0 && (
-        <div className="text-center py-16 bg-white rounded-2xl border border-[#E6D8F5] p-8">
-          <Search className="w-10 h-10 text-[#8782A3] mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-[#1E1B4B]">No properties found with these filters</h3>
-          <p className="text-xs text-[#585375] mt-1 max-w-sm mx-auto">
+        <div className="text-center py-16 glass p-8">
+          <Search className="w-10 h-10 text-muted-se mx-auto mb-3" />
+          <h3 className="text-lg font-bold text-[#1A080C]">No properties found with these filters</h3>
+          <p className="text-xs text-secondary-se mt-1 max-w-sm mx-auto">
             Try lowering your minimum rent return or clearing your search keywords.
           </p>
           <button
             onClick={clearFilters}
-            className="mt-4 px-4 py-2 rounded-xl bg-[#7C4DFF] text-white text-xs font-semibold shadow-sm hover:bg-[#6C3CE9] transition-colors"
+            className="btn btn-primary mt-4 text-xs"
           >
             Clear Filters & Show All
           </button>

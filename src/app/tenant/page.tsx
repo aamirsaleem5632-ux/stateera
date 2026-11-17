@@ -74,31 +74,30 @@ export default function TenantPortalPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-xs uppercase font-bold tracking-wider px-2.5 py-0.5 rounded-full bg-mint text-emerald-900">
-              Active Resident
-            </span>
-            <span className="text-xs text-[#8782A3]">Tenant ID: TNT-9082</span>
+            <span className="badge badge-success">Active Resident</span>
+            <span className="text-xs text-muted-se">Tenant ID: TNT-9082</span>
           </div>
-          <h1 className="text-3xl font-black text-[#1E1B4B] tracking-tight">
-            Tenant & Renter Portal
+          <h1 className="text-3xl font-black text-[#1A080C] tracking-tight">
+            Tenant &amp; Renter Portal
           </h1>
-          <p className="text-xs sm:text-sm text-[#585375]">
+          <p className="text-xs sm:text-sm text-secondary-se">
             Check your lease terms, pay your monthly rent, and request home repairs.
           </p>
         </div>
       </div>
 
       {/* Friendly Next Step Hint */}
-      <div className="p-3 rounded-xl bg-gradient-to-r from-[#F3EAFC] to-[#DCFCE7]/40 border border-[#E6D8F5] flex items-center justify-between gap-3 text-xs text-[#5B3A8C]">
+      <div className="glass rounded-xl p-3 flex items-center justify-between gap-3 text-xs text-secondary-se">
         <div className="flex items-center gap-2">
           <span className="font-bold text-base">💡</span>
           <span>
-            <strong>Next Step:</strong> Click the purple <strong>"Pay Monthly Rent"</strong> button below to test how tenant rent flows to property investors.
+            <strong className="text-[#1A080C]">Next Step:</strong> Click the{" "}
+            <strong className="text-[#1A080C]">&ldquo;Pay Monthly Rent&rdquo;</strong> button below to test how tenant rent flows to property investors.
           </span>
         </div>
         <Link
           href="/glossary"
-          className="text-[11px] font-semibold text-[#7C4DFF] hover:underline whitespace-nowrap flex items-center gap-1"
+          className="text-[11px] font-semibold text-accent-se hover:underline whitespace-nowrap flex items-center gap-1"
         >
           <span>See Simple Terms Guide</span>
           <ArrowRight className="w-3 h-3 rtl-flip" />
@@ -109,7 +108,9 @@ export default function TenantPortalPage() {
       {feedback && (
         <div
           className={`p-4 rounded-2xl text-xs font-semibold flex items-center gap-2 shadow-sm ${
-            feedback.success ? "bg-mint border border-emerald-300 text-emerald-900" : "bg-red-50 border border-red-200 text-red-900"
+            feedback.success
+              ? "bg-emerald-50 border border-emerald-200 text-emerald-800"
+              : "bg-red-50 border border-red-200 text-red-800"
           }`}
         >
           {feedback.success ? (
@@ -123,53 +124,53 @@ export default function TenantPortalPage() {
 
       {/* Active Lease Agreement Card */}
       {activeLease && (
-        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#E6D8F5] shadow-card space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#F3EAFC] gap-4">
+        <div className="glass rounded-3xl p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-[#EADCDD] gap-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-[#7C4DFF]">
+              <span className="text-xs font-bold uppercase tracking-wider text-accent-se">
                 Current Home Lease
               </span>
-              <h2 className="text-2xl font-black text-[#1E1B4B] mt-0.5">
-                {activeLease.propertyTitle} • {activeLease.unitNumber}
+              <h2 className="text-2xl font-black text-[#1A080C] mt-0.5">
+                {activeLease.propertyTitle} &bull; {activeLease.unitNumber}
               </h2>
-              <div className="text-xs text-[#585375]">
-                Renter: <strong>{activeLease.tenantName}</strong>
+              <div className="text-xs text-secondary-se">
+                Renter: <strong className="text-[#1A080C]">{activeLease.tenantName}</strong>
               </div>
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 onClick={() => handlePayRent(activeLease.id)}
-                className="px-6 py-3 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
+                className="btn btn-primary text-xs flex items-center gap-1.5"
               >
-                <DollarSign className="w-4 h-4 text-mint" />
+                <DollarSign className="w-4 h-4" />
                 <span>Pay Monthly Rent (${activeLease.monthlyRent.toLocaleString()})</span>
               </button>
             </div>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
-            <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-              <span className="text-[#8782A3] block uppercase">Monthly Rent</span>
-              <strong className="text-lg font-black text-[#1E1B4B]">
+            <div className="bg-[#FAF5F5] border border-[#EADCDD] rounded-xl p-3">
+              <span className="text-muted-se block uppercase">Monthly Rent</span>
+              <strong className="text-lg font-black text-[#1A080C]">
                 ${activeLease.monthlyRent.toLocaleString()}
               </strong>
             </div>
-            <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-              <span className="text-[#8782A3] block uppercase">Security Deposit</span>
-              <strong className="text-lg font-black text-[#1E1B4B]">
+            <div className="bg-[#FAF5F5] border border-[#EADCDD] rounded-xl p-3">
+              <span className="text-muted-se block uppercase">Security Deposit</span>
+              <strong className="text-lg font-black text-[#1A080C]">
                 ${activeLease.securityDeposit.toLocaleString()}
               </strong>
             </div>
-            <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-              <span className="text-[#8782A3] block uppercase">Lease Term</span>
-              <strong className="text-sm font-bold text-[#1E1B4B]">
+            <div className="bg-[#FAF5F5] border border-[#EADCDD] rounded-xl p-3">
+              <span className="text-muted-se block uppercase">Lease Term</span>
+              <strong className="text-sm font-bold text-[#1A080C]">
                 {activeLease.startDate} to {activeLease.endDate}
               </strong>
             </div>
-            <div className="p-3 bg-[#F8F4FD] rounded-xl border border-[#E6D8F5]">
-              <span className="text-[#8782A3] block uppercase">Due Date</span>
-              <strong className="text-sm font-bold text-[#7C4DFF]">
+            <div className="bg-[#FAF5F5] border border-[#EADCDD] rounded-xl p-3">
+              <span className="text-muted-se block uppercase">Due Date</span>
+              <strong className="text-sm font-bold text-[#3B0F18]">
                 {activeLease.paymentDueDay}st of every month
               </strong>
             </div>
@@ -180,28 +181,24 @@ export default function TenantPortalPage() {
       {/* Main Grid: Rent Receipts on Left (6), Maintenance Request on Right (6) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Rent Payment Receipts (6 cols) */}
-        <div className="lg:col-span-6 bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Rent Payment Receipts</h3>
-            <span className="text-xs text-emerald-700 bg-mint font-bold px-2 py-0.5 rounded-full">
-              Zero Overdue Rent
-            </span>
+        <div className="lg:col-span-6 glass rounded-3xl p-6 sm:p-7 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
+            <h3 className="font-bold text-base text-[#1A080C]">Rent Payment Receipts</h3>
+            <span className="badge badge-success">Zero Overdue Rent</span>
           </div>
 
-          <div className="divide-y divide-[#F3EAFC]">
+          <div className="divide-y divide-[#EADCDD]">
             {rentPayments.map((p) => (
               <div key={p.id} className="py-3 flex items-center justify-between text-xs">
                 <div>
-                  <div className="font-bold text-[#1E1B4B]">{p.month} Rent Payment</div>
-                  <div className="text-[11px] text-[#8782A3]">
-                    Paid on {p.paidDate} • Receipt: {p.receiptId}
+                  <div className="font-bold text-[#1A080C]">{p.month} Rent Payment</div>
+                  <div className="text-[11px] text-muted-se">
+                    Paid on {p.paidDate} &bull; Receipt: {p.receiptId}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="font-black text-[#1E1B4B]">${p.amount.toLocaleString()}</div>
-                  <span className="text-[10px] font-bold text-emerald-700 bg-mint px-2 py-0.5 rounded">
-                    {p.status}
-                  </span>
+                  <div className="font-black text-[#1A080C]">${p.amount.toLocaleString()}</div>
+                  <span className="badge badge-success text-[10px]">{p.status}</span>
                 </div>
               </div>
             ))}
@@ -209,47 +206,47 @@ export default function TenantPortalPage() {
         </div>
 
         {/* Submit Maintenance Request (6 cols) */}
-        <div className="lg:col-span-6 bg-white rounded-3xl p-6 sm:p-7 border border-[#E6D8F5] shadow-subtle space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-[#F3EAFC]">
-            <h3 className="font-bold text-base text-[#1E1B4B]">Submit Maintenance Request</h3>
-            <span className="text-xs text-[#8782A3]">Direct to Property Manager</span>
+        <div className="lg:col-span-6 glass rounded-3xl p-6 sm:p-7 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-[#EADCDD]">
+            <h3 className="font-bold text-base text-[#1A080C]">Submit Maintenance Request</h3>
+            <span className="text-xs text-muted-se">Direct to Property Manager</span>
           </div>
 
           <form onSubmit={handleTenantMaintenance} className="space-y-3.5 text-xs">
             <div className="space-y-1">
-              <label className="font-bold text-[#1E1B4B]">Issue Subject</label>
+              <label className="font-bold text-[#1A080C]">Issue Subject</label>
               <input
                 type="text"
                 placeholder="e.g. Master bathroom tap dripping"
                 value={maintTitle}
                 onChange={(e) => setMaintTitle(e.target.value)}
-                className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2 text-[#1E1B4B]"
+                className="input text-[#1A080C]"
                 required
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="font-bold text-[#1E1B4B]">Category</label>
+                <label className="font-bold text-[#1A080C]">Category</label>
                 <select
                   value={maintCategory}
                   onChange={(e) => setMaintCategory(e.target.value as any)}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3 py-2 text-[#1E1B4B]"
+                  className="select text-[#1A080C]"
                 >
                   <option value="Plumbing">Plumbing</option>
                   <option value="Electrical">Electrical</option>
-                  <option value="HVAC">HVAC & Climate</option>
+                  <option value="HVAC">HVAC &amp; Climate</option>
                   <option value="Appliance">Appliances</option>
                   <option value="General">General / Painting</option>
                 </select>
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-[#1E1B4B]">Priority Level</label>
+                <label className="font-bold text-[#1A080C]">Priority Level</label>
                 <select
                   value={maintPriority}
                   onChange={(e) => setMaintPriority(e.target.value as any)}
-                  className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3 py-2 text-[#1E1B4B]"
+                  className="select text-[#1A080C]"
                 >
                   <option value="Low">Low (Within 7 days)</option>
                   <option value="Medium">Medium (Within 48 hours)</option>
@@ -260,20 +257,17 @@ export default function TenantPortalPage() {
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-[#1E1B4B]">Description of Maintenance Needed</label>
+              <label className="font-bold text-[#1A080C]">Description of Maintenance Needed</label>
               <textarea
                 rows={3}
                 placeholder="Describe when the issue started and access instructions for technicians..."
                 value={maintDesc}
                 onChange={(e) => setMaintDesc(e.target.value)}
-                className="w-full bg-[#F8F4FD] border border-[#E6D8F5] rounded-xl px-3.5 py-2 text-[#1E1B4B]"
+                className="textarea text-[#1A080C]"
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full py-2.5 rounded-xl bg-[#7C4DFF] hover:bg-[#6C3CE9] text-white font-bold text-xs shadow-md transition-all"
-            >
+            <button type="submit" className="btn btn-primary w-full text-xs">
               Submit Maintenance Request
             </button>
           </form>
