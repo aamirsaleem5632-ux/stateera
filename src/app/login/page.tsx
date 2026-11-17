@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -11,7 +11,6 @@ import {
   UserCheck,
   KeyRound,
   Layers,
-  Shield,
   ArrowRight,
   CheckCircle2,
   Info,
@@ -35,6 +34,28 @@ export default function LoginPage() {
 
   const supabase = createClient();
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const err = params.get("error");
+      if (err === "admin_unauthorized") {
+        setError("Access Restricted: Verified Administrator clearance required to access /admin.");
+      } else if (err === "manager_unauthorized") {
+        setError("Access Restricted: Property Manager role required to access /manager.");
+      } else if (err === "tenant_unauthorized") {
+        setError("Access Restricted: Verified Tenant leaseholder role required to access /tenant.");
+      } else if (err === "manager_unapproved") {
+        setError("Application Pending: Your Property Manager account is currently under compliance review.");
+      } else if (err === "tenant_unapproved") {
+        setError("Verification Pending: Your Resident Tenant account requires administrative verification.");
+      } else if (err === "session_required") {
+        setError("Authentication Required: Please sign in with authorized credentials to access this portal.");
+      } else if (err === "profile_not_found") {
+        setError("Profile Not Found: Please sign up or contact platform administrators.");
+      }
+    }
+  }, []);
+
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setLoading(true);
@@ -47,8 +68,7 @@ export default function LoginPage() {
           redirectTo: `${window.location.origin}/auth/callback?next=/login`,
         });
         if (error) {
-          // If Supabase credentials are demo/unreachable, provide graceful simulation feedback
-          setMessage(`Password recovery email dispatched to ${email}. Check your inbox for the reset link.`);
+          setError(error.message || "Failed to dispatch password recovery email.");
         } else {
           setMessage(`Password reset email sent to ${email}. Please check your inbox.`);
         }
@@ -66,34 +86,52 @@ export default function LoginPage() {
         });
 
         if (error) {
-          // Graceful fallback for offline demo testing
-          setRole(selectedRole as UserRole);
-          setMessage(`Demo registration successful as ${selectedRole.toUpperCase()}. Redirecting to dashboard...`);
-          setTimeout(() => {
-            if (selectedRole === "manager") router.push("/manager");
-            else if (selectedRole === "tenant") router.push("/tenant");
-            else router.push("/dashboard");
-          }, 1200);
+          setError(error.message || "Account creation failed. Please check your credentials.");
         } else if (data.session) {
           setRole(selectedRole as UserRole);
           router.push(selectedRole === "manager" ? "/manager" : selectedRole === "tenant" ? "/tenant" : "/dashboard");
           router.refresh();
         } else {
-          setMessage("Account created. Please check your email to confirm your account.");
+          setMessage("Account created successfully. Please check your email to verify your account.");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
+        const { data: authData, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
 
         if (error) {
-          // Graceful demo login fallback
-          setMessage("Authenticating in prototype demo mode...");
-          setTimeout(() => {
-            router.push("/dashboard");
-          }, 800);
+          setError(error.message || "Invalid credentials. Please verify your email and password.");
         } else {
+          if (authData?.user) {
+            try {
+              const { data: profile } = await supabase
+                .from("profiles")
+                .select("role, role_approval_status")
+                .eq("id", authData.user.id)
+                .single();
+
+              if (profile && profile.role_approval_status === "Approved") {
+                const approvedRole = profile.role as UserRole;
+                setRole(approvedRole);
+                if (approvedRole === "admin") {
+                  router.push("/admin");
+                  router.refresh();
+                  return;
+                } else if (approvedRole === "manager") {
+                  router.push("/manager");
+                  router.refresh();
+                  return;
+                } else if (approvedRole === "tenant") {
+                  router.push("/tenant");
+                  router.refresh();
+                  return;
+                }
+              }
+            } catch {
+              // Proceed with standard dashboard navigation
+            }
+          }
           router.push("/dashboard");
           router.refresh();
         }
@@ -166,7 +204,7 @@ export default function LoginPage() {
             </span>
             <span className="badge badge-demo text-[10px]">Instant Demo</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+          <div className="grid grid-cols-3 gap-2 text-xs">
             <button
               type="button"
               onClick={() => handleInstantDemoLogin("investor", "/dashboard")}
@@ -191,15 +229,10 @@ export default function LoginPage() {
               <KeyRound className="w-3.5 h-3.5" />
               <span>Tenant</span>
             </button>
-            <button
-              type="button"
-              onClick={() => handleInstantDemoLogin("admin", "/admin")}
-              className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
-            >
-              <Shield className="w-3.5 h-3.5" />
-              <span>Admin</span>
-            </button>
           </div>
+          <p className="text-[10px] text-[#8C7B7F] text-center pt-0.5">
+            * Executive Administrator portal (/admin) strictly requires authenticated executive credentials.
+          </p>
         </div>
 
         {mode !== "forgot" && (

@@ -64,21 +64,22 @@ export const Navbar: React.FC = () => {
   return (
     <>
       {/* Slim white/soft-rose Practice Demo Mode ribbon */}
-      <div className="bg-[#FAF5F5] text-[#1A080C] text-[11px] sm:text-xs py-1.5 px-4 text-center font-medium flex items-center justify-center gap-2 relative z-50 border-b border-[#EADCDD]">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#15803D]" />
-        <span className="bg-[#3B0F18] text-white text-[10px] font-bold px-2 py-0.5 rounded">
+      <div className="bg-[#FAF5F5] text-[#1A080C] text-[11px] sm:text-xs py-1.5 px-3 sm:px-4 text-center font-medium flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 relative z-50 border-b border-[#EADCDD]">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#15803D] shrink-0" />
+        <span className="bg-[#3B0F18] text-white text-[10px] font-bold px-2 py-0.5 rounded shrink-0">
           Practice mode
         </span>
-        <span className="hidden sm:inline text-[#5E4A4E]">{BRAND_CONFIG.disclaimer}</span>
+        <span className="hidden lg:inline text-[#5E4A4E]">{BRAND_CONFIG.disclaimer}</span>
         <button
           onClick={() => {
             resetDemoData();
             alert("Demo data reset to default successfully!");
           }}
-          className="ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#3B0F18] underline hover:text-[#2A0A10] transition-colors"
+          className="ml-1 sm:ml-2 inline-flex items-center gap-1 text-[11px] font-semibold text-[#3B0F18] underline hover:text-[#2A0A10] transition-colors shrink-0"
         >
           <RotateCcw className="w-3 h-3" />
-          <span>Reset practice data</span>
+          <span className="hidden sm:inline">Reset practice data</span>
+          <span className="sm:hidden">Reset</span>
         </button>
       </div>
 
@@ -431,7 +432,7 @@ export const Navbar: React.FC = () => {
             {/* Try Interactive Demo CTA (Plain text, no sparkle icon) */}
             <Link
               href="/explore"
-              className="hidden 2xl:inline-flex btn btn-primary text-xs"
+              className="!hidden 2xl:!inline-flex btn btn-primary text-xs"
             >
               <span>{t.nav.tryDemo}</span>
             </Link>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -16,6 +16,7 @@ import {
   TrendingUp,
   Clock,
   ShieldCheck,
+  ShieldAlert,
   Calendar,
   ArrowRight,
 } from "lucide-react";
@@ -23,6 +24,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MaintenanceRequest } from "@/types/tenant";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
+import { createClient } from "@/lib/supabase/client";
 
 export default function PropertyManagerPage() {
   const {
@@ -32,9 +34,52 @@ export default function PropertyManagerPage() {
     updateMaintenanceStatus,
     accountingLedger,
     addLedgerEntry,
+    role,
+    setRole,
   } = useDemo();
 
   const { t, dir } = useLanguage();
+
+  const [checkingAuth, setCheckingAuth] = useState(role !== "manager" && role !== "admin");
+
+  useEffect(() => {
+    if (role === "manager" || role === "admin") {
+      setCheckingAuth(false);
+      return;
+    }
+
+    let isMounted = true;
+    const checkServerAuth = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && isMounted) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role, role_approval_status")
+            .eq("id", user.id)
+            .single();
+
+          if (profile && profile.role_approval_status === "Approved" && isMounted) {
+            if (profile.role === "manager" || profile.role === "admin") {
+              setRole(profile.role as any);
+              setCheckingAuth(false);
+              return;
+            }
+          }
+        }
+      } catch {
+        // Fallback for offline demo mode
+      } finally {
+        if (isMounted) setCheckingAuth(false);
+      }
+    };
+
+    checkServerAuth();
+    return () => {
+      isMounted = false;
+    };
+  }, [role, setRole]);
 
   // Active Tab
   const [activeTab, setActiveTab] = useState<"overview" | "rent-collection" | "maintenance" | "ledger">("overview");
@@ -102,6 +147,48 @@ export default function PropertyManagerPage() {
     setMaintTitle("");
     setMaintDesc("");
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+        <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-10 shadow-sm flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 border-4 border-[#3B0F18] border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-[#5E4A4E] font-medium">Verifying property manager credentials...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (role !== "manager" && role !== "admin") {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+        <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-10 shadow-sm space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-amber-50 text-amber-700 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <span className="badge badge-demo text-[10px] uppercase font-bold text-amber-800 bg-amber-100">
+              Role Permission Required
+            </span>
+            <h1 className="text-2xl font-black text-[#1A080C] tracking-tight">
+              Property Manager Portal
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5E4A4E] leading-relaxed">
+              This dashboard is designated exclusively for accredited building and property asset managers. Your active session role is {role.toUpperCase()}.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/dashboard" className="btn btn-primary text-xs font-bold w-full sm:flex-1 py-2.5 px-6 text-center">
+              Return to Investor Dashboard
+            </Link>
+            <Link href="/login" className="btn btn-secondary text-xs font-bold w-full sm:flex-1 py-2.5 px-6 text-center">
+              Switch Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8" dir={dir}>

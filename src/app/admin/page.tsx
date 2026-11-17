@@ -1,8 +1,9 @@
 ﻿"use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Shield,
+  ShieldAlert,
   Users,
   Building,
   CheckCircle2,
@@ -21,6 +22,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InvestorUser, PropertyApprovalQueueItem, PlatformAuditLog } from "@/types/admin";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 const INITIAL_INVESTORS: InvestorUser[] = [
   {
@@ -107,8 +109,46 @@ const INITIAL_LOGS: PlatformAuditLog[] = [
 ];
 
 export default function AdminPortalPage() {
-  const { properties, transactions } = useDemo();
+  const { properties, transactions, role, setRole } = useDemo();
   const { t, dir } = useLanguage();
+  const [checkingAuth, setCheckingAuth] = useState(role !== "admin");
+
+  useEffect(() => {
+    if (role === "admin") {
+      setCheckingAuth(false);
+      return;
+    }
+
+    let isMounted = true;
+    const checkServerAuth = async () => {
+      try {
+        const supabase = createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user && isMounted) {
+          const { data: profile } = await supabase
+            .from("profiles")
+            .select("role, role_approval_status")
+            .eq("id", user.id)
+            .single();
+
+          if (profile?.role === "admin" && profile?.role_approval_status === "Approved" && isMounted) {
+            setRole("admin");
+            setCheckingAuth(false);
+            return;
+          }
+        }
+      } catch {
+        // Offline demo mode fallback
+      } finally {
+        if (isMounted) setCheckingAuth(false);
+      }
+    };
+
+    checkServerAuth();
+    return () => {
+      isMounted = false;
+    };
+  }, [role, setRole]);
 
   const [investors, setInvestors] = useState<InvestorUser[]>(() => {
     if (typeof window !== "undefined") {
@@ -156,6 +196,48 @@ export default function AdminPortalPage() {
     setFeedback("Property offering compliance verified and approved for marketplace!");
     setTimeout(() => setFeedback(null), 3000);
   };
+
+  if (checkingAuth) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+        <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-10 shadow-sm flex flex-col items-center justify-center space-y-4">
+          <div className="w-8 h-8 border-4 border-[#3B0F18] border-t-transparent rounded-full animate-spin" />
+          <p className="text-xs text-[#5E4A4E] font-medium">Verifying administrator clearance...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (role !== "admin") {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+        <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-10 shadow-sm space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-700 flex items-center justify-center mx-auto">
+            <ShieldAlert className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <span className="badge badge-demo text-[10px] uppercase font-bold text-red-800 bg-red-100">
+              Access Restricted
+            </span>
+            <h1 className="text-2xl font-black text-[#1A080C] tracking-tight">
+              Executive Administrator Clearance Required
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5E4A4E] leading-relaxed">
+              The StateEra compliance portal contains institutional KYC records, escrow distribution logs, and legal approval queues. Your current active role ({role.toUpperCase()}) does not possess executive administration credentials.
+            </p>
+          </div>
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Link href="/dashboard" className="btn btn-primary text-xs font-bold w-full sm:flex-1 py-2.5 px-6 text-center">
+              Return to Investor Dashboard
+            </Link>
+            <Link href="/login" className="btn btn-secondary text-xs font-bold w-full sm:flex-1 py-2.5 px-6 text-center">
+              Switch Account
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8" dir={dir}>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Property } from "@/types/property";
 import { ShareHolding, Transaction, RentalPayoutRecord, InvestorStatement } from "@/types/investor";
 import { LeaseAgreement, TenantRentPayment, MaintenanceRequest } from "@/types/tenant";
@@ -8,6 +8,7 @@ import { AccountingLedgerEntry } from "@/types/accounting";
 import { UserRole } from "@/types/admin";
 import { NotificationItem } from "@/types/notification";
 import { MOCK_PROPERTIES } from "@/data/mockProperties";
+import { createClient } from "@/lib/supabase/client";
 
 interface DemoContextType {
   // Role
@@ -374,6 +375,17 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isDemoTourActive, setIsDemoTourActive] = useState<boolean>(false);
   const [demoTourStep, setDemoTourStep] = useState<number>(0);
 
+  // Authenticated user ID tracking, sequence counter & active user ref for cancellation checks
+  const [authUserId, setAuthUserId] = useState<string | null>(null);
+  const authSequenceRef = useRef<number>(0);
+  const authUserIdRef = useRef<string | null>(null);
+
+  // Synchronously update both ref and state to eliminate render-timing gaps
+  const updateAuthUserId = useCallback((userId: string | null) => {
+    authUserIdRef.current = userId;
+    setAuthUserId(userId);
+  }, []);
+
   // Load from localStorage if present
   useEffect(() => {
     try {
@@ -395,6 +407,105 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Local storage read error
     }
   }, []);
+
+  // Synchronous non-blocking auth session subscriber (with sequence race guard)
+  useEffect(() => {
+    const supabase = createClient();
+    const requestSeq = authSequenceRef.current;
+
+    // Check initial active session with race-condition sequence guard
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      // Discard delayed getSession if onAuthStateChange already fired a newer event while in-flight
+      if (authSequenceRef.current !== requestSeq) return;
+
+      if (session?.user) {
+        updateAuthUserId(session.user.id);
+      } else {
+        updateAuthUserId(null);
+      }
+    }).catch(() => {
+      // Graceful offline fallback
+    });
+
+    // Purely synchronous auth event listener - zero async database calls inside callback
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      // Increment sequence counter so any in-flight getSession resolution is discarded
+      authSequenceRef.current += 1;
+
+      if (event === "SIGNED_OUT" || !session?.user) {
+        updateAuthUserId(null);
+        setRole("investor");
+        try {
+          localStorage.removeItem("stateera_role");
+        } catch {
+          // Local storage write error
+        }
+      } else if (session?.user) {
+        updateAuthUserId(session.user.id);
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [updateAuthUserId]);
+
+  // Decoupled asynchronous profile role synchronization (runs outside auth event loop with cancellation checks)
+  useEffect(() => {
+    if (!authUserId) return;
+
+    let isMounted = true;
+    const targetUserId = authUserId;
+
+    const syncProfileRole = async () => {
+      try {
+        const supabase = createClient();
+        const { data: profile, error } = await supabase
+          .from("profiles")
+          .select("role, role_approval_status")
+          .eq("id", targetUserId)
+          .single();
+
+        // Cancellation & identity checks: discard result if unmounted or targetUser is outdated
+        if (!isMounted || targetUserId !== authUserIdRef.current) {
+          return;
+        }
+
+        if (!error && profile && profile.role_approval_status === "Approved") {
+          const approvedRole = profile.role as UserRole;
+          if (["admin", "manager", "tenant", "investor"].includes(approvedRole)) {
+            setRole(approvedRole);
+            return;
+          }
+        }
+
+        // Fail-closed: If profile is unapproved (Pending/Rejected), query errored, or profile missing:
+        // Reset client role to "investor" and remove stateera_role from localStorage
+        setRole("investor");
+        try {
+          localStorage.removeItem("stateera_role");
+        } catch {
+          // Local storage write error
+        }
+      } catch {
+        // Fail-closed on network/runtime exception
+        if (isMounted && targetUserId === authUserIdRef.current) {
+          setRole("investor");
+          try {
+            localStorage.removeItem("stateera_role");
+          } catch {
+            // Local storage write error
+          }
+        }
+      }
+    };
+
+    syncProfileRole();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [authUserId]);
 
   // Sync state changes to localStorage
   useEffect(() => {
