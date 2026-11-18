@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useDemo } from "@/context/DemoContext";
 import {
   Users,
   ShieldCheck,
@@ -39,6 +40,8 @@ interface Expert {
 }
 
 export default function ExpertsPage() {
+  const { appointments, bookAppointment, cancelAppointment } = useDemo();
+
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [bookingModalExpert, setBookingModalExpert] = useState<Expert | null>(null);
@@ -49,20 +52,7 @@ export default function ExpertsPage() {
   const [meetingType, setMeetingType] = useState<"video" | "in-person" | "phone">("video");
   const [meetingPurpose, setMeetingPurpose] = useState<string>("Cross-Border Property Due Diligence");
   const [bookingSuccess, setBookingSuccess] = useState<boolean>(false);
-
-  // Mock Active Appointments History
-  const [myAppointments, setMyAppointments] = useState<any[]>([
-    {
-      id: "apt-101",
-      expertName: "Adv. Bilal Hassan, LL.M",
-      expertRole: "Senior Property Legal Counsel",
-      date: "2026-11-20",
-      time: "10:30 AM",
-      type: "Video Consultation",
-      status: "Confirmed",
-      purpose: "Title deed validation & overseas Pakistani tax structure review",
-    },
-  ]);
+  const [bookingError, setBookingError] = useState<string | null>(null);
 
   const experts: Expert[] = [
     {
@@ -170,22 +160,27 @@ export default function ExpertsPage() {
     e.preventDefault();
     if (!bookingModalExpert) return;
 
-    const newApt = {
-      id: `apt-${Date.now()}`,
+    setBookingError(null);
+    const typeLabel = meetingType === "video" ? "Video Consultation" : meetingType === "phone" ? "Phone Call" : "In-Person Meeting";
+    const res = bookAppointment({
       expertName: bookingModalExpert.name,
       expertRole: bookingModalExpert.role,
       date: bookDate,
       time: bookTime,
-      type: meetingType === "video" ? "Video Consultation" : meetingType === "phone" ? "Phone Call" : "In-Person Meeting",
-      status: "Confirmed",
+      type: typeLabel,
       purpose: meetingPurpose,
-    };
+    });
 
-    setMyAppointments([newApt, ...myAppointments]);
+    if (!res.success) {
+      setBookingError(res.message);
+      return;
+    }
+
     setBookingSuccess(true);
     setTimeout(() => {
       setBookingSuccess(false);
       setBookingModalExpert(null);
+      setBookingError(null);
     }, 2000);
   };
 
@@ -206,27 +201,46 @@ export default function ExpertsPage() {
       </div>
 
       {/* Active Appointments Strip (if any) */}
-      {myAppointments.length > 0 && (
+      {appointments.length > 0 && (
         <div className="bg-[#FAF5F5] border border-[#EADCDD] rounded-3xl p-6 sm:p-8 space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-bold text-[#1A080C] flex items-center gap-2">
               <Calendar className="w-4 h-4 text-[#3B0F18]" />
-              <span>Your Scheduled Expert Consultations ({myAppointments.length})</span>
+              <span>Your Scheduled Expert Consultations ({appointments.length})</span>
             </h3>
             <span className="badge badge-success text-xs font-bold">Upcoming</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {myAppointments.map((apt) => (
+            {appointments.map((apt) => (
               <div key={apt.id} className="bg-white border border-[#EADCDD] rounded-2xl p-5 space-y-2.5 shadow-sm">
                 <div className="flex justify-between items-start">
                   <div>
                     <h4 className="font-bold text-sm text-[#1A080C]">{apt.expertName}</h4>
                     <p className="text-xs text-[#8C7B7F]">{apt.expertRole}</p>
                   </div>
-                  <span className="badge badge-demo text-[10px]">{apt.status}</span>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={`badge text-[10px] ${
+                        apt.status === "Cancelled"
+                          ? "bg-rose-50 text-rose-700 border border-rose-200"
+                          : "badge-demo"
+                      }`}
+                    >
+                      {apt.status}
+                    </span>
+                    {apt.status !== "Cancelled" && (
+                      <button
+                        type="button"
+                        onClick={() => cancelAppointment(apt.id)}
+                        className="text-[11px] font-semibold text-rose-600 hover:text-rose-800 hover:underline transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <div className="text-xs text-[#5E4A4E] flex items-center gap-4">
+                <div className="text-xs text-[#5E4A4E] flex items-center gap-4 flex-wrap">
                   <span className="flex items-center gap-1 font-semibold text-[#1A080C]">
                     <Calendar className="w-3.5 h-3.5 text-[#3B0F18]" />
                     {apt.date}
@@ -351,7 +365,11 @@ export default function ExpertsPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setBookingModalExpert(exp)}
+                onClick={() => {
+                  setBookingError(null);
+                  setBookingSuccess(false);
+                  setBookingModalExpert(exp);
+                }}
                 className="btn btn-primary w-full text-xs font-bold py-2.5 flex items-center justify-center gap-1.5"
               >
                 <Calendar className="w-3.5 h-3.5" />
@@ -378,7 +396,7 @@ export default function ExpertsPage() {
               <h3 className="text-xl font-bold text-[#1A080C]">
                 Schedule with {bookingModalExpert.name}
               </h3>
-              <p className="text-xs text-[#5E4A4E]">{bookingModalExpert.role} &bull; {bookingModalExpert.jurisdiction}</p>
+              <p className="text-xs text-[#5E4A4E]">{bookingModalExpert.role} • {bookingModalExpert.jurisdiction}</p>
             </div>
 
             {bookingSuccess ? (
@@ -393,6 +411,12 @@ export default function ExpertsPage() {
               </div>
             ) : (
               <form onSubmit={handleBookSubmit} className="space-y-4 text-xs">
+                {bookingError && (
+                  <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{bookingError}</span>
+                  </div>
+                )}
                 <div>
                   <label className="block font-bold text-[#1A080C] mb-1">Preferred Consultation Date:</label>
                   <input

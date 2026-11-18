@@ -13,13 +13,13 @@ export const BottomNav: React.FC = () => {
   const navItems = [
     { label: t.nav.home, href: "/", icon: Home },
     { label: t.nav.explore, href: "/explore", icon: Compass },
-    { label: t.nav.portfolio, href: "/dashboard", icon: PieChart },
+    { label: t.nav.dashboard, href: "/dashboard", icon: PieChart },
     { label: t.nav.reports, href: "/reports", icon: Bookmark },
     { label: t.nav.wallet, href: "/wallet", icon: Wallet },
   ];
 
   return (
-    <nav className="md:hidden glass-bottom-nav" aria-label="Mobile Navigation">
+    <nav className="lg:hidden glass-bottom-nav" aria-label="Mobile Navigation">
       {navItems.map((item) => {
         const Icon = item.icon;
         const isActive = pathname === item.href;

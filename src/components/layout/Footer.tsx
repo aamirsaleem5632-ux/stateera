@@ -203,23 +203,23 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/manager" className="hover:text-[#3B0F18] transition-colors font-medium">
-                  Property Manager Portal
+                <Link href="/demo/manager" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Property Manager (Demo)
                 </Link>
               </li>
               <li>
-                <Link href="/tenant" className="hover:text-[#3B0F18] transition-colors font-medium">
-                  Tenant Portal
+                <Link href="/demo/tenant" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Tenant Portal (Demo)
                 </Link>
               </li>
               <li>
-                <Link href="/admin" className="hover:text-[#3B0F18] transition-colors font-medium">
-                  Admin &amp; KYC Compliance
+                <Link href="/demo/admin" className="hover:text-[#3B0F18] transition-colors font-medium">
+                  Admin &amp; KYC (Demo)
                 </Link>
               </li>
               <li>
                 <Link href="/login" className="hover:text-[#3B0F18] transition-colors font-medium">
-                  Sign In / Create Account
+                  Sign In / Live Portals
                 </Link>
               </li>
             </ul>

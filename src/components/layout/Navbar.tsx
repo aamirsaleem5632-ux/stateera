@@ -53,9 +53,9 @@ export const Navbar: React.FC = () => {
   const handleRoleSelect = (newRole: UserRole) => {
     setRole(newRole);
     setRoleDropdownOpen(false);
-    if (newRole === "manager") router.push("/manager");
-    else if (newRole === "tenant") router.push("/tenant");
-    else if (newRole === "admin") router.push("/admin");
+    if (newRole === "manager") router.push("/demo/manager");
+    else if (newRole === "tenant") router.push("/demo/tenant");
+    else if (newRole === "admin") router.push("/demo/admin");
     else router.push("/dashboard");
   };
 
@@ -101,8 +101,8 @@ export const Navbar: React.FC = () => {
             </div>
           </Link>
 
-          {/* Desktop Navigation Links */}
-          <nav className="hidden xl:flex items-center gap-5 text-xs font-semibold text-[#5E4A4E]">
+          {/* Horizontal Navigation Links */}
+          <nav className="hidden lg:flex items-center gap-5 text-xs font-semibold text-[#5E4A4E]">
             <Link
               href="/"
               className={`hover:text-[#3B0F18] transition-colors ${
@@ -120,22 +120,6 @@ export const Navbar: React.FC = () => {
               {t.nav.explore}
             </Link>
             <Link
-              href="/how-it-works"
-              className={`hover:text-[#3B0F18] transition-colors ${
-                pathname === "/how-it-works" ? "text-[#3B0F18] font-bold" : ""
-              }`}
-            >
-              {t.nav.howItWorks}
-            </Link>
-            <Link
-              href="/schemes"
-              className={`hover:text-[#3B0F18] transition-colors ${
-                pathname === "/schemes" ? "text-[#3B0F18] font-bold" : ""
-              }`}
-            >
-              Schemes
-            </Link>
-            <Link
               href="/dashboard"
               className={`hover:text-[#3B0F18] transition-colors ${
                 pathname === "/dashboard" ? "text-[#3B0F18] font-bold" : ""
@@ -149,118 +133,16 @@ export const Navbar: React.FC = () => {
                 pathname === "/reports" ? "text-[#3B0F18] font-bold" : ""
               }`}
             >
-              P&amp;L Analytics
+              {t.nav.reports}
             </Link>
             <Link
-              href="/trust"
-              className={`hover:text-[#3B0F18] transition-colors ${
-                pathname === "/trust" ? "text-[#3B0F18] font-bold" : ""
+              href="/wallet"
+              className={`lg:hidden hover:text-[#3B0F18] transition-colors ${
+                pathname === "/wallet" ? "text-[#3B0F18] font-bold" : ""
               }`}
             >
-              Trust Centre
+              {t.nav.wallet}
             </Link>
-
-            {/* More Ecosystem Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={() => setMoreDropdownOpen(!moreDropdownOpen)}
-                className={`hover:text-[#3B0F18] transition-colors flex items-center gap-1 ${
-                  moreDropdownOpen ? "text-[#3B0F18] font-bold" : ""
-                }`}
-              >
-                <span>More</span>
-                <ChevronDown className="w-3 h-3" />
-              </button>
-
-              {moreDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#EADCDD] rounded-2xl shadow-xl py-2 z-50 text-xs divide-y divide-[#FAF5F5]">
-                  <div className="py-1">
-                    <Link
-                      href="/ai-features"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
-                    >
-                      AI Property Detective
-                    </Link>
-                    <Link
-                      href="/experts"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
-                    >
-                      Human Expert Network
-                    </Link>
-                    <Link
-                      href="/community-lab"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
-                    >
-                      Community Property Lab
-                    </Link>
-                    <Link
-                      href="/learn"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] font-semibold text-[#1A080C]"
-                    >
-                      Learn-to-Own Academy
-                    </Link>
-                  </div>
-                  <div className="py-1">
-                    <Link
-                      href="/fees-and-returns"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
-                    >
-                      Fees &amp; Returns Schedule
-                    </Link>
-                    <Link
-                      href="/simulator"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
-                    >
-                      Scenario Simulator
-                    </Link>
-                    <Link
-                      href="/governance"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
-                    >
-                      Investor Governance
-                    </Link>
-                    <Link
-                      href="/glossary"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
-                    >
-                      Real Estate Glossary
-                    </Link>
-                  </div>
-                  <div className="py-1">
-                    <Link
-                      href="/about"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
-                    >
-                      About StateEra
-                    </Link>
-                    <Link
-                      href="/faq"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
-                    >
-                      Frequently Asked Questions
-                    </Link>
-                    <Link
-                      href="/support"
-                      onClick={() => setMoreDropdownOpen(false)}
-                      className="block px-4 py-2 hover:bg-[#FAF5F5] text-[#5E4A4E]"
-                    >
-                      Support Desk
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </div>
           </nav>
 
           {/* Right Action Icons & Controls */}
@@ -289,6 +171,7 @@ export const Navbar: React.FC = () => {
               >
                 <span className="w-2 h-2 rounded-full bg-[#15803D]" />
                 <span className="capitalize font-semibold">{role}</span>
+                <span className="text-[10px] text-[#8C7B7F] font-medium hidden lg:inline">(Demo)</span>
                 <ChevronDown className="w-3 h-3 text-[#8C7B7F]" />
               </button>
 
@@ -298,7 +181,7 @@ export const Navbar: React.FC = () => {
                   dir={dir}
                 >
                   <div className="px-3 py-1.5 border-b border-[#FAF5F5] text-[10px] uppercase font-bold tracking-wider text-[#8C7B7F]">
-                    Switch User Role View
+                    Switch Demo Role Sandbox
                   </div>
                   {roles.map((r) => {
                     const Icon = r.icon;
@@ -429,6 +312,14 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
+            {/* Live Portal Login */}
+            <Link
+              href="/login"
+              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#EADCDD] hover:border-[#3B0F18] text-[#1A080C] text-xs font-semibold hover:bg-[#FAF5F5] transition-all"
+            >
+              <span>Live Login</span>
+            </Link>
+
             {/* Try Interactive Demo CTA (Plain text, no sparkle icon) */}
             <Link
               href="/explore"
@@ -440,7 +331,7 @@ export const Navbar: React.FC = () => {
             {/* Mobile / Tablet Hamburger Button */}
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="xl:hidden p-2 rounded-lg text-[#5E4A4E] hover:bg-[#FAF5F5] hover:text-[#3B0F18] transition-colors"
+              className="lg:hidden p-2 rounded-lg text-[#5E4A4E] hover:bg-[#FAF5F5] hover:text-[#3B0F18] transition-colors"
               aria-label="Toggle Navigation Menu"
             >
               {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -450,7 +341,7 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile / Tablet Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="xl:hidden border-t border-[#EADCDD] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg" dir={dir}>
+          <div className="lg:hidden border-t border-[#EADCDD] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg" dir={dir}>
             <div className="grid grid-cols-2 gap-2 text-sm font-medium">
               <Link
                 href="/"
@@ -460,18 +351,39 @@ export const Navbar: React.FC = () => {
                 {t.nav.home}
               </Link>
               <Link
-                href="/#how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.howItWorks}
-              </Link>
-              <Link
                 href="/explore"
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C] font-semibold"
               >
                 {t.nav.explore}
+              </Link>
+              <Link
+                href="/dashboard"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                {t.nav.dashboard}
+              </Link>
+              <Link
+                href="/reports"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                {t.nav.reports}
+              </Link>
+              <Link
+                href="/wallet"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                {t.nav.wallet}
+              </Link>
+              <Link
+                href="/#how-it-works"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                {t.nav.howItWorks}
               </Link>
               <Link
                 href="/how-it-works"
@@ -579,25 +491,32 @@ export const Navbar: React.FC = () => {
                 Support Desk
               </Link>
               <Link
-                href="/manager"
+                href="/demo/manager"
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
-                {t.nav.manager}
+                {t.nav.manager} (Demo)
               </Link>
               <Link
-                href="/tenant"
+                href="/demo/tenant"
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
-                {t.nav.tenant}
+                {t.nav.tenant} (Demo)
               </Link>
               <Link
-                href="/admin"
+                href="/demo/admin"
                 onClick={() => setMobileMenuOpen(false)}
                 className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
               >
-                {t.nav.admin}
+                {t.nav.admin} (Demo)
+              </Link>
+              <Link
+                href="/login"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-2.5 rounded-lg border border-[#3B0F18] bg-[#FAF5F5] text-[#3B0F18] font-bold"
+              >
+                Live Portal Login
               </Link>
               <Link
                 href="/wallet"

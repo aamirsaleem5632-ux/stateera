@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo, useRef, useEffect } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -26,6 +26,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { Property, PropertyCategory } from "@/types/property";
 import { PropertyCard } from "@/components/property/PropertyCard";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { BeginnerGuideBanner } from "@/components/common/BeginnerGuideBanner";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
 import { Reveal } from "@/components/scroll/Reveal";
@@ -94,7 +95,7 @@ export default function ExplorePage() {
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const [visibleCount, setVisibleCount] = useState<number>(12);
-  const prevCountRef = useRef<number>(0);
+  const [prevCount, setPrevCount] = useState<number>(0);
 
   const toggleCompare = (id: string) => {
     setCompareList((prev) => {
@@ -149,11 +150,11 @@ export default function ExplorePage() {
     setMaxSharePrice(250);
     setSortBy("yield");
     setVisibleCount(12);
-    prevCountRef.current = 0;
+    setPrevCount(0);
   };
 
   const handleLoadMore = () => {
-    prevCountRef.current = visibleCount;
+    setPrevCount(visibleCount);
     setVisibleCount((prev) => Math.min(prev + 12, filteredProperties.length));
   };
 
@@ -442,7 +443,14 @@ export default function ExplorePage() {
                   return (
                     <div key={id} className="glass rounded-2xl p-4 space-y-4">
                       <div className="relative aspect-[16/10] rounded-xl overflow-hidden img-overlay bg-[#FAF5F5]">
-                        <Image src={p.coverImage} alt={p.title} fill className="object-cover" />
+                        <OptimizedImage
+                          src={p.coverImage}
+                          alt={p.title}
+                          fill
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                          className="object-cover"
+                          fallbackLabel={p.title}
+                        />
                       </div>
                       <div>
                         <span className="badge badge-demo text-[10px] uppercase font-bold tracking-wider">{p.category}</span>
@@ -487,8 +495,8 @@ export default function ExplorePage() {
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {filteredProperties.slice(0, visibleCount).map((property, idx) => {
-              const isInitialBatch = prevCountRef.current === 0;
-              const isNewFromLoadMore = idx >= prevCountRef.current && prevCountRef.current > 0;
+              const isInitialBatch = prevCount === 0;
+              const isNewFromLoadMore = idx >= prevCount && prevCount > 0;
 
               if (isInitialBatch) {
                 return (
@@ -500,6 +508,7 @@ export default function ExplorePage() {
                   >
                     <PropertyCard
                       property={property}
+                      priority={idx < 2}
                       onCompareToggle={compareMode ? () => toggleCompare(property.id) : undefined}
                       isCompared={compareList.includes(property.id)}
                     />
@@ -515,7 +524,7 @@ export default function ExplorePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
                       duration: 0.5,
-                      delay: (idx - prevCountRef.current) * 0.08,
+                      delay: (idx - prevCount) * 0.08,
                       ease: EASING,
                     }}
                   >
@@ -532,6 +541,7 @@ export default function ExplorePage() {
                 <div key={property.id}>
                   <PropertyCard
                     property={property}
+                    priority={idx < 2}
                     onCompareToggle={compareMode ? () => toggleCompare(property.id) : undefined}
                     isCompared={compareList.includes(property.id)}
                   />
@@ -557,18 +567,21 @@ export default function ExplorePage() {
         <>
           <div className="space-y-4">
             {filteredProperties.slice(0, visibleCount).map((property, idx) => {
-              const isInitialBatch = prevCountRef.current === 0;
-              const isNewFromLoadMore = idx >= prevCountRef.current && prevCountRef.current > 0;
+              const isInitialBatch = prevCount === 0;
+              const isNewFromLoadMore = idx >= prevCount && prevCount > 0;
 
               const cardContent = (
                 <div className="glass glass-hover p-4 sm:p-5 flex flex-col md:flex-row items-center justify-between gap-6">
                   <div className="flex flex-col sm:flex-row items-center gap-4 w-full md:w-auto">
                     <div className="relative w-full sm:w-44 h-32 rounded-xl overflow-hidden flex-shrink-0 img-overlay bg-[#FAF5F5]">
-                      <Image
+                      <OptimizedImage
                         src={property.coverImage}
                         alt={property.title}
                         fill
+                        priority={idx < 2}
+                        sizes="(max-width: 640px) 100vw, 176px"
                         className="object-cover"
+                        fallbackLabel={property.title}
                       />
                       <div className="absolute top-2 left-2 badge badge-demo text-[10px]">
                         {property.category}
@@ -644,7 +657,7 @@ export default function ExplorePage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{
                       duration: 0.5,
-                      delay: (idx - prevCountRef.current) * 0.08,
+                      delay: (idx - prevCount) * 0.08,
                       ease: EASING,
                     }}
                   >
@@ -748,11 +761,13 @@ export default function ExplorePage() {
                 </div>
 
                 <div className="relative aspect-[16/10] rounded-2xl overflow-hidden img-overlay bg-[#FAF5F5]">
-                  <Image
+                  <OptimizedImage
                     src={mapSelectedProp.coverImage}
                     alt={mapSelectedProp.title}
                     fill
+                    sizes="(max-width: 1024px) 100vw, 33vw"
                     className="object-cover"
+                    fallbackLabel={mapSelectedProp.title}
                   />
                   <div className="absolute bottom-2 left-2 bg-white/90 text-[#1A080C] text-xs px-2.5 py-1 rounded-lg border border-[#EADCDD] font-medium">
                     {mapSelectedProp.city}, {mapSelectedProp.country}

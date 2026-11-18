@@ -27,6 +27,10 @@ interface ChatMessage {
   };
 }
 
+function createUserMessageId(): string {
+  return `usr-${Date.now()}`;
+}
+
 export const StateEraAI: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -108,7 +112,7 @@ export const StateEraAI: React.FC = () => {
     if (!query.trim()) return;
 
     const userMsg: ChatMessage = {
-      id: `usr-${Date.now()}`,
+      id: createUserMessageId(),
       sender: "user",
       text: query,
       timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
@@ -222,7 +226,7 @@ export const StateEraAI: React.FC = () => {
             className={`fixed z-50 bg-white border border-[#EADCDD] rounded-2xl shadow-xl flex flex-col overflow-hidden transition-all duration-300 ${
               isMaximized
                 ? "inset-4 md:inset-12 w-auto h-auto"
-                : "bottom-24 md:bottom-24 right-4 md:right-6 w-[94vw] sm:w-[420px] md:w-[450px] h-[580px] max-h-[85vh]"
+                : "bottom-[76px] md:bottom-24 right-4 md:right-6 w-[94vw] sm:w-[420px] md:w-[450px] h-[580px] max-h-[75vh] md:max-h-[85vh]"
             }`}
             dir={dir}
           >

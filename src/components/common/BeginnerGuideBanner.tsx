@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { ArrowRight, X, BookOpen } from "lucide-react";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useStorageBoolean, setStorageItem } from "@/lib/storageStore";
 
 interface BeginnerGuideBannerProps {
   pageName?: "dashboard" | "explore" | "property";
@@ -11,28 +12,16 @@ interface BeginnerGuideBannerProps {
 
 export const BeginnerGuideBanner: React.FC<BeginnerGuideBannerProps> = ({ pageName = "dashboard" }) => {
   const { dir } = useLanguage();
-  const [isDismissed, setIsDismissed] = useState<boolean>(true);
+  const [locallyDismissed, setLocallyDismissed] = useState<boolean>(false);
 
   const storageKey = `stateera_beginner_banner_${pageName}`;
+  const isStoredDismissed = useStorageBoolean(storageKey, true);
 
-  useEffect(() => {
-    try {
-      const dismissed = localStorage.getItem(storageKey);
-      if (!dismissed) {
-        setIsDismissed(false);
-      }
-    } catch {
-      setIsDismissed(false);
-    }
-  }, [storageKey]);
+  const isDismissed = isStoredDismissed || locallyDismissed;
 
   const handleDismiss = () => {
-    setIsDismissed(true);
-    try {
-      localStorage.setItem(storageKey, "true");
-    } catch {
-      // Ignore
-    }
+    setLocallyDismissed(true);
+    setStorageItem(storageKey, "true");
   };
 
   if (isDismissed) return null;

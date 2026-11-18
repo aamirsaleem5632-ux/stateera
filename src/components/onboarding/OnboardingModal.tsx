@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Building2,
@@ -13,30 +13,19 @@ import {
 } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
+import { useStorageBoolean, setStorageItem } from "@/lib/storageStore";
 
 export const OnboardingModal: React.FC = () => {
   const { t } = useLanguage();
-  const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(0);
+  const [locallyClosed, setLocallyClosed] = useState(false);
 
-  useEffect(() => {
-    try {
-      const seen = localStorage.getItem("stateera_onboarding_completed");
-      if (!seen) {
-        setIsOpen(true);
-      }
-    } catch {
-      // Ignore
-    }
-  }, []);
+  const isCompleted = useStorageBoolean("stateera_onboarding_completed", true);
+  const isOpen = !isCompleted && !locallyClosed;
 
   const handleClose = () => {
-    setIsOpen(false);
-    try {
-      localStorage.setItem("stateera_onboarding_completed", "true");
-    } catch {
-      // Ignore
-    }
+    setLocallyClosed(true);
+    setStorageItem("stateera_onboarding_completed", "true");
   };
 
   const steps = [

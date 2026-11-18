@@ -46,7 +46,7 @@ export const BackToTop: React.FC = () => {
           aria-label="Back to top"
           className="
             fixed z-50
-            bottom-[88px] right-4
+            bottom-[140px] right-4
             md:bottom-6 md:right-24
             w-11 h-11 rounded-full
             bg-white

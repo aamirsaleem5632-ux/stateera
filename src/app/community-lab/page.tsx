@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useDemo } from "@/context/DemoContext";
 import {
   Users,
   Building2,
@@ -15,83 +16,12 @@ import {
   ArrowRight,
   Sparkles,
   MapPin,
+  X,
 } from "lucide-react";
 import { Reveal, RevealGroup } from "@/components/scroll/Reveal";
 
-interface Proposal {
-  id: string;
-  title: string;
-  city: string;
-  country: string;
-  category: string;
-  estimatedCost: string;
-  author: string;
-  votes: number;
-  hasVoted: boolean;
-  status: "Feasibility Study" | "Community Voting" | "Under Review" | "Due Diligence";
-  rationale: string;
-  commentsCount: number;
-}
-
 export default function CommunityPropertyLabPage() {
-  const [proposals, setProposals] = useState<Proposal[]>([
-    {
-      id: "prop-lab-01",
-      title: "Solar-Powered Student Housing Hub near NUST",
-      city: "Islamabad",
-      country: "Pakistan",
-      category: "student",
-      estimatedCost: "$1.8M",
-      author: "Farhan Qureshi (Community Member)",
-      votes: 184,
-      hasVoted: false,
-      status: "Feasibility Study",
-      rationale: "Over 8,000 university students struggle to find safe, high-speed fiber-equipped student accommodation near Sector H-12. A purpose-built student block with rooftop solar can deliver steady 10%+ net rental yield.",
-      commentsCount: 38,
-    },
-    {
-      id: "prop-lab-02",
-      title: "Biophilic Co-Living & Creative Studios in Shoreditch",
-      city: "London",
-      country: "United Kingdom",
-      category: "residential",
-      estimatedCost: "$4.5M",
-      author: "Elena Rostova (Investor Circle)",
-      votes: 142,
-      hasVoted: false,
-      status: "Due Diligence",
-      rationale: "High demand from European tech founders and creative designers for flexible 3-to-12 month serviced suites with communal podcast studios and garden terraces.",
-      commentsCount: 29,
-    },
-    {
-      id: "prop-lab-03",
-      title: "Cold-Chain Logistics Terminal for Mango & Citrus Exports",
-      city: "Multan",
-      country: "Pakistan",
-      category: "logistics",
-      estimatedCost: "$2.6M",
-      author: "Malik Shahzad (Agri-Logistics)",
-      votes: 119,
-      hasVoted: false,
-      status: "Community Voting",
-      rationale: "Export agricultural processors in Southern Punjab face 25% post-harvest spoilage. A climate-controlled cold storage warehouse along M-4 Motorway guarantees year-round long-term corporate leases.",
-      commentsCount: 22,
-    },
-    {
-      id: "prop-lab-04",
-      title: "Affordable Healthcare Professional Housing near Dubai Healthcare City",
-      city: "Dubai",
-      country: "United Arab Emirates",
-      category: "affordable",
-      estimatedCost: "$3.9M",
-      author: "Dr. Ayesha Rehman",
-      votes: 95,
-      hasVoted: false,
-      status: "Under Review",
-      rationale: "Mid-level nursing and healthcare technicians commute 90 minutes daily. Developing dedicated affordable community apartments creates immediate 100% occupancy with long-term hospital leases.",
-      commentsCount: 17,
-    },
-  ]);
+  const { proposals, submitProposal, voteProposal } = useDemo();
 
   const [modalOpen, setModalOpen] = useState(false);
   const [newTitle, setNewTitle] = useState("");
@@ -100,43 +30,35 @@ export default function CommunityPropertyLabPage() {
   const [newCategory, setNewCategory] = useState("residential");
   const [newEstimatedCost, setNewEstimatedCost] = useState("");
   const [newRationale, setNewRationale] = useState("");
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const handleVote = (id: string) => {
-    setProposals((prev) =>
-      prev.map((p) => {
-        if (p.id === id) {
-          return {
-            ...p,
-            votes: p.hasVoted ? p.votes - 1 : p.votes + 1,
-            hasVoted: !p.hasVoted,
-          };
-        }
-        return p;
-      })
-    );
+    voteProposal(id);
   };
 
   const handleCreateProposal = (e: React.FormEvent) => {
     e.preventDefault();
-    const created: Proposal = {
-      id: `prop-lab-${Date.now()}`,
+    setSubmitError(null);
+
+    const res = submitProposal({
       title: newTitle,
       city: newCity,
       country: newCountry,
       category: newCategory,
       estimatedCost: newEstimatedCost || "$2.0M",
-      author: "You (Active Contributor)",
-      votes: 1,
-      hasVoted: true,
-      status: "Under Review",
       rationale: newRationale,
-      commentsCount: 0,
-    };
-    setProposals([created, ...proposals]);
+    });
+
+    if (!res.success) {
+      setSubmitError(res.message);
+      return;
+    }
+
     setModalOpen(false);
     setNewTitle("");
     setNewCity("");
     setNewRationale("");
+    setSubmitError(null);
   };
 
   return (
@@ -162,7 +84,10 @@ export default function CommunityPropertyLabPage() {
           <p className="text-xs text-[#5E4A4E]">Submit an idea for community review and independent feasibility study.</p>
         </div>
         <button
-          onClick={() => setModalOpen(true)}
+          onClick={() => {
+            setSubmitError(null);
+            setModalOpen(true);
+          }}
           className="btn btn-primary text-xs font-bold py-2.5 px-4 flex items-center gap-1.5 whitespace-nowrap"
         >
           <Plus className="w-4 h-4" />
@@ -254,12 +179,28 @@ export default function CommunityPropertyLabPage() {
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
           <div className="bg-white border border-[#EADCDD] rounded-3xl p-6 sm:p-8 max-w-lg w-full space-y-4 shadow-2xl relative">
+            <button
+              onClick={() => {
+                setModalOpen(false);
+                setSubmitError(null);
+              }}
+              className="absolute right-5 top-5 text-[#8C7B7F] hover:text-[#1A080C]"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
             <h3 className="text-xl font-bold text-[#1A080C]">Submit Community Property Idea</h3>
             <p className="text-xs text-[#5E4A4E]">
               Share an unserved real estate opportunity with the StateEra research community.
             </p>
 
             <form onSubmit={handleCreateProposal} className="space-y-3 text-xs">
+              {submitError && (
+                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{submitError}</span>
+                </div>
+              )}
               <div>
                 <label className="block font-bold text-[#1A080C] mb-1">Concept Title:</label>
                 <input

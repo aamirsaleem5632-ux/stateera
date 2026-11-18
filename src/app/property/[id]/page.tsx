@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { useParams, useRouter } from "next/navigation";
 import {
   MapPin,
@@ -53,7 +54,7 @@ export default function PropertyDetailPage() {
   const { properties, isWatchlisted, toggleWatchlist, walletBalance } = useDemo();
   const { t, dir } = useLanguage();
 
-  const property = properties.find((p) => p.id === propertyId) || properties[0];
+  const property = properties.find((p) => p.id === propertyId);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [activeTab, setActiveTab] = useState<"overview" | "due-diligence" | "financials" | "manager">("overview");
 
@@ -61,7 +62,7 @@ export default function PropertyDetailPage() {
   const [copiedShare, setCopiedShare] = useState(false);
   const [passportModalOpen, setPassportModalOpen] = useState(false);
 
-  const isSaved = isWatchlisted(property.id);
+  const isSaved = property ? isWatchlisted(property.id) : false;
 
   const handleShare = () => {
     if (typeof window !== "undefined") {
@@ -70,6 +71,31 @@ export default function PropertyDetailPage() {
       setTimeout(() => setCopiedShare(false), 2500);
     }
   };
+
+  if (!property) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+        <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-10 shadow-sm space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-700 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-black text-[#1A080C] tracking-tight">
+              Property Listing Not Found
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5E4A4E] leading-relaxed">
+              The property offering ID &quot;{propertyId}&quot; does not exist or has been removed from the platform catalogue.
+            </p>
+          </div>
+          <div className="pt-2 flex justify-center">
+            <Link href="/explore" className="btn btn-primary text-xs font-bold py-2.5 px-6">
+              Browse Available Properties
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Valuation Chart Data (Combines Historical + AI Forecast)
   const combinedValuationChartData = [
@@ -179,12 +205,14 @@ export default function PropertyDetailPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-10">
         {/* Main Large Display Image */}
         <div className="lg:col-span-9 relative aspect-[16/10] sm:aspect-[16/9] rounded-3xl overflow-hidden glass img-overlay bg-[#FAF5F5]">
-          <Image
+          <OptimizedImage
             src={property.galleryImages[activeImageIndex] || property.coverImage}
             alt={property.title}
             fill
             priority
+            sizes="(max-width: 1024px) 100vw, 75vw"
             className="object-cover"
+            fallbackLabel={property.title}
           />
           <div className="absolute top-4 left-4 bg-white/95 text-[#1A080C] border border-[#EADCDD] px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">
             <ShieldCheck className="w-4 h-4 text-accent-se" />
@@ -202,7 +230,14 @@ export default function PropertyDetailPage() {
                 activeImageIndex === idx ? "border-[var(--se-primary)] ring-2 ring-[var(--se-ring)] scale-[1.02]" : "border-transparent opacity-70 hover:opacity-100"
               }`}
             >
-              <Image src={img} alt="Thumbnail" fill className="object-cover" />
+              <OptimizedImage
+                src={img}
+                alt={`${property.title} preview ${idx + 1}`}
+                fill
+                sizes="(max-width: 1024px) 160px, 280px"
+                className="object-cover"
+                fallbackLabel={`Thumbnail ${idx + 1}`}
+              />
             </button>
           ))}
         </div>

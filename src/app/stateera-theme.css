@@ -453,11 +453,14 @@ label.se-label {
 .se-ai-fab {
   position: fixed;
   inset-inline-end: 16px;
-  bottom: 24px;
+  bottom: 76px; /* Safe fallback: 60px mobile bottom nav + 16px clearance */
+  bottom: calc(60px + 16px + env(safe-area-inset-bottom, 0px));
   z-index: 50;
 }
-@media (max-width: 767px) {
-  .se-ai-fab { bottom: calc(60px + 16px + env(safe-area-inset-bottom)); }
+@media (min-width: 768px) {
+  .se-ai-fab {
+    bottom: 24px;
+  }
 }
 
 /* ---------- 12. MODALS, TOASTS, TOOLTIPS (Clean white cards with 1px border) ---------- */

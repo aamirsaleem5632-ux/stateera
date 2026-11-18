@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Play,
@@ -212,11 +213,13 @@ export const StateEraInAction: React.FC = () => {
                       {currentStep.screenType === "marketplace" && (
                         <div className="space-y-3">
                           <div className="h-44 rounded-lg overflow-hidden relative">
-                            <Image
+                            <OptimizedImage
                               src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800&auto=format&fit=crop&q=80"
                               alt="Marina Horizon Luxury Tower"
                               fill
+                              sizes="(max-width: 768px) 100vw, 400px"
                               className="object-cover"
+                              fallbackLabel="Marina Horizon Luxury Tower"
                             />
                           </div>
                           <div className="flex justify-between items-center text-xs">

@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { useParams, useRouter } from "next/navigation";
 import {
   TrendingUp,
@@ -28,6 +29,7 @@ import {
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 export default function TradePropertyPage() {
   const params = useParams();
@@ -36,35 +38,43 @@ export default function TradePropertyPage() {
   const { properties, walletBalance, holdings, buyShares, sellShares } = useDemo();
   const { t, dir } = useLanguage();
 
-  const property = properties.find((p) => p.id === propertyId) || properties[0];
+  const property = properties.find((p) => p.id === propertyId);
 
   // User holdings for this property
-  const currentHolding = holdings.find((h) => h.propertyId === property.id);
+  const currentHolding = holdings.find((h) => h.propertyId === property?.id);
   const sharesOwned = currentHolding ? currentHolding.sharesOwned : 0;
 
   // Order State
   const [orderSide, setOrderSide] = useState<"BUY" | "SELL">("BUY");
   const [orderType, setOrderType] = useState<"Market" | "Limit">("Market");
   const [quantity, setQuantity] = useState<number>(10);
-  const [limitPrice, setLimitPrice] = useState<number>(property.sharePrice);
+  const [prevPropertyId, setPrevPropertyId] = useState<string | null>(property?.id ?? null);
+  const [limitPrice, setLimitPrice] = useState<number>(property ? property.sharePrice : 100);
   const [timeframe, setTimeframe] = useState<"5m" | "15m" | "30m" | "4h" | "1D" | "1M">("1D");
   const [chartType, setChartType] = useState<"area" | "candle">("area");
-  const [chartReady, setChartReady] = useState(false);
+  const chartReady = useIsMounted();
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  useEffect(() => {
-    setChartReady(true);
-  }, []);
+  // Sync limitPrice default when property changes (render-phase state adjustment)
+  const currentPropertyId = property?.id ?? null;
+  if (currentPropertyId !== prevPropertyId) {
+    setPrevPropertyId(currentPropertyId);
+    if (property) {
+      setLimitPrice(property.sharePrice);
+    }
+  }
 
   // Feedback Modal & Alerts
   const [feedback, setFeedback] = useState<{ success: boolean; message: string } | null>(null);
 
   // Computed Values
-  const effectivePrice = orderType === "Market" ? property.sharePrice : limitPrice;
-  const orderTotalValue = quantity * effectivePrice;
-  const estMonthlyRentalIncome = quantity * property.monthlyPerShareRent;
+  const effectivePrice = property ? (orderType === "Market" ? property.sharePrice : limitPrice) : 0;
+  const orderTotalValue = Number.isFinite(quantity) && quantity > 0 ? quantity * effectivePrice : 0;
+  const estMonthlyRentalIncome = property && Number.isFinite(quantity) && quantity > 0 ? quantity * property.monthlyPerShareRent : 0;
 
   // Chart data points per timeframe
   const priceChartData = useMemo(() => {
+    if (!property) return [];
     const base = property.sharePrice;
     if (timeframe === "5m") {
       return [
@@ -103,16 +113,54 @@ export default function TradePropertyPage() {
       { time: "Oct", price: Number((base * 0.995).toFixed(2)) },
       { time: "Nov", price: base },
     ];
-  }, [property.sharePrice, timeframe]);
+  }, [property, timeframe]);
+
+  if (!property) {
+    return (
+      <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+        <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-10 shadow-sm space-y-5">
+          <div className="w-14 h-14 rounded-2xl bg-red-50 text-red-700 flex items-center justify-center mx-auto">
+            <AlertCircle className="w-7 h-7" />
+          </div>
+          <div className="space-y-2">
+            <h1 className="text-2xl font-black text-[#1A080C] tracking-tight">
+              Property Listing Not Found
+            </h1>
+            <p className="text-xs sm:text-sm text-[#5E4A4E] leading-relaxed">
+              The property offering ID &quot;{propertyId}&quot; was not found in the catalogue. It may be invalid or unlisted.
+            </p>
+          </div>
+          <div className="pt-2 flex justify-center">
+            <Link href="/explore" className="btn btn-primary text-xs font-bold py-2.5 px-6">
+              Browse Available Properties
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handleExecuteOrder = (e: React.FormEvent) => {
     e.preventDefault();
-    if (orderSide === "BUY") {
-      const res = buyShares(property.id, Number(quantity), orderType);
-      setFeedback(res);
-    } else {
-      const res = sellShares(property.id, Number(quantity));
-      setFeedback(res);
+    if (isSubmitting) return;
+
+    const numQty = Number(quantity);
+    if (!Number.isFinite(numQty) || numQty <= 0 || !Number.isInteger(numQty)) {
+      setFeedback({ success: false, message: "Please specify a valid whole number of shares greater than 0." });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      if (orderSide === "BUY") {
+        const res = buyShares(property.id, numQty, orderType, orderType === "Limit" ? Number(limitPrice) : undefined);
+        setFeedback(res);
+      } else {
+        const res = sellShares(property.id, numQty);
+        setFeedback(res);
+      }
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -169,15 +217,23 @@ export default function TradePropertyPage() {
         </Link>
       </div>
 
-      {/* Main Grid: Chart & Asset Info on Left (8), Order Card on Right (4) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Column (8 cols) */}
-        <div className="lg:col-span-8 space-y-6">
+      {/* Main Grid: Chart & Asset Info on Left (8 cols desktop, 7 cols tablet), Order Card on Right (4 cols desktop, 5 cols tablet) */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-6 lg:gap-8 items-start">
+        {/* Left Column (md: 7 cols, lg: 8 cols) */}
+        <div className="md:col-span-7 lg:col-span-8 space-y-6">
           {/* Asset Price Banner */}
           <div className="glass rounded-3xl p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">
               <div className="relative w-16 h-16 rounded-2xl overflow-hidden flex-shrink-0 bg-[#FAF5F5] border border-[#EADCDD]">
-                <Image src={property.coverImage} alt={property.title} fill className="object-cover" />
+                <OptimizedImage
+                  src={property.coverImage}
+                  alt={property.title}
+                  fill
+                  priority
+                  sizes="64px"
+                  className="object-cover"
+                  fallbackLabel={property.title}
+                />
               </div>
               <div>
                 <span className="text-xs uppercase font-bold tracking-wider text-accent-se">
@@ -290,7 +346,7 @@ export default function TradePropertyPage() {
                 </div>
               )}
             </div>
-            <div className="flex items-center justify-between text-[11px] text-muted-se pt-2 border-t border-[#EADCDD]">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-muted-se pt-2 border-t border-[#EADCDD]">
               <span>Market Cap: ${(property.totalValuation).toLocaleString()}</span>
               <span>Available Shares: {property.availableShares.toLocaleString()}</span>
               <span>Total Shares: {property.totalShares.toLocaleString()}</span>
@@ -298,8 +354,8 @@ export default function TradePropertyPage() {
           </div>
         </div>
 
-        {/* Right Column: Order Execution Card (4 cols) */}
-        <div className="lg:col-span-4 space-y-4">
+        {/* Right Column: Order Execution Card (md: 5 cols, lg: 4 cols) */}
+        <div className="md:col-span-5 lg:col-span-4 space-y-4">
           <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#EADCDD] shadow-sm space-y-5">
             {/* Buy / Sell Tabs */}
             <div className="grid grid-cols-2 gap-1.5 p-1 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl">

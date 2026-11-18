@@ -44,6 +44,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
 import { useChartInView } from "@/hooks/useChartInView";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 const THEME_COLORS = ["#3B0F18", "#E8909A", "#1D4ED8", "#15803D", "#B45309", "#8C7B7F", "#6B21A8"];
 
@@ -62,10 +63,7 @@ export default function ReportsPage() {
   const { t, dir } = useLanguage();
 
   // SSR-safe chart mounting flag
-  const [chartReady, setChartReady] = useState(false);
-  useEffect(() => {
-    setChartReady(true);
-  }, []);
+  const chartReady = useIsMounted();
 
   // Controls State
   const [timeView, setTimeView] = useState<"monthly" | "quarterly" | "yearly">("monthly");
@@ -74,12 +72,12 @@ export default function ReportsPage() {
   const [period, setPeriod] = useState<string>("YTD 2026");
 
   // Chart view references
-  const c1 = useChartInView();
-  const c2 = useChartInView();
-  const c3 = useChartInView();
-  const c4 = useChartInView();
-  const c5 = useChartInView();
-  const c6 = useChartInView();
+  const [c1Ref, isC1Active] = useChartInView();
+  const [c2Ref, isC2Active] = useChartInView();
+  const [c3Ref, isC3Active] = useChartInView();
+  const [c4Ref, isC4Active] = useChartInView();
+  const [c5Ref, isC5Active] = useChartInView();
+  const [c6Ref, isC6Active] = useChartInView();
 
   // Distinct countries from catalogue
   const availableCountries = useMemo(() => {
@@ -342,7 +340,7 @@ export default function ReportsPage() {
             <span className="badge badge-demo text-[10px]">P&amp;L Trend</span>
           </div>
 
-          <div ref={c1.ref} className="h-64 w-full pt-2">
+          <div ref={c1Ref} className="h-64 w-full pt-2">
             {chartReady && (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={plTimeData}>
@@ -352,8 +350,8 @@ export default function ReportsPage() {
                     contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #EADCDD", fontSize: "12px" }}
                   />
                   <Legend />
-                  <Line type="monotone" dataKey="netProfit" name="Net Profit ($)" stroke="#3B0F18" strokeWidth={2.5} dot={{ r: 4 }} isAnimationActive={c1.isAnimationActive} />
-                  <Line type="monotone" dataKey="realisedRent" name="Rental Cashflow ($)" stroke="#15803D" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={c1.isAnimationActive} />
+                  <Line type="monotone" dataKey="netProfit" name="Net Profit ($)" stroke="#3B0F18" strokeWidth={2.5} dot={{ r: 4 }} isAnimationActive={isC1Active} />
+                  <Line type="monotone" dataKey="realisedRent" name="Rental Cashflow ($)" stroke="#15803D" strokeWidth={2} dot={{ r: 3 }} isAnimationActive={isC1Active} />
                 </LineChart>
               </ResponsiveContainer>
             )}
@@ -370,7 +368,7 @@ export default function ReportsPage() {
             <span className="badge badge-success text-[10px]">Net Cashflow</span>
           </div>
 
-          <div ref={c2.ref} className="h-64 w-full pt-2">
+          <div ref={c2Ref} className="h-64 w-full pt-2">
             {chartReady && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={incomeVsExpensesData}>
@@ -380,9 +378,9 @@ export default function ReportsPage() {
                     contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #EADCDD", fontSize: "12px" }}
                   />
                   <Legend />
-                  <Bar dataKey="grossRent" name="Gross Rent ($)" fill="#3B0F18" radius={[4, 4, 0, 0]} isAnimationActive={c2.isAnimationActive} />
-                  <Bar dataKey="opex" name="Expenses & Fees ($)" fill="#B45309" radius={[4, 4, 0, 0]} isAnimationActive={c2.isAnimationActive} />
-                  <Bar dataKey="netDistributed" name="Net Paid ($)" fill="#15803D" radius={[4, 4, 0, 0]} isAnimationActive={c2.isAnimationActive} />
+                  <Bar dataKey="grossRent" name="Gross Rent ($)" fill="#3B0F18" radius={[4, 4, 0, 0]} isAnimationActive={isC2Active} />
+                  <Bar dataKey="opex" name="Expenses & Fees ($)" fill="#B45309" radius={[4, 4, 0, 0]} isAnimationActive={isC2Active} />
+                  <Bar dataKey="netDistributed" name="Net Paid ($)" fill="#15803D" radius={[4, 4, 0, 0]} isAnimationActive={isC2Active} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -402,7 +400,7 @@ export default function ReportsPage() {
             <span className="badge badge-demo text-[10px]">Valuation Curve</span>
           </div>
 
-          <div ref={c3.ref} className="h-64 w-full pt-2">
+          <div ref={c3Ref} className="h-64 w-full pt-2">
             {chartReady && (
               <ResponsiveContainer width="100%" height="100%">
                 <AreaChart data={growthCurveData}>
@@ -412,8 +410,8 @@ export default function ReportsPage() {
                     contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #EADCDD", fontSize: "12px" }}
                   />
                   <Legend />
-                  <Area type="monotone" dataKey="portfolioValue" name="Current Value ($)" stroke="#3B0F18" fill="#FAF5F5" fillOpacity={0.8} strokeWidth={2} isAnimationActive={c3.isAnimationActive} />
-                  <Area type="monotone" dataKey="investedPrincipal" name="Invested Capital ($)" stroke="#8C7B7F" fill="#EADCDD" fillOpacity={0.4} strokeWidth={1.5} isAnimationActive={c3.isAnimationActive} />
+                  <Area type="monotone" dataKey="portfolioValue" name="Current Value ($)" stroke="#3B0F18" fill="#FAF5F5" fillOpacity={0.8} strokeWidth={2} isAnimationActive={isC3Active} />
+                  <Area type="monotone" dataKey="investedPrincipal" name="Invested Capital ($)" stroke="#8C7B7F" fill="#EADCDD" fillOpacity={0.4} strokeWidth={1.5} isAnimationActive={isC3Active} />
                 </AreaChart>
               </ResponsiveContainer>
             )}
@@ -430,7 +428,7 @@ export default function ReportsPage() {
             <span className="badge badge-success text-[10px]">Honest Tracking</span>
           </div>
 
-          <div ref={c4.ref} className="h-64 w-full pt-2">
+          <div ref={c4Ref} className="h-64 w-full pt-2">
             {chartReady && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={actualVsProjectedData}>
@@ -440,8 +438,8 @@ export default function ReportsPage() {
                     contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #EADCDD", fontSize: "12px" }}
                   />
                   <Legend />
-                  <Bar dataKey="projectedYield" name="Projected Yield (%)" fill="#8C7B7F" radius={[4, 4, 0, 0]} isAnimationActive={c4.isAnimationActive} />
-                  <Bar dataKey="actualYield" name="Actual Net Yield (%)" fill="#3B0F18" radius={[4, 4, 0, 0]} isAnimationActive={c4.isAnimationActive} />
+                  <Bar dataKey="projectedYield" name="Projected Yield (%)" fill="#8C7B7F" radius={[4, 4, 0, 0]} isAnimationActive={isC4Active} />
+                  <Bar dataKey="actualYield" name="Actual Net Yield (%)" fill="#3B0F18" radius={[4, 4, 0, 0]} isAnimationActive={isC4Active} />
                 </BarChart>
               </ResponsiveContainer>
             )}
@@ -461,7 +459,7 @@ export default function ReportsPage() {
             <PieIcon className="w-4 h-4 text-[#3B0F18]" />
           </div>
 
-          <div ref={c5.ref} className="h-64 w-full pt-2 flex items-center justify-center">
+          <div ref={c5Ref} className="h-64 w-full pt-2 flex items-center justify-center">
             {chartReady && (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -473,7 +471,7 @@ export default function ReportsPage() {
                     innerRadius={45}
                     paddingAngle={3}
                     dataKey="value"
-                    isAnimationActive={c5.isAnimationActive}
+                    isAnimationActive={isC5Active}
                   >
                     {(propertyDistributionData.length > 0 ? propertyDistributionData : [1, 2]).map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={THEME_COLORS[index % THEME_COLORS.length]} />
@@ -497,14 +495,14 @@ export default function ReportsPage() {
             <Globe className="w-4 h-4 text-[#3B0F18]" />
           </div>
 
-          <div ref={c6.ref} className="h-64 w-full pt-2">
+          <div ref={c6Ref} className="h-64 w-full pt-2">
             {chartReady && (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={countryWiseData} layout="vertical">
                   <XAxis type="number" stroke="#8C7B7F" fontSize={11} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                   <YAxis dataKey="country" type="category" stroke="#8C7B7F" fontSize={11} width={80} />
                   <Tooltip contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", border: "1px solid #EADCDD", fontSize: "12px" }} />
-                  <Bar dataKey="value" name="Capital Invested ($)" fill="#3B0F18" radius={[0, 4, 4, 0]} isAnimationActive={c6.isAnimationActive} />
+                  <Bar dataKey="value" name="Capital Invested ($)" fill="#3B0F18" radius={[0, 4, 4, 0]} isAnimationActive={isC6Active} />
                 </BarChart>
               </ResponsiveContainer>
             )}

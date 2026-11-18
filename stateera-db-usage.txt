@@ -1,0 +1,118 @@
+﻿
+
+Path       : E:\Project\stateera\src\app\admin\page.tsx
+LineNumber : 25
+Line       : import { createClient } from "@/lib/supabase/client";
+
+Path       : E:\Project\stateera\src\app\admin\page.tsx
+LineNumber : 125
+Line       :         const supabase = createClient();
+
+Path       : E:\Project\stateera\src\app\admin\page.tsx
+LineNumber : 129
+Line       :             .from("profiles")
+
+Path       : E:\Project\stateera\src\app\auth\callback\route.ts
+LineNumber : 2
+Line       : import { createClient } from "@/lib/supabase/server";
+
+Path       : E:\Project\stateera\src\app\auth\callback\route.ts
+LineNumber : 27
+Line       :     const supabase = createClient();
+
+Path       : E:\Project\stateera\src\app\explore\page.tsx
+LineNumber : 75
+Line       :     return Array.from(set).sort();
+
+Path       : E:\Project\stateera\src\app\explore\page.tsx
+LineNumber : 85
+Line       :     return Array.from(set).sort();
+
+Path       : E:\Project\stateera\src\app\login\page.tsx
+LineNumber : 18
+Line       : import { createClient } from "@/lib/supabase/client";
+
+Path       : E:\Project\stateera\src\app\login\page.tsx
+LineNumber : 35
+Line       :   const supabase = createClient();
+
+Path       : E:\Project\stateera\src\app\login\page.tsx
+LineNumber : 76
+Line       :         const { data, error } = await supabase.auth.signUp({
+
+Path       : E:\Project\stateera\src\app\login\page.tsx
+LineNumber : 98
+Line       :         const { data: authData, error } = await 
+             supabase.auth.signInWithPassword({
+
+Path       : E:\Project\stateera\src\app\login\page.tsx
+LineNumber : 109
+Line       :                 .from("profiles")
+
+Path       : E:\Project\stateera\src\app\login\page.tsx
+LineNumber : 151
+Line       :       const { error } = await supabase.auth.signInWithOAuth({
+
+Path       : E:\Project\stateera\src\app\manager\page.tsx
+LineNumber : 27
+Line       : import { createClient } from "@/lib/supabase/client";
+
+Path       : E:\Project\stateera\src\app\manager\page.tsx
+LineNumber : 54
+Line       :         const supabase = createClient();
+
+Path       : E:\Project\stateera\src\app\manager\page.tsx
+LineNumber : 58
+Line       :             .from("profiles")
+
+Path       : E:\Project\stateera\src\app\reports\page.tsx
+LineNumber : 90
+Line       :     return Array.from(set).sort();
+
+Path       : E:\Project\stateera\src\app\tenant\page.tsx
+LineNumber : 24
+Line       : import { createClient } from "@/lib/supabase/client";
+
+Path       : E:\Project\stateera\src\app\tenant\page.tsx
+LineNumber : 50
+Line       :         const supabase = createClient();
+
+Path       : E:\Project\stateera\src\app\tenant\page.tsx
+LineNumber : 54
+Line       :             .from("profiles")
+
+Path       : E:\Project\stateera\src\context\DemoContext.tsx
+LineNumber : 11
+Line       : import { createClient } from "@/lib/supabase/client";
+
+Path       : E:\Project\stateera\src\context\DemoContext.tsx
+LineNumber : 413
+Line       :     const supabase = createClient();
+
+Path       : E:\Project\stateera\src\context\DemoContext.tsx
+LineNumber : 431
+Line       :     const { data: { subscription } } = 
+             supabase.auth.onAuthStateChange((event, session) => {
+
+Path       : E:\Project\stateera\src\context\DemoContext.tsx
+LineNumber : 462
+Line       :         const supabase = createClient();
+
+Path       : E:\Project\stateera\src\context\DemoContext.tsx
+LineNumber : 464
+Line       :           .from("profiles")
+
+Path       : E:\Project\stateera\src\lib\supabase\client.ts
+LineNumber : 3
+Line       : export function createClient() {
+
+Path       : E:\Project\stateera\src\lib\supabase\server.ts
+LineNumber : 4
+Line       : export function createClient() {
+
+Path       : E:\Project\stateera\src\middleware.ts
+LineNumber : 75
+Line       :         .from("profiles")
+
+
+

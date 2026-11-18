@@ -38,6 +38,7 @@ import { BeginnerGuideBanner } from "@/components/common/BeginnerGuideBanner";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useChartInView } from "@/hooks/useChartInView";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 const EASING = [0.22, 1, 0.36, 1] as const;
 
@@ -64,11 +65,10 @@ export default function InvestorDashboardPage() {
 
   const { t, dir } = useLanguage();
   const reducedMotion = useReducedMotion();
-  const { ref: chartRef, isAnimationActive } = useChartInView();
+  const [chartRef, isAnimationActive] = useChartInView();
   const [payoutResult, setPayoutResult] = useState<string | null>(null);
   // SSR-safe chart flag: only render Recharts after client hydration
-  const [chartReady, setChartReady] = useState(false);
-  useEffect(() => { setChartReady(true); }, []);
+  const chartReady = useIsMounted();
 
   const handleSimulatePayout = () => {
     const res = simulateMonthlyDividendPayout();

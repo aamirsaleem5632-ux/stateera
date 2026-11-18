@@ -20,6 +20,7 @@ import { BRAND_CONFIG } from "@/config/brand";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { PropertyCard } from "@/components/property/PropertyCard";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 import { StateEraInAction } from "@/components/landing/StateEraInAction";
 import { Reveal, RevealGroup } from "@/components/scroll/Reveal";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -173,12 +174,14 @@ export default function HomePage() {
                 style={{ y: heroImageY }}
                 className="rounded-2xl overflow-hidden border border-[#EADCDD] shadow-sm relative aspect-[4/5] bg-[#FAF5F5]"
               >
-                <Image
+                <OptimizedImage
                   src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&auto=format&fit=crop&q=80"
                   alt="Manhattan Luxury Glass Tower"
                   fill
                   priority
+                  sizes="(max-width: 1024px) 100vw, 42vw"
                   className="object-cover"
+                  fallbackLabel="Manhattan Luxury Glass Tower"
                 />
               </motion.div>
             </motion.div>
@@ -221,7 +224,7 @@ export default function HomePage() {
           {/* Property Cards Grid — staggered */}
           <RevealGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.08}>
             {properties.slice(0, 3).map((property, idx) => (
-              <PropertyCard key={property.id} property={property} featured={idx === 0} />
+              <PropertyCard key={property.id} property={property} featured={idx === 0} priority={idx === 0} />
             ))}
           </RevealGroup>
         </div>

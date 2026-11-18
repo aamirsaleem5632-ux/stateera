@@ -6,27 +6,26 @@ import { useReducedMotion } from "./useReducedMotion";
 /**
  * Hook to trigger Recharts animation only when the chart scrolls into view.
  * Runs once (once: true) and respects prefers-reduced-motion.
+ * Returns a tuple [ref, isAnimationActive, isVisible] for clean compiler inference.
  */
 export function useChartInView() {
-  const [isVisible, setIsVisible] = useState(false);
-  const ref = useRef<HTMLDivElement | null>(null);
+  const [hasIntersected, setHasIntersected] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
   const reducedMotion = useReducedMotion();
 
+  const isVisible = reducedMotion || hasIntersected;
+  const isAnimationActive = !reducedMotion && isVisible;
+
   useEffect(() => {
-    if (isVisible) return;
+    if (reducedMotion || hasIntersected) return;
     const element = ref.current;
     if (!element) return;
-
-    if (reducedMotion) {
-      setIsVisible(true);
-      return;
-    }
 
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            setIsVisible(true);
+            setHasIntersected(true);
             observer.disconnect();
           }
         });
@@ -36,7 +35,7 @@ export function useChartInView() {
 
     observer.observe(element);
     return () => observer.disconnect();
-  }, [isVisible, reducedMotion]);
+  }, [reducedMotion, hasIntersected]);
 
-  return { ref, isVisible, isAnimationActive: !reducedMotion && isVisible };
+  return [ref, isAnimationActive, isVisible] as const;
 }

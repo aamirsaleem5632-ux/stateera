@@ -14,12 +14,14 @@ import { Property } from "@/types/property";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
+import { OptimizedImage } from "@/components/common/OptimizedImage";
 
 interface PropertyCardProps {
   property: Property;
   featured?: boolean;
   onCompareToggle?: () => void;
   isCompared?: boolean;
+  priority?: boolean;
 }
 
 export const PropertyCard: React.FC<PropertyCardProps> = ({
@@ -27,6 +29,7 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
   featured,
   onCompareToggle,
   isCompared,
+  priority = false,
 }) => {
   const { isWatchlisted, toggleWatchlist } = useDemo();
   const { t } = useLanguage();
@@ -36,12 +39,14 @@ export const PropertyCard: React.FC<PropertyCardProps> = ({
     <div className="bg-white border border-[#EADCDD] rounded-xl overflow-hidden flex flex-col group h-full transition-all duration-200 hover:border-[#3B0F18]/50 hover:shadow-sm">
       {/* Property Cover Image */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#FAF5F5]">
-        <Image
+        <OptimizedImage
           src={property.coverImage}
           alt={property.title}
           fill
-          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          priority={priority}
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-500"
+          fallbackLabel={property.title}
         />
 
         {/* Top Badges */}

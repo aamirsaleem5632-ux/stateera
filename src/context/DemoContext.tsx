@@ -7,8 +7,10 @@ import { LeaseAgreement, TenantRentPayment, MaintenanceRequest } from "@/types/t
 import { AccountingLedgerEntry } from "@/types/accounting";
 import { UserRole } from "@/types/admin";
 import { NotificationItem } from "@/types/notification";
+import { ExpertAppointment, CommunityProposal } from "@/types/community";
 import { MOCK_PROPERTIES } from "@/data/mockProperties";
 import { createClient } from "@/lib/supabase/client";
+import { getStorageItem, setStorageItem, removeStorageItem } from "@/lib/storageStore";
 
 interface DemoContextType {
   // Role
@@ -36,7 +38,12 @@ interface DemoContextType {
   averageAnnualYield: number;
 
   // Actions
-  buyShares: (propertyId: string, quantity: number, orderType?: "Market" | "Limit") => { success: boolean; message: string };
+  buyShares: (
+    propertyId: string,
+    quantity: number,
+    orderType?: "Market" | "Limit",
+    limitPrice?: number
+  ) => { success: boolean; message: string };
   sellShares: (propertyId: string, quantity: number) => { success: boolean; message: string };
   depositFunds: (amount: number) => { success: boolean; message: string };
   withdrawFunds: (amount: number) => { success: boolean; message: string };
@@ -67,6 +74,21 @@ interface DemoContextType {
   setDemoTourStep: (step: number) => void;
   startDemoTour: () => void;
   endDemoTour: () => void;
+
+  // Expert Consultations
+  appointments: ExpertAppointment[];
+  bookAppointment: (apt: Omit<ExpertAppointment, "id" | "status" | "createdAt">) => { success: boolean; message: string; appointment?: ExpertAppointment };
+  cancelAppointment: (id: string) => { success: boolean; message: string };
+
+  // Community Governance Proposals
+  proposals: CommunityProposal[];
+  submitProposal: (
+    prop: Omit<CommunityProposal, "id" | "votes" | "hasVoted" | "commentsCount" | "createdAt" | "status" | "author"> & {
+      status?: CommunityProposal["status"];
+      author?: string;
+    }
+  ) => { success: boolean; message: string; proposal?: CommunityProposal };
+  voteProposal: (id: string) => { success: boolean; message: string; hasVoted?: boolean; votes?: number };
 }
 
 const INITIAL_WALLET_BALANCE = 25000;
@@ -354,6 +376,83 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
   },
 ];
 
+const INITIAL_APPOINTMENTS: ExpertAppointment[] = [
+  {
+    id: "apt-101",
+    expertName: "Adv. Bilal Hassan, LL.M",
+    expertRole: "Senior Property Legal Counsel",
+    date: "2026-11-20",
+    time: "10:30 AM",
+    type: "Video Consultation",
+    status: "Confirmed",
+    purpose: "Title deed validation & overseas Pakistani tax structure review",
+    createdAt: "2026-11-15 09:00:00",
+  },
+];
+
+const INITIAL_PROPOSALS: CommunityProposal[] = [
+  {
+    id: "prop-lab-01",
+    title: "Solar-Powered Student Housing Hub near NUST",
+    city: "Islamabad",
+    country: "Pakistan",
+    category: "student",
+    estimatedCost: "$1.8M",
+    author: "Farhan Qureshi (Community Member)",
+    votes: 184,
+    hasVoted: false,
+    status: "Feasibility Study",
+    rationale: "Over 8,000 university students struggle to find safe, high-speed fiber-equipped student accommodation near Sector H-12. A purpose-built student block with rooftop solar can deliver steady 10%+ net rental yield.",
+    commentsCount: 38,
+    createdAt: "2026-11-01 10:00:00",
+  },
+  {
+    id: "prop-lab-02",
+    title: "Biophilic Co-Living & Creative Studios in Shoreditch",
+    city: "London",
+    country: "United Kingdom",
+    category: "residential",
+    estimatedCost: "$4.5M",
+    author: "Elena Rostova (Investor Circle)",
+    votes: 142,
+    hasVoted: false,
+    status: "Due Diligence",
+    rationale: "High demand from European tech founders and creative designers for flexible 3-to-12 month serviced suites with communal podcast studios and garden terraces.",
+    commentsCount: 29,
+    createdAt: "2026-11-04 14:30:00",
+  },
+  {
+    id: "prop-lab-03",
+    title: "Cold-Chain Logistics Terminal for Mango & Citrus Exports",
+    city: "Multan",
+    country: "Pakistan",
+    category: "logistics",
+    estimatedCost: "$2.6M",
+    author: "Malik Shahzad (Agri-Logistics)",
+    votes: 119,
+    hasVoted: false,
+    status: "Community Voting",
+    rationale: "Export agricultural processors in Southern Punjab face 25% post-harvest spoilage. A climate-controlled cold storage warehouse along M-4 Motorway guarantees year-round long-term corporate leases.",
+    commentsCount: 22,
+    createdAt: "2026-11-07 16:15:00",
+  },
+  {
+    id: "prop-lab-04",
+    title: "Affordable Healthcare Professional Housing near Dubai Healthcare City",
+    city: "Dubai",
+    country: "United Arab Emirates",
+    category: "affordable",
+    estimatedCost: "$3.9M",
+    author: "Dr. Ayesha Rehman",
+    votes: 95,
+    hasVoted: false,
+    status: "Under Review",
+    rationale: "Mid-level nursing and healthcare technicians commute 90 minutes daily. Developing dedicated affordable community apartments creates immediate 100% occupancy with long-term hospital leases.",
+    commentsCount: 17,
+    createdAt: "2026-11-10 11:45:00",
+  },
+];
+
 const DemoContext = createContext<DemoContextType | undefined>(undefined);
 
 export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -371,6 +470,10 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [accountingLedger, setAccountingLedger] = useState<AccountingLedgerEntry[]>(INITIAL_LEDGER);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
 
+  // Experts & Community Lab persistent state
+  const [appointments, setAppointments] = useState<ExpertAppointment[]>(INITIAL_APPOINTMENTS);
+  const [proposals, setProposals] = useState<CommunityProposal[]>(INITIAL_PROPOSALS);
+
   // Guided Walkthrough
   const [isDemoTourActive, setIsDemoTourActive] = useState<boolean>(false);
   const [demoTourStep, setDemoTourStep] = useState<number>(0);
@@ -380,33 +483,105 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const authSequenceRef = useRef<number>(0);
   const authUserIdRef = useRef<string | null>(null);
 
+  // Helper to scope localStorage by authenticated user with guest fallback
+  const getStorageKey = useCallback((key: string, userId: string | null) => {
+    return userId ? `stateera_${userId}_${key}` : `stateera_guest_${key}`;
+  }, []);
+
   // Synchronously update both ref and state to eliminate render-timing gaps
   const updateAuthUserId = useCallback((userId: string | null) => {
     authUserIdRef.current = userId;
     setAuthUserId(userId);
   }, []);
 
-  // Load from localStorage if present
-  useEffect(() => {
+  // Load from user-scoped localStorage with strict isolation between authenticated and guest accounts
+  const restoreStorageForUser = useCallback((userId: string | null) => {
     try {
-      const savedWallet = localStorage.getItem("stateera_wallet_balance");
-      if (savedWallet) setWalletBalance(JSON.parse(savedWallet));
+      if (userId) {
+        // Authenticated user: strictly read user-scoped keys. NEVER fall back to guest or legacy unscoped data.
+        const scopedWalletKey = `stateera_${userId}_wallet_balance`;
+        const savedWallet = getStorageItem(scopedWalletKey);
+        setWalletBalance(savedWallet ? JSON.parse(savedWallet) : INITIAL_WALLET_BALANCE);
 
-      const savedHoldings = localStorage.getItem("stateera_holdings");
-      if (savedHoldings) setHoldings(JSON.parse(savedHoldings));
+        const scopedHoldingsKey = `stateera_${userId}_holdings`;
+        const savedHoldings = getStorageItem(scopedHoldingsKey);
+        setHoldings(savedHoldings ? JSON.parse(savedHoldings) : INITIAL_HOLDINGS);
 
-      const savedTransactions = localStorage.getItem("stateera_transactions");
-      if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
+        const scopedTransactionsKey = `stateera_${userId}_transactions`;
+        const savedTransactions = getStorageItem(scopedTransactionsKey);
+        setTransactions(savedTransactions ? JSON.parse(savedTransactions) : INITIAL_TRANSACTIONS);
 
-      const savedWatchlist = localStorage.getItem("stateera_watchlist");
-      if (savedWatchlist) setWatchlist(JSON.parse(savedWatchlist));
+        const scopedWatchlistKey = `stateera_${userId}_watchlist`;
+        const savedWatchlist = getStorageItem(scopedWatchlistKey);
+        setWatchlist(savedWatchlist ? JSON.parse(savedWatchlist) : ["prop-dubai-marina-tower", "prop-london-mayfair-commercial"]);
 
-      const savedRole = localStorage.getItem("stateera_role") as UserRole;
-      if (savedRole) setRole(savedRole);
+        const scopedRoleKey = `stateera_${userId}_role`;
+        const savedRole = getStorageItem(scopedRoleKey) as UserRole | null;
+        setRole(savedRole && ["investor", "manager", "tenant", "admin"].includes(savedRole) ? savedRole : "investor");
+
+        const scopedAppointmentsKey = `stateera_${userId}_appointments`;
+        const savedAppointments = getStorageItem(scopedAppointmentsKey);
+        if (savedAppointments) {
+          try {
+            const parsedApt = JSON.parse(savedAppointments);
+            if (Array.isArray(parsedApt)) setAppointments(parsedApt);
+          } catch {}
+        }
+
+        const scopedProposalsKey = `stateera_${userId}_proposals`;
+        const savedProposals = getStorageItem(scopedProposalsKey);
+        if (savedProposals) {
+          try {
+            const parsedProp = JSON.parse(savedProposals);
+            if (Array.isArray(parsedProp)) setProposals(parsedProp);
+          } catch {}
+        }
+      } else {
+        // Guest user: read guest-scoped keys with legacy unscoped fallback
+        const savedWallet = getStorageItem("stateera_guest_wallet_balance") ?? getStorageItem("stateera_wallet_balance");
+        setWalletBalance(savedWallet ? JSON.parse(savedWallet) : INITIAL_WALLET_BALANCE);
+
+        const savedHoldings = getStorageItem("stateera_guest_holdings") ?? getStorageItem("stateera_holdings");
+        setHoldings(savedHoldings ? JSON.parse(savedHoldings) : INITIAL_HOLDINGS);
+
+        const savedTransactions = getStorageItem("stateera_guest_transactions") ?? getStorageItem("stateera_transactions");
+        setTransactions(savedTransactions ? JSON.parse(savedTransactions) : INITIAL_TRANSACTIONS);
+
+        const savedWatchlist = getStorageItem("stateera_guest_watchlist") ?? getStorageItem("stateera_watchlist");
+        setWatchlist(savedWatchlist ? JSON.parse(savedWatchlist) : ["prop-dubai-marina-tower", "prop-london-mayfair-commercial"]);
+
+        const savedRole = (getStorageItem("stateera_guest_role") ?? getStorageItem("stateera_role")) as UserRole | null;
+        setRole(savedRole && ["investor", "manager", "tenant", "admin"].includes(savedRole) ? savedRole : "investor");
+
+        const savedAppointments = getStorageItem("stateera_guest_appointments") ?? getStorageItem("stateera_appointments");
+        if (savedAppointments) {
+          try {
+            const parsedApt = JSON.parse(savedAppointments);
+            if (Array.isArray(parsedApt)) setAppointments(parsedApt);
+          } catch {}
+        }
+
+        const savedProposals = getStorageItem("stateera_guest_proposals") ?? getStorageItem("stateera_proposals");
+        if (savedProposals) {
+          try {
+            const parsedProp = JSON.parse(savedProposals);
+            if (Array.isArray(parsedProp)) setProposals(parsedProp);
+          } catch {}
+        }
+      }
     } catch {
-      // Local storage read error
+      // In restricted environments or if parsing fails, restore clean defaults
+      setWalletBalance(INITIAL_WALLET_BALANCE);
+      setHoldings(INITIAL_HOLDINGS);
+      setTransactions(INITIAL_TRANSACTIONS);
+      setWatchlist(["prop-dubai-marina-tower", "prop-london-mayfair-commercial"]);
+      setRole("investor");
+      setAppointments(INITIAL_APPOINTMENTS);
+      setProposals(INITIAL_PROPOSALS);
     }
   }, []);
+
+  const isRestoredRef = useRef<boolean>(false);
 
   // Synchronous non-blocking auth session subscriber (with sequence race guard)
   useEffect(() => {
@@ -418,13 +593,16 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Discard delayed getSession if onAuthStateChange already fired a newer event while in-flight
       if (authSequenceRef.current !== requestSeq) return;
 
-      if (session?.user) {
-        updateAuthUserId(session.user.id);
-      } else {
-        updateAuthUserId(null);
-      }
+      const uid = session?.user?.id ?? null;
+      updateAuthUserId(uid);
+      restoreStorageForUser(uid);
+      isRestoredRef.current = true;
     }).catch(() => {
       // Graceful offline fallback
+      if (authSequenceRef.current !== requestSeq) return;
+      updateAuthUserId(null);
+      restoreStorageForUser(null);
+      isRestoredRef.current = true;
     });
 
     // Purely synchronous auth event listener - zero async database calls inside callback
@@ -434,21 +612,21 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (event === "SIGNED_OUT" || !session?.user) {
         updateAuthUserId(null);
+        restoreStorageForUser(null);
         setRole("investor");
-        try {
-          localStorage.removeItem("stateera_role");
-        } catch {
-          // Local storage write error
-        }
+        removeStorageItem("stateera_role");
+        isRestoredRef.current = true;
       } else if (session?.user) {
         updateAuthUserId(session.user.id);
+        restoreStorageForUser(session.user.id);
+        isRestoredRef.current = true;
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, [updateAuthUserId]);
+  }, [updateAuthUserId, restoreStorageForUser]);
 
   // Decoupled asynchronous profile role synchronization (runs outside auth event loop with cancellation checks)
   useEffect(() => {
@@ -482,20 +660,12 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
         // Fail-closed: If profile is unapproved (Pending/Rejected), query errored, or profile missing:
         // Reset client role to "investor" and remove stateera_role from localStorage
         setRole("investor");
-        try {
-          localStorage.removeItem("stateera_role");
-        } catch {
-          // Local storage write error
-        }
+        removeStorageItem("stateera_role");
       } catch {
         // Fail-closed on network/runtime exception
         if (isMounted && targetUserId === authUserIdRef.current) {
           setRole("investor");
-          try {
-            localStorage.removeItem("stateera_role");
-          } catch {
-            // Local storage write error
-          }
+          removeStorageItem("stateera_role");
         }
       }
     };
@@ -507,20 +677,25 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, [authUserId]);
 
-  // Sync state changes to localStorage
+  // Sync state changes to user-scoped localStorage
   useEffect(() => {
+    // Prevent premature overwrite before initial auth/storage restoration completes
+    if (!isRestoredRef.current) return;
+
     try {
-      localStorage.setItem("stateera_wallet_balance", JSON.stringify(walletBalance));
-      localStorage.setItem("stateera_holdings", JSON.stringify(holdings));
-      localStorage.setItem("stateera_transactions", JSON.stringify(transactions));
-      localStorage.setItem("stateera_watchlist", JSON.stringify(watchlist));
-      localStorage.setItem("stateera_role", role);
+      setStorageItem(getStorageKey("wallet_balance", authUserId), JSON.stringify(walletBalance));
+      setStorageItem(getStorageKey("holdings", authUserId), JSON.stringify(holdings));
+      setStorageItem(getStorageKey("transactions", authUserId), JSON.stringify(transactions));
+      setStorageItem(getStorageKey("watchlist", authUserId), JSON.stringify(watchlist));
+      setStorageItem(getStorageKey("role", authUserId), role);
+      setStorageItem(getStorageKey("appointments", authUserId), JSON.stringify(appointments));
+      setStorageItem(getStorageKey("proposals", authUserId), JSON.stringify(proposals));
     } catch {
       // Local storage write error
     }
-  }, [walletBalance, holdings, transactions, watchlist, role]);
+  }, [walletBalance, holdings, transactions, watchlist, role, appointments, proposals, authUserId, getStorageKey]);
 
-  // Computed Portfolio Totals
+  // Computed Portfolio Totals (Division-by-zero & non-finite protected)
   const { totalPortfolioValue, totalInvested, totalGainLoss, totalGainLossPercent, monthlyEstimatedIncome, averageAnnualYield } = useMemo(() => {
     let portVal = 0;
     let invTotal = 0;
@@ -535,16 +710,18 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const gainLoss = portVal - invTotal;
-    const gainLossPct = invTotal > 0 ? (gainLoss / invTotal) * 100 : 0;
-    const avgYield = portVal > 0 ? weightedYieldSum / portVal : 0;
+    const rawGainLossPct = invTotal > 0 ? (gainLoss / invTotal) * 100 : 0;
+    const gainLossPct = Number.isFinite(rawGainLossPct) ? rawGainLossPct : 0;
+    const rawAvgYield = portVal > 0 ? weightedYieldSum / portVal : 0;
+    const avgYield = Number.isFinite(rawAvgYield) ? rawAvgYield : 0;
 
     return {
-      totalPortfolioValue: portVal,
-      totalInvested: invTotal,
-      totalGainLoss: gainLoss,
-      totalGainLossPercent: gainLossPct,
-      monthlyEstimatedIncome: monthInc,
-      averageAnnualYield: avgYield,
+      totalPortfolioValue: Number(portVal.toFixed(2)),
+      totalInvested: Number(invTotal.toFixed(2)),
+      totalGainLoss: Number(gainLoss.toFixed(2)),
+      totalGainLossPercent: Number(gainLossPct.toFixed(2)),
+      monthlyEstimatedIncome: Number(monthInc.toFixed(2)),
+      averageAnnualYield: Number(avgYield.toFixed(2)),
     };
   }, [holdings]);
 
@@ -558,9 +735,14 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isWatchlisted = (propertyId: string) => watchlist.includes(propertyId);
 
   // Buy fractional shares
-  const buyShares = (propertyId: string, quantity: number, orderType: "Market" | "Limit" = "Market") => {
-    if (quantity <= 0) {
-      return { success: false, message: "Please enter a valid share quantity greater than 0." };
+  const buyShares = (
+    propertyId: string,
+    quantity: number,
+    orderType: "Market" | "Limit" = "Market",
+    limitPrice?: number
+  ) => {
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+      return { success: false, message: "Please enter a valid whole number of shares greater than 0." };
     }
 
     const prop = properties.find((p) => p.id === propertyId);
@@ -572,7 +754,22 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return { success: false, message: `Only ${prop.availableShares} shares are currently available.` };
     }
 
-    const totalCost = quantity * prop.sharePrice;
+    // Determine execution price based on order type
+    let executionPrice = prop.sharePrice;
+    if (orderType === "Limit") {
+      if (limitPrice === undefined || !Number.isFinite(limitPrice) || limitPrice <= 0) {
+        return { success: false, message: "Please specify a valid limit price greater than $0." };
+      }
+      if (limitPrice < prop.sharePrice) {
+        return {
+          success: false,
+          message: `Limit price ($${limitPrice.toFixed(2)}) is below the current market asking price ($${prop.sharePrice.toFixed(2)}). In instant demo execution, buy orders only fill when limit price meets or exceeds the market price.`,
+        };
+      }
+      executionPrice = limitPrice;
+    }
+
+    const totalCost = Number((quantity * executionPrice).toFixed(2));
     if (totalCost > walletBalance) {
       return {
         success: false,
@@ -581,7 +778,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
 
     // Deduct wallet balance
-    setWalletBalance((prev) => prev - totalCost);
+    setWalletBalance((prev) => Number((prev - totalCost).toFixed(2)));
 
     // Update Property available shares & funded %
     setProperties((prev) =>
@@ -603,21 +800,21 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (existing) {
         const newShares = existing.sharesOwned + quantity;
         const newTotalInvested = existing.totalInvested + totalCost;
-        const newAvgPrice = newTotalInvested / newShares;
+        const newAvgPrice = newShares > 0 ? newTotalInvested / newShares : executionPrice;
         const newCurrentVal = newShares * prop.sharePrice;
         const unrealGain = newCurrentVal - newTotalInvested;
-        const unrealPct = (unrealGain / newTotalInvested) * 100;
+        const unrealPct = newTotalInvested > 0 ? (unrealGain / newTotalInvested) * 100 : 0;
 
         return prev.map((h) =>
           h.propertyId === propertyId
             ? {
                 ...h,
                 sharesOwned: newShares,
-                totalInvested: newTotalInvested,
+                totalInvested: Number(newTotalInvested.toFixed(2)),
                 averagePurchasePrice: Number(newAvgPrice.toFixed(2)),
-                currentValue: newCurrentVal,
-                unrealizedGain: unrealGain,
-                unrealizedGainPercent: Number(unrealPct.toFixed(2)),
+                currentValue: Number(newCurrentVal.toFixed(2)),
+                unrealizedGain: Number(unrealGain.toFixed(2)),
+                unrealizedGainPercent: Number(Number.isFinite(unrealPct) ? unrealPct.toFixed(2) : 0),
                 monthlyEstimatedRentalIncome: Number((newShares * prop.monthlyPerShareRent).toFixed(2)),
               }
             : h
@@ -627,7 +824,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
           propertyId: prop.id,
           propertyTitle: prop.title,
           sharesOwned: quantity,
-          averagePurchasePrice: prop.sharePrice,
+          averagePurchasePrice: executionPrice,
           currentSharePrice: prop.sharePrice,
           totalInvested: totalCost,
           currentValue: totalCost,
@@ -649,7 +846,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       propertyId: prop.id,
       propertyTitle: prop.title,
       shares: quantity,
-      pricePerShare: prop.sharePrice,
+      pricePerShare: executionPrice,
       amount: totalCost,
       fee: 0,
       status: "Completed",
@@ -662,7 +859,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       id: `notif-${Date.now()}`,
       category: "TRANSACTION",
       title: "Share Purchase Executed",
-      message: `Successfully acquired ${quantity} shares of ${prop.title} for $${totalCost.toLocaleString()}.`,
+      message: `Successfully acquired ${quantity} shares of ${prop.title} for $${totalCost.toLocaleString()} (${orderType} order at $${executionPrice.toFixed(2)}/share).`,
       timestamp: "Just now",
       read: false,
       actionUrl: "/dashboard",
@@ -670,13 +867,16 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
     setNotifications((prev) => [newNotif, ...prev]);
 
-    return { success: true, message: `Successfully purchased ${quantity} shares of ${prop.title}!` };
+    return {
+      success: true,
+      message: `Successfully purchased ${quantity} shares of ${prop.title} for $${totalCost.toLocaleString()} (${orderType} order)!`,
+    };
   };
 
   // Sell fractional shares
   const sellShares = (propertyId: string, quantity: number) => {
-    if (quantity <= 0) {
-      return { success: false, message: "Please enter a valid share quantity to sell." };
+    if (!Number.isFinite(quantity) || quantity <= 0 || !Number.isInteger(quantity)) {
+      return { success: false, message: "Please enter a valid whole number of shares to sell." };
     }
 
     const holding = holdings.find((h) => h.propertyId === propertyId);
@@ -689,10 +889,10 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const prop = properties.find((p) => p.id === propertyId);
     const sharePrice = prop ? prop.sharePrice : holding.currentSharePrice;
-    const saleProceeds = quantity * sharePrice;
+    const saleProceeds = Number((quantity * sharePrice).toFixed(2));
 
     // Credit wallet balance
-    setWalletBalance((prev) => prev + saleProceeds);
+    setWalletBalance((prev) => Number((prev + saleProceeds).toFixed(2)));
 
     // Update Property available shares
     if (prop) {
@@ -709,19 +909,19 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
         .map((h) => {
           if (h.propertyId === propertyId) {
             const remainingShares = h.sharesOwned - quantity;
-            if (remainingShares === 0) return null;
-            const newTotalInvested = h.totalInvested * (remainingShares / h.sharesOwned);
+            if (remainingShares <= 0) return null;
+            const newTotalInvested = h.sharesOwned > 0 ? h.totalInvested * (remainingShares / h.sharesOwned) : 0;
             const newCurrentVal = remainingShares * sharePrice;
             const unrealGain = newCurrentVal - newTotalInvested;
-            const unrealPct = (unrealGain / newTotalInvested) * 100;
+            const unrealPct = newTotalInvested > 0 ? (unrealGain / newTotalInvested) * 100 : 0;
 
             return {
               ...h,
               sharesOwned: remainingShares,
               totalInvested: Number(newTotalInvested.toFixed(2)),
-              currentValue: newCurrentVal,
+              currentValue: Number(newCurrentVal.toFixed(2)),
               unrealizedGain: Number(unrealGain.toFixed(2)),
-              unrealizedGainPercent: Number(unrealPct.toFixed(2)),
+              unrealizedGainPercent: Number(Number.isFinite(unrealPct) ? unrealPct.toFixed(2) : 0),
               monthlyEstimatedRentalIncome: Number(
                 (remainingShares * (prop ? prop.monthlyPerShareRent : 0.8)).toFixed(2)
               ),
@@ -766,49 +966,70 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Deposit demo cash
   const depositFunds = (amount: number) => {
-    if (amount <= 0) return { success: false, message: "Please enter a valid amount." };
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { success: false, message: "Please enter a valid deposit amount greater than $0." };
+    }
 
-    setWalletBalance((prev) => prev + amount);
+    const cleanAmount = Number(amount.toFixed(2));
+    setWalletBalance((prev) => Number((prev + cleanAmount).toFixed(2)));
 
     const newTx: Transaction = {
       id: `tx-dep-${Date.now()}`,
       timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
       type: "DEPOSIT",
-      amount,
+      amount: cleanAmount,
       fee: 0,
       status: "Completed",
       referenceCode: `DEP-${Math.floor(100000 + Math.random() * 900000)}`,
     };
     setTransactions((prev) => [newTx, ...prev]);
 
-    return { success: true, message: `Deposited $${amount.toLocaleString()} into your demo wallet!` };
+    return { success: true, message: `Deposited $${cleanAmount.toLocaleString()} demo cash into your wallet (practice funds)!` };
   };
 
   // Withdraw demo cash
   const withdrawFunds = (amount: number) => {
-    if (amount <= 0) return { success: false, message: "Please enter a valid withdrawal amount." };
-    if (amount > walletBalance) return { success: false, message: "Withdrawal amount exceeds available wallet balance." };
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return { success: false, message: "Please enter a valid withdrawal amount greater than $0." };
+    }
+    const cleanAmount = Number(amount.toFixed(2));
+    if (cleanAmount > walletBalance) {
+      return {
+        success: false,
+        message: `Withdrawal amount ($${cleanAmount.toLocaleString()}) exceeds available wallet balance ($${walletBalance.toLocaleString()}).`,
+      };
+    }
 
-    setWalletBalance((prev) => prev - amount);
+    setWalletBalance((prev) => Number((prev - cleanAmount).toFixed(2)));
 
     const newTx: Transaction = {
       id: `tx-wdr-${Date.now()}`,
       timestamp: new Date().toISOString().replace("T", " ").substring(0, 19),
       type: "WITHDRAW",
-      amount,
+      amount: cleanAmount,
       fee: 0,
       status: "Completed",
       referenceCode: `WDR-${Math.floor(100000 + Math.random() * 900000)}`,
     };
     setTransactions((prev) => [newTx, ...prev]);
 
-    return { success: true, message: `Withdrew $${amount.toLocaleString()} demo cash successfully!` };
+    return { success: true, message: `Withdrew $${cleanAmount.toLocaleString()} demo cash successfully (practice funds)!` };
   };
 
   // Simulate monthly rental dividend distributions across owned shares
   const simulateMonthlyDividendPayout = () => {
     if (holdings.length === 0) {
       return { success: false, totalDistributed: 0, message: "You do not own any fractional shares yet. Buy shares first to earn monthly rental yield!" };
+    }
+
+    const currentPeriod = new Date().toISOString().substring(0, 7); // e.g. "2026-11"
+    const isAlreadyPaid = payoutHistory.some((p) => p.payoutDate.startsWith(currentPeriod));
+    if (isAlreadyPaid) {
+      return {
+        success: false,
+        totalDistributed: 0,
+        message: `Simulated rental dividend for period ${currentPeriod} has already been distributed. Monthly distributions can only be triggered once per calendar month cycle in the demo.`,
+      };
     }
 
     let totalPayout = 0;
@@ -851,15 +1072,15 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       });
     });
 
-    setWalletBalance((prev) => prev + totalPayout);
+    setWalletBalance((prev) => Number((prev + totalPayout).toFixed(2)));
     setPayoutHistory((prev) => [...newPayoutRecords, ...prev]);
     setTransactions((prev) => [...newTxs, ...prev]);
 
     const notif: NotificationItem = {
       id: `notif-div-${Date.now()}`,
       category: "PAYOUT",
-      title: "Monthly Rental Yield Distributed",
-      message: `Credited $${totalPayout.toFixed(2)} across ${holdings.length} properties directly to your demo wallet.`,
+      title: "Simulated Rental Yield Distributed",
+      message: `Credited $${totalPayout.toFixed(2)} simulated rental dividend across ${holdings.length} properties directly to your demo wallet.`,
       timestamp: "Just now",
       read: false,
       actionUrl: "/wallet",
@@ -870,7 +1091,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return {
       success: true,
       totalDistributed: Number(totalPayout.toFixed(2)),
-      message: `Simulated rental dividend of $${totalPayout.toFixed(2)} distributed across your portfolio!`,
+      message: `Simulated rental dividend of $${totalPayout.toFixed(2)} distributed across your portfolio for ${currentPeriod}!`,
     };
   };
 
@@ -888,13 +1109,35 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setMaintenanceRequests(INITIAL_MAINTENANCE);
     setAccountingLedger(INITIAL_LEDGER);
     setNotifications(INITIAL_NOTIFICATIONS);
+    setAppointments(INITIAL_APPOINTMENTS);
+    setProposals(INITIAL_PROPOSALS);
 
     try {
-      localStorage.removeItem("stateera_wallet_balance");
-      localStorage.removeItem("stateera_holdings");
-      localStorage.removeItem("stateera_transactions");
-      localStorage.removeItem("stateera_watchlist");
-      localStorage.removeItem("stateera_role");
+      const scopedWalletKey = getStorageKey("wallet_balance", authUserId);
+      const scopedHoldingsKey = getStorageKey("holdings", authUserId);
+      const scopedTxKey = getStorageKey("transactions", authUserId);
+      const scopedWatchlistKey = getStorageKey("watchlist", authUserId);
+      const scopedRoleKey = getStorageKey("role", authUserId);
+      const scopedAppointmentsKey = getStorageKey("appointments", authUserId);
+      const scopedProposalsKey = getStorageKey("proposals", authUserId);
+
+      removeStorageItem(scopedWalletKey);
+      removeStorageItem(scopedHoldingsKey);
+      removeStorageItem(scopedTxKey);
+      removeStorageItem(scopedWatchlistKey);
+      removeStorageItem(scopedRoleKey);
+      removeStorageItem(scopedAppointmentsKey);
+      removeStorageItem(scopedProposalsKey);
+
+      removeStorageItem("stateera_wallet_balance");
+      removeStorageItem("stateera_holdings");
+      removeStorageItem("stateera_transactions");
+      removeStorageItem("stateera_watchlist");
+      removeStorageItem("stateera_role");
+      removeStorageItem("stateera_guest_appointments");
+      removeStorageItem("stateera_guest_proposals");
+      removeStorageItem("stateera_appointments");
+      removeStorageItem("stateera_proposals");
     } catch {
       // Ignore
     }
@@ -917,7 +1160,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       message: `${newReq.title} for ${newReq.propertyTitle} (${newReq.unitNumber}) submitted.`,
       timestamp: "Just now",
       read: false,
-      actionUrl: "/manager",
+      actionUrl: "/demo/manager",
       severity: "warning",
     };
     setNotifications((prev) => [notif, ...prev]);
@@ -966,8 +1209,10 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Accounting Ledger
   const addLedgerEntry = (entry: Omit<AccountingLedgerEntry, "id" | "referenceNo">) => {
+    if (!Number.isFinite(entry.amount) || entry.amount <= 0) return;
     const newEntry: AccountingLedgerEntry = {
       ...entry,
+      amount: Number(entry.amount.toFixed(2)),
       id: `led-${Date.now()}`,
       referenceNo: `REF-${Math.floor(100000 + Math.random() * 900000)}`,
     };
@@ -995,6 +1240,164 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
   const endDemoTour = () => {
     setIsDemoTourActive(false);
+  };
+
+  // Expert Appointments
+  const bookAppointment = (apt: Omit<ExpertAppointment, "id" | "status" | "createdAt">): { success: boolean; message: string; appointment?: ExpertAppointment } => {
+    if (!apt.expertName || !apt.expertName.trim()) {
+      return { success: false, message: "Please select a valid expert advisor." };
+    }
+    if (!apt.date || !apt.date.trim()) {
+      return { success: false, message: "Please choose a valid consultation date." };
+    }
+    if (!apt.time || !apt.time.trim()) {
+      return { success: false, message: "Please choose a valid consultation time slot." };
+    }
+    if (!apt.purpose || apt.purpose.trim().length < 5) {
+      return { success: false, message: "Please provide consultation case notes (minimum 5 characters)." };
+    }
+
+    // Duplicate check: Same expert on identical date and time slot
+    const isDuplicate = appointments.some(
+      (a) =>
+        a.status !== "Cancelled" &&
+        a.expertName.trim().toLowerCase() === apt.expertName.trim().toLowerCase() &&
+        a.date === apt.date &&
+        a.time === apt.time
+    );
+
+    if (isDuplicate) {
+      return {
+        success: false,
+        message: `You already have an active consultation scheduled with ${apt.expertName} on ${apt.date} at ${apt.time}.`,
+      };
+    }
+
+    const newApt: ExpertAppointment = {
+      ...apt,
+      id: `apt-${Date.now()}`,
+      status: "Confirmed",
+      createdAt: new Date().toISOString().replace("T", " ").substring(0, 19),
+    };
+
+    setAppointments((prev) => [newApt, ...prev]);
+
+    // Dispatch persistent confirmation notification
+    const notif: NotificationItem = {
+      id: `notif-apt-${Date.now()}`,
+      category: "DUE_DILIGENCE",
+      title: "Expert Consultation Confirmed",
+      message: `Confirmed ${apt.type} with ${apt.expertName} for ${apt.date} at ${apt.time}.`,
+      timestamp: "Just now",
+      read: false,
+      actionUrl: "/experts",
+      severity: "success",
+    };
+    setNotifications((prev) => [notif, ...prev]);
+
+    return {
+      success: true,
+      message: `Consultation confirmed with ${apt.expertName}!`,
+      appointment: newApt,
+    };
+  };
+
+  const cancelAppointment = (id: string): { success: boolean; message: string } => {
+    const target = appointments.find((a) => a.id === id);
+    if (!target) {
+      return { success: false, message: "Appointment record not found." };
+    }
+
+    setAppointments((prev) =>
+      prev.map((a) => (a.id === id ? { ...a, status: "Cancelled" as const } : a))
+    );
+
+    return { success: true, message: `Consultation with ${target.expertName} has been cancelled.` };
+  };
+
+  // Community Governance Proposals
+  const submitProposal = (
+    prop: Omit<CommunityProposal, "id" | "votes" | "hasVoted" | "commentsCount" | "createdAt" | "status" | "author"> & {
+      status?: CommunityProposal["status"];
+      author?: string;
+    }
+  ): { success: boolean; message: string; proposal?: CommunityProposal } => {
+    if (!prop.title || prop.title.trim().length < 5) {
+      return { success: false, message: "Proposal title must be at least 5 characters." };
+    }
+    if (!prop.city || !prop.city.trim()) {
+      return { success: false, message: "Please specify a target city for the property proposal." };
+    }
+    if (!prop.rationale || prop.rationale.trim().length < 10) {
+      return { success: false, message: "Please provide a clear investment rationale (minimum 10 characters)." };
+    }
+
+    // Duplicate check: Same proposal title
+    const isDuplicate = proposals.some(
+      (p) => p.title.trim().toLowerCase() === prop.title.trim().toLowerCase()
+    );
+
+    if (isDuplicate) {
+      return {
+        success: false,
+        message: "A community proposal with this title already exists in the Community Lab.",
+      };
+    }
+
+    const created: CommunityProposal = {
+      ...prop,
+      id: `prop-lab-${Date.now()}`,
+      author: prop.author || "You (Active Contributor)",
+      estimatedCost: prop.estimatedCost || "$2.0M",
+      votes: 1,
+      hasVoted: true,
+      status: prop.status || "Under Review",
+      commentsCount: 0,
+      createdAt: new Date().toISOString().replace("T", " ").substring(0, 19),
+    };
+
+    setProposals((prev) => [created, ...prev]);
+
+    const notif: NotificationItem = {
+      id: `notif-prop-${Date.now()}`,
+      category: "DUE_DILIGENCE",
+      title: "Community Proposal Submitted",
+      message: `"${created.title}" in ${created.city} submitted for community voting.`,
+      timestamp: "Just now",
+      read: false,
+      actionUrl: "/community-lab",
+      severity: "info",
+    };
+    setNotifications((prev) => [notif, ...prev]);
+
+    return {
+      success: true,
+      message: "Property proposal successfully submitted to Community Lab!",
+      proposal: created,
+    };
+  };
+
+  const voteProposal = (id: string): { success: boolean; message: string; hasVoted?: boolean; votes?: number } => {
+    const target = proposals.find((p) => p.id === id);
+    if (!target) {
+      return { success: false, message: "Proposal not found." };
+    }
+
+    const nextHasVoted = !target.hasVoted;
+    const nextVotes = nextHasVoted ? target.votes + 1 : Math.max(0, target.votes - 1);
+
+    setProposals((prev) =>
+      prev.map((p) =>
+        p.id === id ? { ...p, hasVoted: nextHasVoted, votes: nextVotes } : p
+      )
+    );
+
+    return {
+      success: true,
+      message: nextHasVoted ? "Upvote recorded!" : "Vote withdrawn.",
+      hasVoted: nextHasVoted,
+      votes: nextVotes,
+    };
   };
 
   return (
@@ -1039,6 +1442,12 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setDemoTourStep,
         startDemoTour,
         endDemoTour,
+        appointments,
+        bookAppointment,
+        cancelAppointment,
+        proposals,
+        submitProposal,
+        voteProposal,
       }}
     >
       {children}

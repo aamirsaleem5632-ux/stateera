@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
 import {
   Sliders,
   TrendingUp,
@@ -18,56 +18,170 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from "recharts";
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
+import { Property } from "@/types/property";
 import Link from "next/link";
 import { useChartInView } from "@/hooks/useChartInView";
 
+interface EmptyPortfolioStateProps {
+  onReset?: () => void;
+  dir?: "ltr" | "rtl";
+}
+
+function EmptyPortfolioState({ onReset, dir = "ltr" }: EmptyPortfolioStateProps) {
+  return (
+    <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+      <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-12 shadow-sm space-y-6">
+        <div className="w-16 h-16 rounded-2xl bg-[#FAF5F5] border border-[#EADCDD] text-[#3B0F18] flex items-center justify-center mx-auto shadow-sm">
+          <Building className="w-8 h-8 text-[#3B0F18]" />
+        </div>
+        <div className="space-y-2">
+          <span className="badge badge-warning text-[10px] uppercase font-bold">
+            No Properties Available
+          </span>
+          <h2 className="text-2xl font-black text-[#1A080C] tracking-tight">
+            No Properties Available for Simulation
+          </h2>
+          <p className="text-xs sm:text-sm text-[#5E4A4E] leading-relaxed max-w-md mx-auto">
+            The scenario calculator requires at least one active property listing to model occupancy variations, rental yields, and stress-test projections.
+          </p>
+        </div>
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <Link
+            href="/explore"
+            className="btn btn-primary text-xs font-bold w-full sm:flex-1 py-2.5 px-6 text-center"
+          >
+            Explore Marketplace
+          </Link>
+          {onReset && (
+            <button
+              onClick={onReset}
+              className="btn btn-secondary text-xs font-bold w-full sm:flex-1 py-2.5 px-6 text-center flex items-center justify-center gap-1.5"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              <span>Reset Demo Listings</span>
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LoadingPortfolioState({ dir = "ltr" }: { dir?: "ltr" | "rtl" }) {
+  return (
+    <div className="max-w-xl mx-auto px-4 py-20 text-center" dir={dir}>
+      <div className="bg-white border border-[#EADCDD] rounded-3xl p-8 sm:p-10 shadow-sm flex flex-col items-center justify-center space-y-4">
+        <div className="w-9 h-9 border-4 border-[#3B0F18] border-t-transparent rounded-full animate-spin" />
+        <p className="text-xs text-[#5E4A4E] font-medium">
+          Loading property catalogue for stress-test simulation...
+        </p>
+      </div>
+    </div>
+  );
+}
+
 export default function ScenarioSimulatorPage() {
-  const { properties } = useDemo();
+  const { properties, resetDemoData } = useDemo();
   const { t, dir } = useLanguage();
-  const chartInView = useChartInView();
+  const [chartRef, isChartAnimationActive] = useChartInView();
 
-  const [selectedPropertyId, setSelectedPropertyId] = useState<string>(properties[0]?.id || "");
-  const property = properties.find((p) => p.id === selectedPropertyId) || properties[0];
+  // Defensive validation of property collection
+  const validProperties = useMemo(() => {
+    if (!Array.isArray(properties)) return [];
+    return properties.filter((p): p is Property => Boolean(p && typeof p.id === "string" && p.id.length > 0));
+  }, [properties]);
 
-  // Simulator Sliders
+  const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
+  const prevPropertyIdRef = useRef<string>("");
+
+  // Auto-select valid property when data becomes available or current selection is invalid
+  useEffect(() => {
+    if (validProperties.length > 0) {
+      const exists = validProperties.some((p) => p.id === selectedPropertyId);
+      if (!exists) {
+        setSelectedPropertyId(validProperties[0].id);
+      }
+    } else {
+      setSelectedPropertyId("");
+    }
+  }, [validProperties, selectedPropertyId]);
+
+  const selectedProperty = useMemo(() => {
+    if (validProperties.length === 0) return null;
+    return validProperties.find((p) => p.id === selectedPropertyId) || validProperties[0];
+  }, [validProperties, selectedPropertyId]);
+
+  // Simulator Sliders State
   const [investmentAmount, setInvestmentAmount] = useState<number>(5000);
-  const [occupancyRate, setOccupancyRate] = useState<number>(property.occupancyRate);
+  const [occupancyRate, setOccupancyRate] = useState<number>(95);
   const [rentVariationPercent, setRentVariationPercent] = useState<number>(0);
   const [maintenanceMultiplier, setMaintenanceMultiplier] = useState<number>(1.0);
   const [managementFeeRate, setManagementFeeRate] = useState<number>(7.5);
-  const [valuationVariationPercent, setValuationVariationPercent] = useState<number>(0);
+
+  // Synchronize occupancy rate safely when selected property changes
+  useEffect(() => {
+    if (selectedProperty && selectedProperty.id !== prevPropertyIdRef.current) {
+      prevPropertyIdRef.current = selectedProperty.id;
+      const baseOcc = Number.isFinite(selectedProperty.occupancyRate) ? selectedProperty.occupancyRate : 95;
+      setOccupancyRate(baseOcc);
+    }
+  }, [selectedProperty]);
 
   // Computed Scenarios
   const scenarios = useMemo(() => {
-    const sharesCount = Math.floor(investmentAmount / property.sharePrice);
-    const baseShareRent = property.monthlyPerShareRent;
+    if (!selectedProperty) {
+      return {
+        sharesCount: 0,
+        base: { monthly: 0, annual: 0, yield: 0 },
+        simulated: { monthly: 0, annual: 0, yield: 0 },
+        worst: { monthly: 0, annual: 0, yield: 0 },
+        best: { monthly: 0, annual: 0, yield: 0 },
+      };
+    }
+
+    const sharePrice =
+      Number.isFinite(selectedProperty.sharePrice) && selectedProperty.sharePrice > 0
+        ? selectedProperty.sharePrice
+        : 100;
+    const baseShareRent =
+      Number.isFinite(selectedProperty.monthlyPerShareRent) && selectedProperty.monthlyPerShareRent >= 0
+        ? selectedProperty.monthlyPerShareRent
+        : 0;
+
+    const safeInvestment = Number.isFinite(investmentAmount) && investmentAmount > 0 ? investmentAmount : 0;
+    const sharesCount = Math.max(0, Math.floor(safeInvestment / sharePrice));
+    const totalInvested = sharesCount * sharePrice;
 
     // BASE CASE
     const baseMonthlyRent = sharesCount * baseShareRent;
     const baseAnnualRent = baseMonthlyRent * 12;
-    const baseNetYield = (baseAnnualRent / (sharesCount * property.sharePrice)) * 100;
+    const baseNetYield = totalInvested > 0 ? (baseAnnualRent / totalInvested) * 100 : 0;
 
     // SIMULATED USER CASE
-    const effectiveRentFactor = (1 + rentVariationPercent / 100) * (occupancyRate / 100);
-    const expenseFactor = (1 - (managementFeeRate / 100) - (0.05 * maintenanceMultiplier));
+    const safeOccupancy = Number.isFinite(occupancyRate) ? Math.max(0, Math.min(100, occupancyRate)) : 95;
+    const safeRentVariation = Number.isFinite(rentVariationPercent) ? rentVariationPercent : 0;
+    const safeMaintMultiplier = Number.isFinite(maintenanceMultiplier) && maintenanceMultiplier >= 0 ? maintenanceMultiplier : 1.0;
+    const safeMgmtFeeRate = Number.isFinite(managementFeeRate) && managementFeeRate >= 0 ? managementFeeRate : 7.5;
+
+    const effectiveRentFactor = (1 + safeRentVariation / 100) * (safeOccupancy / 100);
+    const expenseFactor = Math.max(0, 1 - safeMgmtFeeRate / 100 - 0.05 * safeMaintMultiplier);
     const simulatedMonthlyRent = Math.max(0, sharesCount * baseShareRent * effectiveRentFactor * expenseFactor);
     const simulatedAnnualRent = simulatedMonthlyRent * 12;
-    const simulatedNetYield = sharesCount > 0 ? (simulatedAnnualRent / (sharesCount * property.sharePrice)) * 100 : 0;
+    const simulatedNetYield = totalInvested > 0 ? (simulatedAnnualRent / totalInvested) * 100 : 0;
 
     // WORST CASE (70% Occupancy, -15% Rent, +50% Maintenance)
-    const worstMonthly = Math.max(0, sharesCount * baseShareRent * 0.7 * 0.85 * (1 - 0.10 - 0.08));
+    const worstMonthly = Math.max(0, sharesCount * baseShareRent * 0.7 * 0.85 * (1 - 0.1 - 0.08));
     const worstAnnual = worstMonthly * 12;
-    const worstYield = sharesCount > 0 ? (worstAnnual / (sharesCount * property.sharePrice)) * 100 : 0;
+    const worstYield = totalInvested > 0 ? (worstAnnual / totalInvested) * 100 : 0;
 
     // BEST CASE (100% Occupancy, +15% Rent, -20% Maintenance)
-    const bestMonthly = sharesCount * baseShareRent * 1.0 * 1.15 * (1 - 0.06 - 0.03);
+    const bestMonthly = Math.max(0, sharesCount * baseShareRent * 1.0 * 1.15 * (1 - 0.06 - 0.03));
     const bestAnnual = bestMonthly * 12;
-    const bestYield = sharesCount > 0 ? (bestAnnual / (sharesCount * property.sharePrice)) * 100 : 0;
+    const bestYield = totalInvested > 0 ? (bestAnnual / totalInvested) * 100 : 0;
 
     return {
       sharesCount,
@@ -77,47 +191,62 @@ export default function ScenarioSimulatorPage() {
       best: { monthly: bestMonthly, annual: bestAnnual, yield: bestYield },
     };
   }, [
-    property,
+    selectedProperty,
     investmentAmount,
     occupancyRate,
     rentVariationPercent,
     maintenanceMultiplier,
     managementFeeRate,
-    valuationVariationPercent,
   ]);
 
-  const chartData = [
-    {
-      scenario: "Worst Case (Recession / Vacancy)",
-      annualIncome: Number(scenarios.worst.annual.toFixed(2)),
-      netYield: Number(scenarios.worst.yield.toFixed(2)),
-    },
-    {
-      scenario: "Current Parameter Simulation",
-      annualIncome: Number(scenarios.simulated.annual.toFixed(2)),
-      netYield: Number(scenarios.simulated.yield.toFixed(2)),
-    },
-    {
-      scenario: "Base Platform Standard",
-      annualIncome: Number(scenarios.base.annual.toFixed(2)),
-      netYield: Number(scenarios.base.yield.toFixed(2)),
-    },
-    {
-      scenario: "Best Case (High Demand / Full Rent)",
-      annualIncome: Number(scenarios.best.annual.toFixed(2)),
-      netYield: Number(scenarios.best.yield.toFixed(2)),
-    },
-  ];
+  const chartData = useMemo(() => {
+    return [
+      {
+        scenario: "Worst Case (Recession / Vacancy)",
+        annualIncome: Number((scenarios.worst.annual || 0).toFixed(2)),
+        netYield: Number((scenarios.worst.yield || 0).toFixed(2)),
+      },
+      {
+        scenario: "Current Parameter Simulation",
+        annualIncome: Number((scenarios.simulated.annual || 0).toFixed(2)),
+        netYield: Number((scenarios.simulated.yield || 0).toFixed(2)),
+      },
+      {
+        scenario: "Base Platform Standard",
+        annualIncome: Number((scenarios.base.annual || 0).toFixed(2)),
+        netYield: Number((scenarios.base.yield || 0).toFixed(2)),
+      },
+      {
+        scenario: "Best Case (High Demand / Full Rent)",
+        annualIncome: Number((scenarios.best.annual || 0).toFixed(2)),
+        netYield: Number((scenarios.best.yield || 0).toFixed(2)),
+      },
+    ];
+  }, [scenarios]);
 
   const resetSliders = () => {
     setInvestmentAmount(5000);
-    setOccupancyRate(property.occupancyRate);
+    setOccupancyRate(
+      selectedProperty && Number.isFinite(selectedProperty.occupancyRate)
+        ? selectedProperty.occupancyRate
+        : 95
+    );
     setRentVariationPercent(0);
     setMaintenanceMultiplier(1.0);
     setManagementFeeRate(7.5);
-    setValuationVariationPercent(0);
   };
 
+  // State 1: Data is undefined or initializing
+  if (properties === undefined) {
+    return <LoadingPortfolioState dir={dir} />;
+  }
+
+  // State 2: Genuinely empty property collection
+  if (validProperties.length === 0 || !selectedProperty) {
+    return <EmptyPortfolioState onReset={resetDemoData} dir={dir} />;
+  }
+
+  // State 3: Active Simulator with valid selected property
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12 space-y-8" dir={dir}>
       {/* Header */}
@@ -169,13 +298,13 @@ export default function ScenarioSimulatorPage() {
           <div className="space-y-1 pb-3 border-b border-[#EADCDD]">
             <label className="text-xs font-bold text-muted-se uppercase">Choose a Property to Test</label>
             <select
-              value={selectedPropertyId}
+              value={selectedProperty.id}
               onChange={(e) => setSelectedPropertyId(e.target.value)}
               className="select text-xs font-bold"
             >
-              {properties.map((p) => (
+              {validProperties.map((p) => (
                 <option key={p.id} value={p.id}>
-                  {p.title} (${p.sharePrice}/share &bull; {p.netYield}% Yearly Return)
+                  {p.title} (${p.sharePrice}/share • {p.netYield}% Yearly Return)
                 </option>
               ))}
             </select>
@@ -188,7 +317,9 @@ export default function ScenarioSimulatorPage() {
                 <span>How much to invest</span>
                 <InfoTooltip termId="fractional-shares" size="sm" />
               </div>
-              <span className="text-accent-se">${investmentAmount.toLocaleString()} ({scenarios.sharesCount} shares)</span>
+              <span className="text-accent-se">
+                ${investmentAmount.toLocaleString()} ({scenarios.sharesCount} shares)
+              </span>
             </div>
             <input
               type="range"
@@ -329,15 +460,27 @@ export default function ScenarioSimulatorPage() {
           {/* Scenario Comparison Chart */}
           <div className="glass rounded-3xl p-6 sm:p-7 space-y-4">
             <h3 className="font-bold text-base text-[#1A080C]">Estimated Yearly Rent Under Each Scenario ($)</h3>
-            <div ref={chartInView.ref} className="h-64 w-full">
+            <div ref={chartRef} className="h-64 w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={chartData} layout="vertical">
                   <XAxis type="number" stroke="#8C7B7F" fontSize={11} tickFormatter={(v) => `$${v}`} />
                   <YAxis type="category" dataKey="scenario" stroke="#8C7B7F" fontSize={11} width={130} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: "#FFFFFF", borderRadius: "8px", color: "#1A080C", fontSize: "12px", border: "1px solid #EADCDD", boxShadow: "0 4px 12px rgba(26,8,12,0.08)" }}
+                    contentStyle={{
+                      backgroundColor: "#FFFFFF",
+                      borderRadius: "8px",
+                      color: "#1A080C",
+                      fontSize: "12px",
+                      border: "1px solid #EADCDD",
+                      boxShadow: "0 4px 12px rgba(26,8,12,0.08)",
+                    }}
                   />
-                  <Bar dataKey="annualIncome" fill="#3B0F18" radius={[0, 4, 4, 0]} isAnimationActive={chartInView.isAnimationActive} />
+                  <Bar
+                    dataKey="annualIncome"
+                    fill="#3B0F18"
+                    radius={[0, 4, 4, 0]}
+                    isAnimationActive={isChartAnimationActive}
+                  />
                 </BarChart>
               </ResponsiveContainer>
             </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { SupportedLanguage, SUPPORTED_LANGUAGES, TranslationDictionary } from "./types";
 import { en } from "./dictionaries/en";
 import { ur } from "./dictionaries/ur";
@@ -8,6 +8,7 @@ import { ar } from "./dictionaries/ar";
 import { hi } from "./dictionaries/hi";
 import { pa } from "./dictionaries/pa";
 import { es } from "./dictionaries/es";
+import { useStorageItem, setStorageItem } from "@/lib/storageStore";
 
 interface LanguageContextType {
   language: SupportedLanguage;
@@ -27,38 +28,43 @@ const dictionaries: Record<SupportedLanguage, TranslationDictionary> = {
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+function updateHtmlDir(lang: SupportedLanguage) {
+  const isRtl = lang === "ur" || lang === "ar";
+  if (typeof document !== "undefined") {
+    document.documentElement.dir = isRtl ? "rtl" : "ltr";
+    document.documentElement.lang = lang;
+  }
+}
+
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [language, setLanguageState] = useState<SupportedLanguage>("en");
+  const storedLangRaw = useStorageItem("stateera_language", "en");
+  const storedLang: SupportedLanguage =
+    storedLangRaw && dictionaries[storedLangRaw as SupportedLanguage]
+      ? (storedLangRaw as SupportedLanguage)
+      : "en";
 
+  // In-memory fallback if localStorage is completely blocked or restricted
+  const [localFallback, setLocalFallback] = useState<{
+    targetLang: SupportedLanguage;
+    prevStored: string | null;
+  } | null>(null);
+
+  // If storage updated (same-tab or cross-tab), fallback is cleared/superseded
+  const language =
+    localFallback && localFallback.prevStored === storedLangRaw
+      ? localFallback.targetLang
+      : storedLang;
+
+  // DOM attribute synchronization (external system mutation - no React setState)
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem("stateera_language") as SupportedLanguage;
-      if (saved && dictionaries[saved]) {
-        setLanguageState(saved);
-        updateHtmlDir(saved);
-      }
-    } catch {
-      // Ignore localStorage read errors in SSR/strict env
-    }
-  }, []);
+    updateHtmlDir(language);
+  }, [language]);
 
-  const updateHtmlDir = (lang: SupportedLanguage) => {
-    const isRtl = lang === "ur" || lang === "ar";
-    if (typeof document !== "undefined") {
-      document.documentElement.dir = isRtl ? "rtl" : "ltr";
-      document.documentElement.lang = lang;
-    }
-  };
-
-  const setLanguage = (lang: SupportedLanguage) => {
-    setLanguageState(lang);
-    updateHtmlDir(lang);
-    try {
-      localStorage.setItem("stateera_language", lang);
-    } catch {
-      // Ignore storage errors
-    }
-  };
+  const setLanguage = useCallback((lang: SupportedLanguage) => {
+    if (!dictionaries[lang]) return;
+    setLocalFallback({ targetLang: lang, prevStored: storedLangRaw });
+    setStorageItem("stateera_language", lang);
+  }, [storedLangRaw]);
 
   const dir: "ltr" | "rtl" = language === "ur" || language === "ar" ? "rtl" : "ltr";
   const t = dictionaries[language] || en;

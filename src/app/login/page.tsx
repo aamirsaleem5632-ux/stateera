@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useMemo, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -14,47 +14,79 @@ import {
   ArrowRight,
   CheckCircle2,
   Info,
+  Shield,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useDemo } from "@/context/DemoContext";
 import { UserRole } from "@/types/admin";
+
+function subscribeUrlError(callback: () => void): () => void {
+  if (typeof window === "undefined") return () => {};
+  window.addEventListener("popstate", callback);
+  return () => window.removeEventListener("popstate", callback);
+}
+
+function getUrlErrorSnapshot(): string | null {
+  if (typeof window === "undefined") return null;
+  return new URLSearchParams(window.location.search).get("error");
+}
+
+function getServerUrlErrorSnapshot(): string | null {
+  return null;
+}
 
 export default function LoginPage() {
   const router = useRouter();
   const { setRole } = useDemo();
 
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
-  const [selectedRole, setSelectedRole] = useState<"investor" | "tenant" | "manager">("investor");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [formError, setFormError] = useState("");
+  const [dismissedUrlError, setDismissedUrlError] = useState(false);
   const [message, setMessage] = useState("");
 
-  const supabase = createClient();
+  const urlErrorParam = useSyncExternalStore(
+    subscribeUrlError,
+    getUrlErrorSnapshot,
+    getServerUrlErrorSnapshot
+  );
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      const err = params.get("error");
-      if (err === "admin_unauthorized") {
-        setError("Access Restricted: Verified Administrator clearance required to access /admin.");
-      } else if (err === "manager_unauthorized") {
-        setError("Access Restricted: Property Manager role required to access /manager.");
-      } else if (err === "tenant_unauthorized") {
-        setError("Access Restricted: Verified Tenant leaseholder role required to access /tenant.");
-      } else if (err === "manager_unapproved") {
-        setError("Application Pending: Your Property Manager account is currently under compliance review.");
-      } else if (err === "tenant_unapproved") {
-        setError("Verification Pending: Your Resident Tenant account requires administrative verification.");
-      } else if (err === "session_required") {
-        setError("Authentication Required: Please sign in with authorized credentials to access this portal.");
-      } else if (err === "profile_not_found") {
-        setError("Profile Not Found: Please sign up or contact platform administrators.");
-      }
+  const urlErrorMessage = useMemo(() => {
+    if (!urlErrorParam || dismissedUrlError) return "";
+    switch (urlErrorParam) {
+      case "admin_unauthorized":
+        return "Access Restricted: Verified Administrator clearance required to access /admin.";
+      case "manager_unauthorized":
+        return "Access Restricted: Property Manager role required to access /manager.";
+      case "tenant_unauthorized":
+        return "Access Restricted: Verified Tenant leaseholder role required to access /tenant.";
+      case "manager_unapproved":
+        return "Application Pending: Your Property Manager account is currently under compliance review.";
+      case "tenant_unapproved":
+        return "Verification Pending: Your Resident Tenant account requires administrative verification.";
+      case "session_required":
+        return "Authentication Required: Please sign in with authorized credentials to access this portal.";
+      case "profile_not_found":
+        return "Profile Not Found: Please sign up or contact platform administrators.";
+      case "auth_callback_failed":
+        return "Authentication Failed: Unable to complete sign-in or session exchange. Please try again.";
+      default:
+        return urlErrorParam;
     }
-  }, []);
+  }, [urlErrorParam, dismissedUrlError]);
+
+  const error = formError || urlErrorMessage;
+  const setError = (err: string) => {
+    setFormError(err);
+    if (!err) {
+      setDismissedUrlError(true);
+    }
+  };
+
+  const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -79,7 +111,7 @@ export default function LoginPage() {
           options: {
             data: {
               full_name: fullName,
-              role: selectedRole,
+              role: "investor",
             },
             emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
           },
@@ -88,8 +120,9 @@ export default function LoginPage() {
         if (error) {
           setError(error.message || "Account creation failed. Please check your credentials.");
         } else if (data.session) {
-          setRole(selectedRole as UserRole);
-          router.push(selectedRole === "manager" ? "/manager" : selectedRole === "tenant" ? "/tenant" : "/dashboard");
+          // Public registrations default strictly to least-privilege investor role
+          setRole("investor");
+          router.push("/dashboard");
           router.refresh();
         } else {
           setMessage("Account created successfully. Please check your email to verify your account.");
@@ -105,13 +138,13 @@ export default function LoginPage() {
         } else {
           if (authData?.user) {
             try {
-              const { data: profile } = await supabase
+              const { data: profile, error: profileErr } = await supabase
                 .from("profiles")
                 .select("role, role_approval_status")
                 .eq("id", authData.user.id)
                 .single();
 
-              if (profile && profile.role_approval_status === "Approved") {
+              if (!profileErr && profile && profile.role_approval_status === "Approved") {
                 const approvedRole = profile.role as UserRole;
                 setRole(approvedRole);
                 if (approvedRole === "admin") {
@@ -127,11 +160,20 @@ export default function LoginPage() {
                   router.refresh();
                   return;
                 }
+              } else if (profile && profile.role_approval_status !== "Approved") {
+                // Fail-closed: unapproved roles (Pending or Rejected) are restricted to investor role
+                setRole("investor");
+                setMessage(`Your ${profile.role} clearance is currently pending administrative verification.`);
+                router.push("/dashboard");
+                router.refresh();
+                return;
               }
             } catch {
-              // Proceed with standard dashboard navigation
+              // Fail-closed on database or lookup error
+              setRole("investor");
             }
           }
+          setRole("investor");
           router.push("/dashboard");
           router.refresh();
         }
@@ -152,6 +194,10 @@ export default function LoginPage() {
         provider: "google",
         options: {
           redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
         },
       });
 
@@ -204,7 +250,7 @@ export default function LoginPage() {
             </span>
             <span className="badge badge-demo text-[10px]">Instant Demo</span>
           </div>
-          <div className="grid grid-cols-3 gap-2 text-xs">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
             <button
               type="button"
               onClick={() => handleInstantDemoLogin("investor", "/dashboard")}
@@ -215,7 +261,7 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleInstantDemoLogin("manager", "/manager")}
+              onClick={() => handleInstantDemoLogin("manager", "/demo/manager")}
               className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
             >
               <Layers className="w-3.5 h-3.5" />
@@ -223,15 +269,23 @@ export default function LoginPage() {
             </button>
             <button
               type="button"
-              onClick={() => handleInstantDemoLogin("tenant", "/tenant")}
+              onClick={() => handleInstantDemoLogin("tenant", "/demo/tenant")}
               className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
             >
               <KeyRound className="w-3.5 h-3.5" />
               <span>Tenant</span>
             </button>
+            <button
+              type="button"
+              onClick={() => handleInstantDemoLogin("admin", "/demo/admin")}
+              className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
+            >
+              <Shield className="w-3.5 h-3.5" />
+              <span>Admin</span>
+            </button>
           </div>
           <p className="text-[10px] text-[#8C7B7F] text-center pt-0.5">
-            * Executive Administrator portal (/admin) strictly requires authenticated executive credentials.
+            * Instant Demo buttons launch isolated sandboxes (/demo/*). Live portals (/admin, /manager, /tenant) require authenticated credentials.
           </p>
         </div>
 
@@ -260,47 +314,15 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-4">
           {mode === "signup" && (
             <>
-              <div>
-                <label className="block text-xs font-bold text-[#1A080C] uppercase mb-1.5">
-                  Select Your Account Role
-                </label>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("investor")}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
-                      selectedRole === "investor"
-                        ? "bg-[#3B0F18] text-white border-[#3B0F18] shadow-sm"
-                        : "bg-white text-[#5E4A4E] border-[#EADCDD] hover:bg-[#FAF5F5]"
-                    }`}
-                  >
-                    Investor
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("tenant")}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
-                      selectedRole === "tenant"
-                        ? "bg-[#3B0F18] text-white border-[#3B0F18] shadow-sm"
-                        : "bg-white text-[#5E4A4E] border-[#EADCDD] hover:bg-[#FAF5F5]"
-                    }`}
-                  >
-                    Tenant
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedRole("manager")}
-                    className={`p-2.5 rounded-xl border text-xs font-bold transition-all text-center ${
-                      selectedRole === "manager"
-                        ? "bg-[#3B0F18] text-white border-[#3B0F18] shadow-sm"
-                        : "bg-white text-[#5E4A4E] border-[#EADCDD] hover:bg-[#FAF5F5]"
-                    }`}
-                  >
-                    Manager
-                  </button>
+              <div className="p-3.5 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-[#1A080C] uppercase tracking-wider">
+                    Account Clearance: Individual Investor
+                  </span>
+                  <span className="badge badge-success text-[10px] font-bold">Standard</span>
                 </div>
-                <p className="text-[11px] text-[#8C7B7F] mt-1.5">
-                  * Note: Administrative and compliance roles require internal executive approval.
+                <p className="text-[11px] text-[#5E4A4E] leading-relaxed">
+                  All public registrations receive Investor clearance. Property Manager and Resident Tenant live portal access requires administrator verification.
                 </p>
               </div>
 
