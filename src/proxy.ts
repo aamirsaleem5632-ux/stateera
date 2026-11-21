@@ -69,7 +69,9 @@ export async function proxy(request: NextRequest) {
     }
 
     // 2. Retrieve trusted profile record directly from Supabase PostgreSQL database
-    let profile = null;
+    let profile: { role: string; role_approval_status?: string | null } | null = null;
+    let isSchemaError = false;
+
     try {
       const { data, error: profileError } = await supabase
         .from("profiles")
@@ -78,10 +80,49 @@ export async function proxy(request: NextRequest) {
         .single();
 
       if (!profileError && data) {
-        profile = data;
+        profile = data as { role: string; role_approval_status?: string | null };
+      } else if (profileError) {
+        const errCode = profileError.code || "";
+        const errMsg = (profileError.message || "").toLowerCase();
+        const errDetails = (profileError.details || "").toLowerCase();
+
+        if (
+          errCode === "PGRST204" ||
+          errCode === "42703" ||
+          errMsg.includes("role_approval_status") ||
+          errDetails.includes("role_approval_status") ||
+          (errMsg.includes("column") && errMsg.includes("does not exist"))
+        ) {
+          isSchemaError = true;
+        } else if (errCode === "PGRST116") {
+          // Zero rows returned: profile genuinely does not exist in table
+          profile = null;
+        } else {
+          // Verify if profile row exists to distinguish schema error from missing profile
+          const { data: baseProfile, error: baseError } = await supabase
+            .from("profiles")
+            .select("role")
+            .eq("id", authenticatedUser.id)
+            .single();
+
+          if (!baseError && baseProfile) {
+            isSchemaError = true;
+          } else if (baseError && baseError.code === "PGRST116") {
+            profile = null;
+          } else {
+            isSchemaError = true;
+          }
+        }
       }
     } catch {
-      profile = null;
+      isSchemaError = true;
+    }
+
+    if (isSchemaError) {
+      const redirectUrl = new URL("/login", request.url);
+      redirectUrl.searchParams.set("error", "schema_upgrade_pending");
+      redirectUrl.searchParams.set("next", pathname);
+      return redirectWithCookies(redirectUrl);
     }
 
     if (!profile) {

@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useDemo } from "@/context/DemoContext";
+import { useIsMounted } from "@/hooks/useIsMounted";
 import { UserRole } from "@/types/admin";
 
 function subscribeUrlError(callback: () => void): () => void {
@@ -38,6 +39,7 @@ function getServerUrlErrorSnapshot(): string | null {
 export default function LoginPage() {
   const router = useRouter();
   const { setRole } = useDemo();
+  const isMounted = useIsMounted();
 
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
@@ -55,8 +57,10 @@ export default function LoginPage() {
   );
 
   const urlErrorMessage = useMemo(() => {
-    if (!urlErrorParam || dismissedUrlError) return "";
+    if (!isMounted || !urlErrorParam || dismissedUrlError) return "";
     switch (urlErrorParam) {
+      case "schema_upgrade_pending":
+        return "System Maintenance: Database schema upgrade is pending. Administrator migration is required to enable live portal access.";
       case "admin_unauthorized":
         return "Access Restricted: Verified Administrator clearance required to access /admin.";
       case "manager_unauthorized":
@@ -76,7 +80,7 @@ export default function LoginPage() {
       default:
         return urlErrorParam;
     }
-  }, [urlErrorParam, dismissedUrlError]);
+  }, [isMounted, urlErrorParam, dismissedUrlError]);
 
   const error = formError || urlErrorMessage;
   const setError = (err: string) => {
@@ -167,6 +171,36 @@ export default function LoginPage() {
                 router.push("/dashboard");
                 router.refresh();
                 return;
+              } else if (profileErr) {
+                // Check if profileErr is due to missing column (schema upgrade pending)
+                const errCode = profileErr.code || "";
+                const errMsg = (profileErr.message || "").toLowerCase();
+                const errDetails = (profileErr.details || "").toLowerCase();
+                const isSchemaError =
+                  errCode === "PGRST204" ||
+                  errCode === "42703" ||
+                  errMsg.includes("role_approval_status") ||
+                  errDetails.includes("role_approval_status") ||
+                  (errMsg.includes("column") && errMsg.includes("does not exist"));
+
+                if (isSchemaError) {
+                  // Fallback query to verify user's base role
+                  const { data: baseProfile } = await supabase
+                    .from("profiles")
+                    .select("role")
+                    .eq("id", authData.user.id)
+                    .single();
+
+                  setRole("investor");
+                  if (baseProfile && baseProfile.role && baseProfile.role !== "investor" && baseProfile.role !== "user") {
+                    setMessage(`Sign-in successful. Your ${baseProfile.role} clearance verification is pending database migration.`);
+                  } else {
+                    setMessage("Sign-in successful. Welcome to StateEra.");
+                  }
+                  router.push("/dashboard");
+                  router.refresh();
+                  return;
+                }
               }
             } catch {
               // Fail-closed on database or lookup error

@@ -6,7 +6,6 @@ import { LanguageProvider } from "@/lib/i18n/LanguageContext";
 import { DemoProvider } from "@/context/DemoContext";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
-import { BottomNav } from "@/components/layout/BottomNav";
 import { StateEraAI } from "@/components/ai/StateEraAI";
 import { OnboardingModal } from "@/components/onboarding/OnboardingModal";
 import { ScrollProgressBar } from "@/components/scroll/ScrollProgressBar";
@@ -31,7 +30,7 @@ export default function RootLayout({
             <Navbar />
             <main className="flex-1 overflow-x-hidden relative">{children}</main>
             <Footer />
-            <BottomNav />
+
             <StateEraAI />
             <OnboardingModal />
             <BackToTop />

@@ -649,23 +649,62 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
           return;
         }
 
-        if (!error && profile && profile.role_approval_status === "Approved") {
-          const approvedRole = profile.role as UserRole;
-          if (["admin", "manager", "tenant", "investor"].includes(approvedRole)) {
-            setRole(approvedRole);
-            return;
+        if (!error && profile) {
+          // Authoritative profile returned from database
+          if (profile.role_approval_status === "Approved") {
+            const approvedRole = profile.role as UserRole;
+            if (["admin", "manager", "tenant", "investor"].includes(approvedRole)) {
+              setRole(approvedRole);
+              return;
+            }
           }
+          // Explicitly unapproved (Pending or Rejected): fail-closed to investor role
+          setRole("investor");
+          return;
         }
 
-        // Fail-closed: If profile is unapproved (Pending/Rejected), query errored, or profile missing:
-        // Reset client role to "investor" and remove stateera_role from localStorage
-        setRole("investor");
-        removeStorageItem("stateera_role");
+        if (error) {
+          const errCode = error.code || "";
+          const errMsg = (error.message || "").toLowerCase();
+          const errDetails = (error.details || "").toLowerCase();
+
+          const isSchemaError =
+            errCode === "PGRST204" ||
+            errCode === "42703" ||
+            errMsg.includes("role_approval_status") ||
+            errDetails.includes("role_approval_status") ||
+            (errMsg.includes("column") && errMsg.includes("does not exist"));
+
+          if (isSchemaError) {
+            // Check base profile role to verify record existence without destructive deletion
+            const { data: baseProfile, error: baseErr } = await supabase
+              .from("profiles")
+              .select("role")
+              .eq("id", targetUserId)
+              .single();
+
+            if (!isMounted || targetUserId !== authUserIdRef.current) return;
+
+            if (!baseErr && baseProfile) {
+              // Base profile exists; because approval status cannot be verified due to missing column,
+              // restrict active client role to "investor" (fails closed) without wiping stored state
+              setRole("investor");
+              return;
+            }
+          } else if (errCode === "PGRST116") {
+            // Zero rows returned: profile genuinely missing from public.profiles
+            setRole("investor");
+            return;
+          }
+
+          // Network or unexpected temporary failure: do NOT destructively wipe storage
+          // Keep active role fail-closed to investor without corrupting user-scoped storage
+          setRole("investor");
+        }
       } catch {
-        // Fail-closed on network/runtime exception
+        // Network or runtime exception: fail-closed gracefully without destructive deletion
         if (isMounted && targetUserId === authUserIdRef.current) {
           setRole("investor");
-          removeStorageItem("stateera_role");
         }
       }
     };
