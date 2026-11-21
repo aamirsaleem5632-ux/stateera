@@ -1,4 +1,4 @@
-﻿import { NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: Request) {
@@ -8,7 +8,6 @@ export async function GET(request: Request) {
   const errorParam = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
-  // If OAuth provider returned an error directly in callback query parameters
   if (errorParam) {
     const loginUrl = new URL("/login", origin);
     loginUrl.searchParams.set(
@@ -19,6 +18,7 @@ export async function GET(request: Request) {
   }
 
   let next = "/dashboard";
+
   if (
     requestedNext &&
     requestedNext.startsWith("/") &&
@@ -27,6 +27,7 @@ export async function GET(request: Request) {
   ) {
     try {
       const parsed = new URL(requestedNext, origin);
+
       if (parsed.origin === origin) {
         next = parsed.pathname + parsed.search + parsed.hash;
       }
@@ -40,11 +41,6 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      const forwardedHost = request.headers.get("x-forwarded-host");
-      const isLocalEnv = process.env.NODE_ENV === "development";
-      if (!isLocalEnv && forwardedHost) {
-        return NextResponse.redirect(new URL(next, `https://${forwardedHost}`));
-      }
       return NextResponse.redirect(new URL(next, origin));
     }
   }

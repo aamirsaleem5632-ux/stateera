@@ -1,4 +1,4 @@
-﻿import { createServerClient } from "@supabase/ssr";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
@@ -162,7 +162,6 @@ export async function proxy(request: NextRequest) {
         return redirectWithCookies(redirectUrl);
       }
     }
-
     if (isTenantRoute) {
       if (trustedRole === "admin" && isApproved) {
         // Super-admin cross-access permitted
