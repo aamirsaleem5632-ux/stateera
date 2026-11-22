@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "node scripts/verify-fixes.js"
+    "test": "node scripts/verify-fixes.js",
+    "test:all": "node scripts/verify-fixes.js && node scripts/test-auth-flows.js && node scripts/test-profile-security.js && node scripts/test-four-roles-security.js && node scripts/test-operational-architecture.js"
   },
   "dependencies": {
     "@supabase/ssr": "0.12.7",

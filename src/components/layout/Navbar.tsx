@@ -15,6 +15,7 @@ import {
   Layers,
   Shield,
   KeyRound,
+  LogOut,
 } from "lucide-react";
 import { SkylineLogo } from "@/components/brand/SkylineLogo";
 import { useDemo } from "@/context/DemoContext";
@@ -30,6 +31,9 @@ export const Navbar: React.FC = () => {
   const {
     role,
     setRole,
+    authUserId,
+    authUserEmail,
+    signOut,
     walletBalance,
     unreadNotificationCount,
     resetDemoData,
@@ -312,13 +316,33 @@ export const Navbar: React.FC = () => {
               )}
             </div>
 
-            {/* Live Portal Login */}
-            <Link
-              href="/login"
-              className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#EADCDD] hover:border-[#3B0F18] text-[#1A080C] text-xs font-semibold hover:bg-[#FAF5F5] transition-all"
-            >
-              <span>Live Login</span>
-            </Link>
+            {/* Live Portal Login / Authenticated User Status */}
+            {authUserId ? (
+              <div className="hidden lg:inline-flex items-center gap-2">
+                <span className="text-xs text-[#5E4A4E] max-w-[130px] truncate" title={authUserEmail || undefined}>
+                  {authUserEmail || "Signed In"}
+                </span>
+                <button
+                  type="button"
+                  onClick={async () => {
+                    await signOut();
+                    router.push("/login");
+                  }}
+                  className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg border border-[#EADCDD] hover:border-[#DC2626] text-[#DC2626] text-xs font-semibold hover:bg-[#FEF2F2] transition-all cursor-pointer"
+                  title="Sign Out"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span>Logout</span>
+                </button>
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="hidden lg:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[#EADCDD] hover:border-[#3B0F18] text-[#1A080C] text-xs font-semibold hover:bg-[#FAF5F5] transition-all"
+              >
+                <span>Live Login</span>
+              </Link>
+            )}
 
             {/* Try Interactive Demo CTA (Plain text, no sparkle icon) */}
             <Link
@@ -511,13 +535,30 @@ export const Navbar: React.FC = () => {
               >
                 {t.nav.admin} (Demo)
               </Link>
-              <Link
-                href="/login"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#3B0F18] bg-[#FAF5F5] text-[#3B0F18] font-bold"
-              >
-                Live Portal Login
-              </Link>
+              {authUserId ? (
+                <button
+                  type="button"
+                  onClick={async () => {
+                    setMobileMenuOpen(false);
+                    await signOut();
+                    router.push("/login");
+                  }}
+                  className="p-2.5 rounded-lg border border-[#DC2626] bg-[#FEF2F2] text-[#DC2626] font-bold text-left flex items-center justify-between"
+                >
+                  <span className="truncate text-xs">{authUserEmail || "Account"}</span>
+                  <span className="text-xs flex items-center gap-1 font-semibold">
+                    <LogOut className="w-3.5 h-3.5" /> Logout
+                  </span>
+                </button>
+              ) : (
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-2.5 rounded-lg border border-[#3B0F18] bg-[#FAF5F5] text-[#3B0F18] font-bold"
+                >
+                  Live Portal Login
+                </Link>
+              )}
               <Link
                 href="/wallet"
                 onClick={() => setMobileMenuOpen(false)}

@@ -19,6 +19,7 @@ import {
   RotateCcw,
   Plus,
   ArrowDownLeft,
+  LogOut,
 } from "lucide-react";
 import {
   PieChart,
@@ -61,6 +62,9 @@ export default function InvestorDashboardPage() {
     watchlist,
     isWatchlisted,
     toggleWatchlist,
+    authUserId,
+    authUserEmail,
+    signOut,
   } = useDemo();
 
   const { t, dir } = useLanguage();
@@ -94,17 +98,23 @@ export default function InvestorDashboardPage() {
       <div className="glass p-6 sm:p-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 rounded-2xl bg-[#3B0F18] text-white flex items-center justify-center font-black text-2xl shadow-sm">
-            JS
+            {authUserId && authUserEmail
+              ? authUserEmail.slice(0, 2).toUpperCase()
+              : "JS"}
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-black text-[#1A080C]">Jonathan Sterling</h1>
+              <h1 className="text-2xl font-black text-[#1A080C]">
+                {authUserId && authUserEmail
+                  ? authUserEmail.split("@")[0].charAt(0).toUpperCase() + authUserEmail.split("@")[0].slice(1)
+                  : "Jonathan Sterling"}
+              </h1>
               <span className="badge badge-success text-[10px] uppercase font-bold tracking-wider">
                 Verified Investor
               </span>
             </div>
             <p className="text-xs text-secondary-se mt-0.5">
-              Investor ID: STE-892144 • Identity Check: Complete • Practice Wallet Active
+              Investor ID: {authUserId ? `USR-${authUserId.slice(0, 8).toUpperCase()}` : "STE-892144"} • Identity Check: Complete • {authUserId ? "Live Account (Practice Funds)" : "Practice Wallet Active"}
             </p>
           </div>
         </div>
@@ -125,6 +135,19 @@ export default function InvestorDashboardPage() {
             <Plus className="w-4 h-4" />
             <span>Buy Shares in New Buildings</span>
           </Link>
+          {authUserId && (
+            <button
+              onClick={async () => {
+                await signOut();
+                window.location.href = "/login";
+              }}
+              className="btn btn-secondary text-xs text-[#DC2626] border-[#FCA5A5] hover:bg-[#FEF2F2]"
+              title="Sign out of live session"
+            >
+              <LogOut className="w-4 h-4" />
+              <span>Sign Out</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -144,6 +167,34 @@ export default function InvestorDashboardPage() {
           <ArrowRight className="w-3 h-3 rtl-flip" />
         </Link>
       </div>
+
+      {/* New Investor Onboarding Banner for zero-balance authenticated users */}
+      {authUserId && walletBalance === 0 && holdings.length === 0 && (
+        <div className="p-6 rounded-2xl bg-white border border-[#EADCDD] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="badge badge-success text-xs font-bold">New Investor Onboarding</span>
+              <span className="text-xs text-[#8C7B7F]">• Balance: $0.00</span>
+            </div>
+            <h2 className="text-base font-extrabold text-[#1A080C]">
+              Welcome to Your Investor Portfolio
+            </h2>
+            <p className="text-xs text-[#5E4A4E] max-w-2xl leading-relaxed">
+              Every newly registered investor starts with a $0 balance and an isolated portfolio. To start testing fractional real estate investments and collecting monthly rent distributions, deposit simulated practice funds into your wallet.
+            </p>
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link href="/wallet" className="btn btn-primary text-xs py-2 px-4 flex items-center gap-1.5">
+              <Wallet className="w-4 h-4" />
+              <span>Deposit Practice Cash</span>
+            </Link>
+            <Link href="/explore" className="btn btn-secondary text-xs py-2 px-4 flex items-center gap-1.5">
+              <Building2 className="w-4 h-4" />
+              <span>Browse Properties</span>
+            </Link>
+          </div>
+        </div>
+      )}
 
       {/* Payout Feedback Alert */}
       {payoutResult && (
@@ -326,30 +377,48 @@ export default function InvestorDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {holdings.map((h) => (
-                  <tr key={h.propertyId}>
-                    <td className="font-bold text-[#1A080C] truncate max-w-[180px]">
-                      {h.propertyTitle}
-                    </td>
-                    <td className="text-secondary-se">
-                      {h.sharesOwned} shares
-                    </td>
-                    <td className="font-semibold text-[#1A080C]">
-                      ${h.currentValue.toLocaleString()}
-                    </td>
-                    <td className="font-bold text-accent-se">
-                      +${h.monthlyEstimatedRentalIncome.toFixed(2)}
-                    </td>
-                    <td className="text-right">
-                      <Link
-                        href={`/trade/${h.propertyId}`}
-                        className="btn btn-secondary text-[11px] py-1 px-3 min-h-[32px]"
-                      >
-                        Buy / Sell
-                      </Link>
+                {holdings.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="py-8 text-center text-secondary-se">
+                      <div className="space-y-2">
+                        <Building2 className="w-8 h-8 text-[#8C7B7F] mx-auto opacity-60" />
+                        <p className="font-semibold text-sm text-[#1A080C]">No Fractional Holdings Yet</p>
+                        <p className="text-xs text-[#5E4A4E] max-w-sm mx-auto">
+                          Deposit simulated funds in your wallet and acquire shares in curated properties to begin collecting monthly tenant rent.
+                        </p>
+                        <Link href="/explore" className="btn btn-primary text-xs inline-flex items-center gap-1.5 mt-2">
+                          <span>Browse Properties</span>
+                          <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  holdings.map((h) => (
+                    <tr key={h.propertyId}>
+                      <td className="font-bold text-[#1A080C] truncate max-w-[180px]">
+                        {h.propertyTitle}
+                      </td>
+                      <td className="text-secondary-se">
+                        {h.sharesOwned} shares
+                      </td>
+                      <td className="font-semibold text-[#1A080C]">
+                        ${h.currentValue.toLocaleString()}
+                      </td>
+                      <td className="font-bold text-accent-se">
+                        +${h.monthlyEstimatedRentalIncome.toFixed(2)}
+                      </td>
+                      <td className="text-right">
+                        <Link
+                          href={`/trade/${h.propertyId}`}
+                          className="btn btn-secondary text-[11px] py-1 px-3 min-h-[32px]"
+                        >
+                          Buy / Sell
+                        </Link>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -71,7 +71,7 @@ export default async function PropertyManagerPage() {
   }
 
   const trustedRole = profile.role;
-  const isApproved = profile.role_approval_status === "Approved";
+  const isApproved = (profile.role_approval_status || "").toLowerCase() === "approved";
 
   if (trustedRole === "admin" && isApproved) {
     // Super-admin permitted cross-access

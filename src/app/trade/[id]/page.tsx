@@ -30,6 +30,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
 import { useIsMounted } from "@/hooks/useIsMounted";
+import { walletService } from "@/lib/services/walletService";
 
 export default function TradePropertyPage() {
   const params = useParams();
@@ -154,9 +155,13 @@ export default function TradePropertyPage() {
     try {
       if (orderSide === "BUY") {
         const res = buyShares(property.id, numQty, orderType, orderType === "Limit" ? Number(limitPrice) : undefined);
+        walletService
+          .buyShares(property.id, numQty, orderType, orderType === "Limit" ? Number(limitPrice) : undefined)
+          .catch(() => {});
         setFeedback(res);
       } else {
         const res = sellShares(property.id, numQty);
+        walletService.sellShares(property.id, numQty).catch(() => {});
         setFeedback(res);
       }
     } finally {

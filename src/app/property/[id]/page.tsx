@@ -212,6 +212,7 @@ export default function PropertyDetailPage() {
             priority
             sizes="(max-width: 1024px) 100vw, 75vw"
             className="object-cover"
+            fallbackSrc={property.galleryImages?.find((img) => img !== (property.galleryImages[activeImageIndex] || property.coverImage))}
             fallbackLabel={property.title}
           />
           <div className="absolute top-4 left-4 bg-white/95 text-[#1A080C] border border-[#EADCDD] px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm">

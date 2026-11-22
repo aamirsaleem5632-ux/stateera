@@ -47,14 +47,20 @@ export const Reveal: React.FC<RevealProps> = ({
   className,
   ...rest
 }) => {
+  const [mounted, setMounted] = React.useState(false);
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const { dir } = useLanguage();
   const isRTL = dir === "rtl";
 
-  // If reduced motion, render plain container with content immediately visible
-  if (reducedMotion) {
-    const Tag = as as React.ElementType;
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const Tag = as as any;
+
+  // Render pure static HTML on server and during initial client hydration to guarantee 100% hydration match
+  if (!mounted || reducedMotion) {
     return (
       <Tag className={className} {...(rest as any)}>
         {children}
@@ -120,7 +126,6 @@ export const Reveal: React.FC<RevealProps> = ({
         ease: EASING,
       }}
       className={className}
-      style={{ willChange: "opacity, transform", ...((rest as any).style ?? {}) }}
       {...(rest as any)}
     >
       {children}
@@ -211,13 +216,20 @@ export const RevealGroup: React.FC<RevealGroupProps> = ({
   className,
   as = "div",
 }) => {
+  const [mounted, setMounted] = React.useState(false);
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const { dir } = useLanguage();
   const isRTL = dir === "rtl";
 
-  if (reducedMotion) {
-    const Tag = as as React.ElementType;
+  React.useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const Tag = as as any;
+
+  // Render pure static HTML on server and during initial client hydration to guarantee 100% hydration match
+  if (!mounted || reducedMotion) {
     return <Tag className={className}>{children}</Tag>;
   }
 
@@ -232,13 +244,12 @@ export const RevealGroup: React.FC<RevealGroupProps> = ({
       whileInView="visible"
       viewport={{ once: true, amount: 0.2 }}
       className={className}
-      style={{ willChange: "opacity, transform" } as React.CSSProperties}
     >
       {React.Children.map(children, (child) =>
         React.isValidElement(child) ? (
           <motion.div
             variants={cv}
-            style={{ willChange: "opacity, transform" } as React.CSSProperties}
+            initial="hidden"
           >
             {child}
           </motion.div>

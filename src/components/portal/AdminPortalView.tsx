@@ -13,6 +13,7 @@ import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { InvestorUser, PropertyApprovalQueueItem, PlatformAuditLog } from "@/types/admin";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
 import { DemoBanner } from "@/components/common/DemoBanner";
+import { adminService } from "@/lib/services/adminService";
 
 const INITIAL_INVESTORS: InvestorUser[] = [
   {
@@ -163,6 +164,13 @@ export const AdminPortalView: React.FC<AdminPortalViewProps> = ({ isDemo = true 
       }
       return updated;
     });
+
+    if (!isDemo) {
+      adminService
+        .reviewKyc(id, id, newStatus === "Verified" ? "Verified" : "Rejected")
+        .catch(() => {});
+    }
+
     setFeedback(`Updated KYC status for user ${id} to "${newStatus}".`);
     setTimeout(() => setFeedback(null), 3000);
   };

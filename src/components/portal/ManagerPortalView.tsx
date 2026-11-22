@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { OptimizedImage } from "@/components/common/OptimizedImage";
@@ -13,6 +13,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MaintenanceRequest } from "@/types/tenant";
 import { DemoBanner } from "@/components/common/DemoBanner";
+import { managerService } from "@/lib/services/managerService";
 
 interface ManagerPortalViewProps {
   isDemo?: boolean;
@@ -74,6 +75,17 @@ export const ManagerPortalView: React.FC<ManagerPortalViewProps> = ({ isDemo = t
       reconciled: true,
     });
 
+    if (!isDemo && prop) {
+      managerService
+        .recordRentCollection({
+          propertyId: prop.id,
+          amount: numAmount,
+          month: rentMonth,
+          tenantName: rentTenantName,
+        })
+        .catch(() => {});
+    }
+
     setFeedback({
       success: true,
       message: `Successfully recorded ${rentMonth} rent deposit of $${numAmount.toLocaleString()} for ${prop?.title}!`,
@@ -114,6 +126,17 @@ export const ManagerPortalView: React.FC<ManagerPortalViewProps> = ({ isDemo = t
       vendorOrTenant: maintVendor || "Prime Facilities & MEP Services",
       reconciled: false,
     });
+
+    if (!isDemo && properties[0]) {
+      managerService
+        .createWorkOrder({
+          propertyId: properties[0].id,
+          vendorName: maintVendor || "Prime Facilities & MEP Services",
+          estimatedCost: costNum,
+          title: maintTitle,
+        })
+        .catch(() => {});
+    }
 
     setFeedback({
       success: true,

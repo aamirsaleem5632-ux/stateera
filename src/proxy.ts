@@ -133,7 +133,7 @@ export async function proxy(request: NextRequest) {
     }
 
     const trustedRole = profile.role;
-    const isApproved = profile.role_approval_status === "Approved";
+    const isApproved = (profile.role_approval_status || "").toLowerCase() === "approved";
 
     // 3. Enforce strict server-side authorization matrix
     if (isAdminRoute) {

@@ -449,6 +449,7 @@ export default function ExplorePage() {
                           fill
                           sizes="(max-width: 768px) 100vw, 33vw"
                           className="object-cover"
+                          fallbackSrc={p.galleryImages?.find((img) => img !== p.coverImage)}
                           fallbackLabel={p.title}
                         />
                       </div>
@@ -581,6 +582,7 @@ export default function ExplorePage() {
                         priority={idx < 2}
                         sizes="(max-width: 640px) 100vw, 176px"
                         className="object-cover"
+                        fallbackSrc={property.galleryImages?.find((img) => img !== property.coverImage)}
                         fallbackLabel={property.title}
                       />
                       <div className="absolute top-2 left-2 badge badge-demo text-[10px]">
@@ -767,6 +769,7 @@ export default function ExplorePage() {
                     fill
                     sizes="(max-width: 1024px) 100vw, 33vw"
                     className="object-cover"
+                    fallbackSrc={mapSelectedProp.galleryImages?.find((img) => img !== mapSelectedProp.coverImage)}
                     fallbackLabel={mapSelectedProp.title}
                   />
                   <div className="absolute bottom-2 left-2 bg-white/90 text-[#1A080C] text-xs px-2.5 py-1 rounded-lg border border-[#EADCDD] font-medium">

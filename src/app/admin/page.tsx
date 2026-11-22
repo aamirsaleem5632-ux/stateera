@@ -70,7 +70,7 @@ export default async function AdminPortalPage() {
     redirect("/login?error=profile_not_found&next=/admin");
   }
 
-  if (profile.role !== "admin" || profile.role_approval_status !== "Approved") {
+  if (profile.role !== "admin" || (profile.role_approval_status || "").toLowerCase() !== "approved") {
     redirect("/login?error=admin_unauthorized&next=/admin");
   }
 

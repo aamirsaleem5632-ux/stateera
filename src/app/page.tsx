@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import Image from "next/image";
 import Link from "next/link";
 import { motion, useScroll, useTransform } from "framer-motion";
 import {
@@ -15,6 +14,12 @@ import {
   Coins,
   Bot,
   CheckCircle2,
+  Lock,
+  Layers,
+  KeyRound,
+  Shield,
+  UserCheck,
+  Info,
 } from "lucide-react";
 import { BRAND_CONFIG } from "@/config/brand";
 import { useDemo } from "@/context/DemoContext";
@@ -179,6 +184,7 @@ export default function HomePage() {
                   alt="Manhattan Luxury Glass Tower"
                   fill
                   priority
+                  loading="eager"
                   sizes="(max-width: 1024px) 100vw, 42vw"
                   className="object-cover"
                   fallbackLabel="Manhattan Luxury Glass Tower"
@@ -191,6 +197,170 @@ export default function HomePage() {
 
       {/* STATEERA IN ACTION: Interactive Walkthrough Section */}
       <StateEraInAction />
+
+      {/* Section: Four Isolated Roles Ecosystem */}
+      <section id="roles" className="py-20 bg-white border-t border-[#EADCDD]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14 space-y-3">
+            <span className="text-xs uppercase font-bold tracking-wider text-[#3B0F18] bg-[#FAF5F5] border border-[#EADCDD] px-3 py-1 rounded-full inline-block">
+              Role-Based Architecture
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-extrabold text-[#1A080C] tracking-tight">
+              Four Roles. Complete Separation.
+            </h2>
+            <p className="text-base text-[#5E4A4E] leading-relaxed">
+              StateEra operates with four strictly isolated participant roles, enforcing server-side authorization and least-privilege security across every operation.
+            </p>
+          </div>
+
+          {/* Role Cards Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {/* 1. Investor — Highlighted Default Selection */}
+            <div className="rounded-2xl p-6 bg-white border-2 border-[#3B0F18] shadow-md relative flex flex-col justify-between space-y-4 hover:shadow-lg transition-shadow">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-[#3B0F18] text-white flex items-center justify-center">
+                    <UserCheck className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="badge badge-success text-[10px] font-bold uppercase tracking-wider">
+                    Highlighted Default
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-[#1A080C]">Investor</h3>
+                  <p className="text-xs font-semibold text-[#3B0F18] mt-0.5">
+                    Explore properties, buy shares and collect rent.
+                  </p>
+                </div>
+                <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                  Open public registration. Build an institutional portfolio, purchase fractional shares, and collect traceable monthly rent distributions into an isolated wallet.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-[#EADCDD]">
+                <Link
+                  href="/login?role=investor"
+                  className="btn btn-primary w-full text-xs py-2 inline-flex items-center justify-center gap-1.5"
+                >
+                  <span>Enter as Investor</span>
+                  <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
+                </Link>
+              </div>
+            </div>
+
+            {/* 2. Property Manager */}
+            <div className="rounded-2xl p-6 bg-[#FAF5F5] border border-[#EADCDD] shadow-sm relative flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-[#EADCDD] text-[#3B0F18] flex items-center justify-center">
+                    <Layers className="w-5 h-5 text-[#3B0F18]" />
+                  </div>
+                  <span className="badge badge-warning text-[10px] font-bold uppercase tracking-wider">
+                    Restricted
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-[#1A080C]">Property Manager</h3>
+                  <p className="text-xs font-semibold text-[#5E4A4E] mt-0.5">
+                    Manage properties, rent and work orders.
+                  </p>
+                </div>
+                <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                  Restricted operational portal. Oversee assigned building operations, record verified rent collections, and dispatch vendor maintenance work orders.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-[#EADCDD]">
+                <Link
+                  href="/login?role=manager"
+                  className="btn btn-secondary w-full text-xs py-2 inline-flex items-center justify-center gap-1.5"
+                >
+                  <span>Manager Access</span>
+                  <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
+                </Link>
+              </div>
+            </div>
+
+            {/* 3. Tenant */}
+            <div className="rounded-2xl p-6 bg-[#FAF5F5] border border-[#EADCDD] shadow-sm relative flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-[#EADCDD] text-[#3B0F18] flex items-center justify-center">
+                    <KeyRound className="w-5 h-5 text-[#3B0F18]" />
+                  </div>
+                  <span className="badge badge-warning text-[10px] font-bold uppercase tracking-wider">
+                    Restricted
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-[#1A080C]">Tenant</h3>
+                  <p className="text-xs font-semibold text-[#5E4A4E] mt-0.5">
+                    View lease, pay rent and submit maintenance requests.
+                  </p>
+                </div>
+                <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                  Leaseholder-only resident portal. View active lease terms, complete monthly rental payments, and log unit repair requests with building management.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-[#EADCDD]">
+                <Link
+                  href="/login?role=tenant"
+                  className="btn btn-secondary w-full text-xs py-2 inline-flex items-center justify-center gap-1.5"
+                >
+                  <span>Tenant Access</span>
+                  <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
+                </Link>
+              </div>
+            </div>
+
+            {/* 4. Platform Admin */}
+            <div className="rounded-2xl p-6 bg-[#FAF5F5] border border-[#EADCDD] shadow-sm relative flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <div className="w-10 h-10 rounded-xl bg-white border border-[#EADCDD] text-[#3B0F18] flex items-center justify-center">
+                    <Shield className="w-5 h-5 text-[#3B0F18]" />
+                  </div>
+                  <span className="badge badge-demo text-[10px] font-bold uppercase tracking-wider">
+                    Max Security
+                  </span>
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-[#1A080C]">Platform Admin</h3>
+                  <p className="text-xs font-semibold text-[#5E4A4E] mt-0.5">
+                    Platform statistics, KYC and approvals.
+                  </p>
+                </div>
+                <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                  Maximum security administrative governance. Review platform-wide statistics, audit KYC compliance, approve manager clearances, and configure assets.
+                </p>
+              </div>
+              <div className="pt-3 border-t border-[#EADCDD]">
+                <Link
+                  href="/login?role=admin"
+                  className="btn btn-secondary w-full text-xs py-2 inline-flex items-center justify-center gap-1.5"
+                >
+                  <span>Admin Clearance</span>
+                  <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          {/* Mandatory Security Disclaimer Notice */}
+          <div className="mt-8 p-4 rounded-xl bg-[#FAF5F5] border border-[#EADCDD] flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-[#5E4A4E]">
+            <div className="flex items-center gap-2.5">
+              <ShieldCheck className="w-4 h-4 text-[#3B0F18] shrink-0" />
+              <span>
+                <strong className="text-[#1A080C]">Security Architecture Notice:</strong> The selected role is NOT proof of authorization. A user must never obtain a role simply by clicking its card. Non-investor access requires cryptographic invitation verification or server-side clearance.
+              </span>
+            </div>
+            <Link
+              href="/login"
+              className="text-xs font-bold text-[#3B0F18] hover:underline whitespace-nowrap"
+            >
+              Learn about authorization →
+            </Link>
+          </div>
+        </div>
+      </section>
 
       {/* Section: Featured Investment Properties */}
       <section className="py-20 bg-[#FAF5F5] border-t border-[#EADCDD]">

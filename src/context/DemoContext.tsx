@@ -17,6 +17,11 @@ interface DemoContextType {
   role: UserRole;
   setRole: (role: UserRole) => void;
 
+  // Real Authentication State
+  authUserId: string | null;
+  authUserEmail: string | null;
+  signOut: () => Promise<void>;
+
   // Properties
   properties: Property[];
   watchlist: string[];
@@ -480,6 +485,7 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   // Authenticated user ID tracking, sequence counter & active user ref for cancellation checks
   const [authUserId, setAuthUserId] = useState<string | null>(null);
+  const [authUserEmail, setAuthUserEmail] = useState<string | null>(null);
   const authSequenceRef = useRef<number>(0);
   const authUserIdRef = useRef<string | null>(null);
 
@@ -498,22 +504,26 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const restoreStorageForUser = useCallback((userId: string | null) => {
     try {
       if (userId) {
-        // Authenticated user: strictly read user-scoped keys. NEVER fall back to guest or legacy unscoped data.
+        // Authenticated user: strictly read user-scoped keys. Every new real investor starts with 0 balance & empty holdings.
         const scopedWalletKey = `stateera_${userId}_wallet_balance`;
         const savedWallet = getStorageItem(scopedWalletKey);
-        setWalletBalance(savedWallet ? JSON.parse(savedWallet) : INITIAL_WALLET_BALANCE);
+        setWalletBalance(savedWallet !== null ? JSON.parse(savedWallet) : 0);
 
         const scopedHoldingsKey = `stateera_${userId}_holdings`;
         const savedHoldings = getStorageItem(scopedHoldingsKey);
-        setHoldings(savedHoldings ? JSON.parse(savedHoldings) : INITIAL_HOLDINGS);
+        setHoldings(savedHoldings !== null ? JSON.parse(savedHoldings) : []);
 
         const scopedTransactionsKey = `stateera_${userId}_transactions`;
         const savedTransactions = getStorageItem(scopedTransactionsKey);
-        setTransactions(savedTransactions ? JSON.parse(savedTransactions) : INITIAL_TRANSACTIONS);
+        setTransactions(savedTransactions !== null ? JSON.parse(savedTransactions) : []);
 
         const scopedWatchlistKey = `stateera_${userId}_watchlist`;
         const savedWatchlist = getStorageItem(scopedWatchlistKey);
-        setWatchlist(savedWatchlist ? JSON.parse(savedWatchlist) : ["prop-dubai-marina-tower", "prop-london-mayfair-commercial"]);
+        setWatchlist(savedWatchlist !== null ? JSON.parse(savedWatchlist) : []);
+
+        const scopedPayoutKey = `stateera_${userId}_payouts`;
+        const savedPayout = getStorageItem(scopedPayoutKey);
+        setPayoutHistory(savedPayout !== null ? JSON.parse(savedPayout) : []);
 
         const scopedRoleKey = `stateera_${userId}_role`;
         const savedRole = getStorageItem(scopedRoleKey) as UserRole | null;
@@ -594,13 +604,16 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (authSequenceRef.current !== requestSeq) return;
 
       const uid = session?.user?.id ?? null;
+      const uemail = session?.user?.email ?? null;
       updateAuthUserId(uid);
+      setAuthUserEmail(uemail);
       restoreStorageForUser(uid);
       isRestoredRef.current = true;
     }).catch(() => {
       // Graceful offline fallback
       if (authSequenceRef.current !== requestSeq) return;
       updateAuthUserId(null);
+      setAuthUserEmail(null);
       restoreStorageForUser(null);
       isRestoredRef.current = true;
     });
@@ -612,12 +625,14 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (event === "SIGNED_OUT" || !session?.user) {
         updateAuthUserId(null);
+        setAuthUserEmail(null);
         restoreStorageForUser(null);
         setRole("investor");
         removeStorageItem("stateera_role");
         isRestoredRef.current = true;
       } else if (session?.user) {
         updateAuthUserId(session.user.id);
+        setAuthUserEmail(session.user.email ?? null);
         restoreStorageForUser(session.user.id);
         isRestoredRef.current = true;
       }
@@ -626,6 +641,28 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => {
       subscription.unsubscribe();
     };
+  }, [updateAuthUserId, restoreStorageForUser]);
+
+  const signOut = useCallback(async () => {
+    try {
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    } catch {
+      // Graceful offline fallback
+    }
+    try {
+      await fetch("/auth/signout", { method: "POST" });
+    } catch {
+      // Offline fallback
+    }
+    updateAuthUserId(null);
+    setAuthUserEmail(null);
+    restoreStorageForUser(null);
+    setRole("investor");
+    removeStorageItem("stateera_role");
+    if (typeof window !== "undefined") {
+      window.location.href = "/login";
+    }
   }, [updateAuthUserId, restoreStorageForUser]);
 
   // Decoupled asynchronous profile role synchronization (runs outside auth event loop with cancellation checks)
@@ -651,7 +688,8 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         if (!error && profile) {
           // Authoritative profile returned from database
-          if (profile.role_approval_status === "Approved") {
+          const isApproved = (profile.role_approval_status || "").toLowerCase() === "approved";
+          if (isApproved) {
             const approvedRole = profile.role as UserRole;
             if (["admin", "manager", "tenant", "investor"].includes(approvedRole)) {
               setRole(approvedRole);
@@ -729,10 +767,11 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setStorageItem(getStorageKey("role", authUserId), role);
       setStorageItem(getStorageKey("appointments", authUserId), JSON.stringify(appointments));
       setStorageItem(getStorageKey("proposals", authUserId), JSON.stringify(proposals));
+      setStorageItem(getStorageKey("payouts", authUserId), JSON.stringify(payoutHistory));
     } catch {
       // Local storage write error
     }
-  }, [walletBalance, holdings, transactions, watchlist, role, appointments, proposals, authUserId, getStorageKey]);
+  }, [walletBalance, holdings, transactions, watchlist, role, appointments, proposals, payoutHistory, authUserId, getStorageKey]);
 
   // Computed Portfolio Totals (Division-by-zero & non-finite protected)
   const { totalPortfolioValue, totalInvested, totalGainLoss, totalGainLossPercent, monthlyEstimatedIncome, averageAnnualYield } = useMemo(() => {
@@ -1444,6 +1483,9 @@ export const DemoProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         role,
         setRole,
+        authUserId,
+        authUserEmail,
+        signOut,
         properties,
         watchlist,
         toggleWatchlist,

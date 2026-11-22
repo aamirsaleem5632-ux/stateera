@@ -1,6 +1,6 @@
 ﻿"use client";
 
-import { useState, useMemo, useSyncExternalStore } from "react";
+import { useState, useMemo, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -21,7 +21,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useIsMounted } from "@/hooks/useIsMounted";
 import { UserRole } from "@/types/admin";
 
-function subscribeUrlError(callback: () => void): () => void {
+function subscribeUrlParams(callback: () => void): () => void {
   if (typeof window === "undefined") return () => {};
   window.addEventListener("popstate", callback);
   return () => window.removeEventListener("popstate", callback);
@@ -32,7 +32,19 @@ function getUrlErrorSnapshot(): string | null {
   return new URLSearchParams(window.location.search).get("error");
 }
 
-function getServerUrlErrorSnapshot(): string | null {
+function getUrlMessageSnapshot(): string | null {
+  if (typeof window === "undefined") return null;
+  const msg = new URLSearchParams(window.location.search).get("message");
+  if (msg === "password_updated") {
+    return "Your password has been updated successfully. Please sign in with your new credentials.";
+  }
+  if (msg === "email_confirmed") {
+    return "Your email address has been confirmed successfully. Please sign in with your credentials.";
+  }
+  return msg;
+}
+
+function getServerSnapshot(): string | null {
   return null;
 }
 
@@ -48,12 +60,76 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
   const [dismissedUrlError, setDismissedUrlError] = useState(false);
-  const [message, setMessage] = useState("");
+  const [formMessage, setFormMessage] = useState("");
+
+  const [activeRoleTab, setActiveRoleTab] = useState<"investor" | "manager" | "tenant" | "admin">("investor");
+  const [invitationCode, setInvitationCode] = useState("");
+  const [verifyingCode, setVerifyingCode] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const p = new URLSearchParams(window.location.search).get("role");
+      if (p === "manager" || p === "tenant" || p === "admin" || p === "investor") {
+        setActiveRoleTab(p);
+      }
+    }
+  }, []);
+
+  async function handleVerifyInvitation(e?: React.FormEvent) {
+    if (e) e.preventDefault();
+    if (!invitationCode.trim()) {
+      setError("Please enter a valid invitation code.");
+      return;
+    }
+    setVerifyingCode(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const res = await fetch("/api/invitation/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          role: activeRoleTab,
+          code: invitationCode.trim(),
+          email: email.trim().toLowerCase(),
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        setError(data.message || "Invalid or unauthorized verification token.");
+        setVerifyingCode(false);
+        return;
+      }
+
+      if (data.isDemo) {
+        setRole(data.role);
+        setMessage(data.message || `Demo Clearance Verified! Redirecting to ${data.role} sandbox...`);
+        setTimeout(() => {
+          router.push(data.sandboxUrl);
+        }, 800);
+      } else {
+        setMessage("Invitation code verified. You may now complete sign-in.");
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to connect to verification service.");
+    } finally {
+      setVerifyingCode(false);
+    }
+  }
 
   const urlErrorParam = useSyncExternalStore(
-    subscribeUrlError,
+    subscribeUrlParams,
     getUrlErrorSnapshot,
-    getServerUrlErrorSnapshot
+    getServerSnapshot
+  );
+
+  const urlMessageParam = useSyncExternalStore(
+    subscribeUrlParams,
+    getUrlMessageSnapshot,
+    getServerSnapshot
   );
 
   const urlErrorMessage = useMemo(() => {
@@ -83,6 +159,8 @@ export default function LoginPage() {
   }, [isMounted, urlErrorParam, dismissedUrlError]);
 
   const error = formError || urlErrorMessage;
+  const message = formMessage || (isMounted ? urlMessageParam || "" : "");
+
   const setError = (err: string) => {
     setFormError(err);
     if (!err) {
@@ -90,7 +168,26 @@ export default function LoginPage() {
     }
   };
 
+  const setMessage = (msg: string) => {
+    setFormMessage(msg);
+  };
+
   const supabase = createClient();
+
+  // Helper to extract safe redirection target from searchParams
+  const getSafeNextPath = () => {
+    if (typeof window === "undefined") return null;
+    const nextParam = new URLSearchParams(window.location.search).get("next");
+    if (
+      nextParam &&
+      nextParam.startsWith("/") &&
+      !nextParam.startsWith("//") &&
+      !nextParam.includes("\\")
+    ) {
+      return nextParam;
+    }
+    return null;
+  };
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -98,47 +195,101 @@ export default function LoginPage() {
     setError("");
     setMessage("");
 
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
+    const safeNext = getSafeNextPath();
+
     try {
       if (mode === "forgot") {
-        const { error } = await supabase.auth.resetPasswordForEmail(email, {
-          redirectTo: `${window.location.origin}/auth/callback?next=/login`,
+        if (!cleanEmail) {
+          setError("Please enter your registered email address.");
+          setLoading(false);
+          return;
+        }
+
+        const { error } = await supabase.auth.resetPasswordForEmail(cleanEmail, {
+          redirectTo: `${window.location.origin}/auth/callback?next=/auth/reset-password`,
         });
+
         if (error) {
-          setError(error.message || "Failed to dispatch password recovery email.");
+          const errMsg = (error.message || "").toLowerCase();
+          if (
+            errMsg.includes("rate limit") ||
+            errMsg.includes("smtp") ||
+            errMsg.includes("email provider") ||
+            errMsg.includes("not configured") ||
+            errMsg.includes("error sending") ||
+            errMsg.includes("over_email_send_rate_limit")
+          ) {
+            setError("Password recovery email delivery is not configured or rate-limited in this demo environment. In production, configure an SMTP provider in the Supabase Dashboard.");
+          } else {
+            setError(error.message || "Failed to dispatch password recovery email.");
+          }
         } else {
-          setMessage(`Password reset email sent to ${email}. Please check your inbox.`);
+          setMessage(`Password recovery email dispatched to ${cleanEmail}. Please check your inbox for the reset link.`);
         }
       } else if (mode === "signup") {
+        if (cleanName.length < 2) {
+          setError("Please enter your full name (at least 2 characters).");
+          setLoading(false);
+          return;
+        }
+
+        if (password.length < 6) {
+          setError("Password must be at least 6 characters long.");
+          setLoading(false);
+          return;
+        }
+
         const { data, error } = await supabase.auth.signUp({
-          email,
+          email: cleanEmail,
           password,
           options: {
             data: {
-              full_name: fullName,
+              full_name: cleanName,
+              name: cleanName,
               role: "investor",
             },
-            emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+            emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext || "/dashboard")}`,
           },
         });
 
         if (error) {
-          setError(error.message || "Account creation failed. Please check your credentials.");
+          const errMsg = error.message.toLowerCase();
+          if (errMsg.includes("already registered") || errMsg.includes("already in use")) {
+            setError("An account with this email address already exists. Please sign in or reset your password.");
+          } else if (errMsg.includes("rate limit") || errMsg.includes("over_email_send_rate_limit")) {
+            setError("Too many registration requests. Please wait a few moments before trying again.");
+          } else {
+            setError(error.message || "Account creation failed. Please check your credentials.");
+          }
+        } else if (data.user && data.user.identities && data.user.identities.length === 0) {
+          setError("An account with this email address already exists. Please sign in or reset your password.");
         } else if (data.session) {
-          // Public registrations default strictly to least-privilege investor role
+          // Auto-login active (email confirmation disabled in Supabase project)
           setRole("investor");
-          router.push("/dashboard");
+          router.push(safeNext || "/dashboard");
           router.refresh();
         } else {
-          setMessage("Account created successfully. Please check your email to verify your account.");
+          // Email confirmation is required by Supabase Auth
+          setMessage(`Account created successfully! A verification email has been sent to ${cleanEmail}. Please verify your email before signing in.`);
         }
       } else {
+        // Sign-in mode
         const { data: authData, error } = await supabase.auth.signInWithPassword({
-          email,
+          email: cleanEmail,
           password,
         });
 
         if (error) {
-          setError(error.message || "Invalid credentials. Please verify your email and password.");
+          const errMsg = error.message.toLowerCase();
+          if (errMsg.includes("invalid login credentials") || errMsg.includes("invalid credentials")) {
+            setError("Invalid email or password. Please verify your credentials or reset your password.");
+          } else if (errMsg.includes("email not confirmed")) {
+            setError("Email verification pending. Please verify your email via the link sent to your inbox before signing in.");
+          } else {
+            setError(error.message || "Invalid credentials. Please verify your email and password.");
+          }
         } else {
           if (authData?.user) {
             try {
@@ -148,31 +299,43 @@ export default function LoginPage() {
                 .eq("id", authData.user.id)
                 .single();
 
-              if (!profileErr && profile && profile.role_approval_status === "Approved") {
+              const isApproved = (profile?.role_approval_status || "").toLowerCase() === "approved";
+              const isRejected = (profile?.role_approval_status || "").toLowerCase() === "rejected";
+
+              if (!profileErr && profile && isApproved) {
                 const approvedRole = profile.role as UserRole;
                 setRole(approvedRole);
+
                 if (approvedRole === "admin") {
-                  router.push("/admin");
+                  router.push(safeNext || "/admin");
                   router.refresh();
                   return;
                 } else if (approvedRole === "manager") {
-                  router.push("/manager");
+                  router.push(safeNext && !safeNext.startsWith("/admin") ? safeNext : "/manager");
                   router.refresh();
                   return;
                 } else if (approvedRole === "tenant") {
-                  router.push("/tenant");
+                  router.push(safeNext && !safeNext.startsWith("/admin") && !safeNext.startsWith("/manager") ? safeNext : "/tenant");
+                  router.refresh();
+                  return;
+                } else {
+                  router.push(safeNext || "/dashboard");
                   router.refresh();
                   return;
                 }
-              } else if (profile && profile.role_approval_status !== "Approved") {
-                // Fail-closed: unapproved roles (Pending or Rejected) are restricted to investor role
+              } else if (profile && !isApproved) {
+                // Restricted/Unapproved role: restrict to investor dashboard
                 setRole("investor");
-                setMessage(`Your ${profile.role} clearance is currently pending administrative verification.`);
-                router.push("/dashboard");
+                if (isRejected) {
+                  setMessage(`Your ${profile.role} application was declined by compliance. Operating under standard Investor access.`);
+                } else {
+                  setMessage(`Your ${profile.role} clearance is currently pending compliance verification. Operating under standard Investor access.`);
+                }
+                router.push(safeNext && !safeNext.startsWith("/admin") && !safeNext.startsWith("/manager") && !safeNext.startsWith("/tenant") ? safeNext : "/dashboard");
                 router.refresh();
                 return;
               } else if (profileErr) {
-                // Check if profileErr is due to missing column (schema upgrade pending)
+                // Check if profileErr is due to schema migration in progress
                 const errCode = profileErr.code || "";
                 const errMsg = (profileErr.message || "").toLowerCase();
                 const errDetails = (profileErr.details || "").toLowerCase();
@@ -184,7 +347,6 @@ export default function LoginPage() {
                   (errMsg.includes("column") && errMsg.includes("does not exist"));
 
                 if (isSchemaError) {
-                  // Fallback query to verify user's base role
                   const { data: baseProfile } = await supabase
                     .from("profiles")
                     .select("role")
@@ -197,7 +359,7 @@ export default function LoginPage() {
                   } else {
                     setMessage("Sign-in successful. Welcome to StateEra.");
                   }
-                  router.push("/dashboard");
+                  router.push(safeNext || "/dashboard");
                   router.refresh();
                   return;
                 }
@@ -207,8 +369,9 @@ export default function LoginPage() {
               setRole("investor");
             }
           }
+
           setRole("investor");
-          router.push("/dashboard");
+          router.push(safeNext || "/dashboard");
           router.refresh();
         }
       }
@@ -224,10 +387,12 @@ export default function LoginPage() {
     setError("");
 
     try {
+      const safeNext = getSafeNextPath();
+      const dynamicRedirect = `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNext || "/dashboard")}`;
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` ? dynamicRedirect : `${window.location.origin}/auth/callback?next=/dashboard`,
           queryParams: {
             access_type: "offline",
             prompt: "consent",
@@ -236,11 +401,22 @@ export default function LoginPage() {
       });
 
       if (error) {
-        setError(error.message);
+        const msg = (error.message || "").toLowerCase();
+        if (msg.includes("unsupported provider") || msg.includes("not enabled")) {
+          setError(
+            "Google Sign-In is not enabled in the Supabase Dashboard. To enable, configure the Google provider under Authentication -> Providers."
+          );
+        } else {
+          setError(error.message || "Failed to initiate Google authentication. Please try again.");
+        }
         setLoading(false);
       }
-    } catch {
-      setError("Google authentication service connection unavailable in offline mode.");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Google authentication connection failed. Please check network connectivity."
+      );
       setLoading(false);
     }
   }
@@ -252,7 +428,7 @@ export default function LoginPage() {
 
   return (
     <main className="min-h-[85vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-lg bg-white border border-[#EADCDD] rounded-3xl p-7 sm:p-10 shadow-sm space-y-6">
+      <div className="w-full max-w-xl bg-white border border-[#EADCDD] rounded-3xl p-7 sm:p-10 shadow-sm space-y-6">
         {/* Brand */}
         <Link href="/" className="flex justify-center items-center gap-2.5">
           <div className="w-11 h-11 rounded-xl bg-[#3B0F18] flex items-center justify-center text-white">
@@ -264,63 +440,326 @@ export default function LoginPage() {
         {/* Heading */}
         <div className="text-center space-y-1.5">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#1A080C]">
-            {mode === "signin" && "Welcome back"}
+            {mode === "signin" && "Welcome to StateEra"}
             {mode === "signup" && "Create your StateEra account"}
             {mode === "forgot" && "Recover your password"}
           </h1>
           <p className="text-sm text-[#5E4A4E]">
-            {mode === "signin" && "Access your real estate portfolio and monthly payouts"}
+            {mode === "signin" && "Select your platform role and sign in with authorized credentials"}
             {mode === "signup" && "Join global investors, tenants, and property managers"}
             {mode === "forgot" && "Enter your email to receive recovery instructions"}
           </p>
         </div>
 
-        {/* 1-Click Fast-Access Role Buttons for Evaluators */}
-        <div className="p-3.5 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl space-y-2">
+        {/* FOUR ROLE SELECTION OPTIONS */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between text-xs font-bold text-[#1A080C]">
-            <span className="flex items-center gap-1.5">
-              <Info className="w-3.5 h-3.5 text-[#3B0F18]" />
-              Evaluation Fast-Access (1-Click Switch)
+            <span className="flex items-center gap-1.5 uppercase tracking-wider text-[#3B0F18]">
+              Role Selection
             </span>
-            <span className="badge badge-demo text-[10px]">Instant Demo</span>
+            <span className="text-[11px] text-[#8C7B7F]">4 Strict Roles</span>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+            {/* 1. Investor — Highlighted Default */}
             <button
               type="button"
-              onClick={() => handleInstantDemoLogin("investor", "/dashboard")}
-              className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
+              onClick={() => {
+                setActiveRoleTab("investor");
+                setError("");
+                setMessage("");
+              }}
+              className={`p-3.5 rounded-2xl border text-left transition-all ${
+                activeRoleTab === "investor"
+                  ? "border-[#3B0F18] bg-[#FAF5F5] ring-2 ring-[#3B0F18]/20 shadow-sm"
+                  : "border-[#EADCDD] bg-white hover:border-[#8C7B7F]"
+              }`}
             >
-              <UserCheck className="w-3.5 h-3.5" />
-              <span>Investor</span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-extrabold text-sm text-[#1A080C] flex items-center gap-1.5">
+                  <UserCheck className="w-4 h-4 text-[#3B0F18]" />
+                  Investor
+                </span>
+                <span className="badge badge-success text-[9px] uppercase font-bold">
+                  Highlighted Default
+                </span>
+              </div>
+              <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                Explore properties, buy shares and collect rent.
+              </p>
             </button>
+
+            {/* 2. Property Manager */}
             <button
               type="button"
-              onClick={() => handleInstantDemoLogin("manager", "/demo/manager")}
-              className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
+              onClick={() => {
+                setActiveRoleTab("manager");
+                setError("");
+                setMessage("");
+              }}
+              className={`p-3.5 rounded-2xl border text-left transition-all ${
+                activeRoleTab === "manager"
+                  ? "border-[#3B0F18] bg-[#FAF5F5] ring-2 ring-[#3B0F18]/20 shadow-sm"
+                  : "border-[#EADCDD] bg-white hover:border-[#8C7B7F]"
+              }`}
             >
-              <Layers className="w-3.5 h-3.5" />
-              <span>Manager</span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-extrabold text-sm text-[#1A080C] flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-[#3B0F18]" />
+                  Property Manager
+                </span>
+                <span className="badge badge-warning text-[9px] uppercase font-bold">
+                  Restricted
+                </span>
+              </div>
+              <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                Manage properties, rent and work orders.
+              </p>
             </button>
+
+            {/* 3. Tenant */}
             <button
               type="button"
-              onClick={() => handleInstantDemoLogin("tenant", "/demo/tenant")}
-              className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
+              onClick={() => {
+                setActiveRoleTab("tenant");
+                setError("");
+                setMessage("");
+              }}
+              className={`p-3.5 rounded-2xl border text-left transition-all ${
+                activeRoleTab === "tenant"
+                  ? "border-[#3B0F18] bg-[#FAF5F5] ring-2 ring-[#3B0F18]/20 shadow-sm"
+                  : "border-[#EADCDD] bg-white hover:border-[#8C7B7F]"
+              }`}
             >
-              <KeyRound className="w-3.5 h-3.5" />
-              <span>Tenant</span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-extrabold text-sm text-[#1A080C] flex items-center gap-1.5">
+                  <KeyRound className="w-4 h-4 text-[#3B0F18]" />
+                  Tenant
+                </span>
+                <span className="badge badge-warning text-[9px] uppercase font-bold">
+                  Restricted
+                </span>
+              </div>
+              <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                View lease, pay rent and submit maintenance requests.
+              </p>
             </button>
+
+            {/* 4. Platform Admin */}
             <button
               type="button"
-              onClick={() => handleInstantDemoLogin("admin", "/demo/admin")}
-              className="px-2.5 py-2 rounded-xl bg-white border border-[#EADCDD] font-bold text-[#1A080C] hover:bg-[#3B0F18] hover:text-white transition-colors flex items-center justify-center gap-1"
+              onClick={() => {
+                setActiveRoleTab("admin");
+                setError("");
+                setMessage("");
+              }}
+              className={`p-3.5 rounded-2xl border text-left transition-all ${
+                activeRoleTab === "admin"
+                  ? "border-[#3B0F18] bg-[#FAF5F5] ring-2 ring-[#3B0F18]/20 shadow-sm"
+                  : "border-[#EADCDD] bg-white hover:border-[#8C7B7F]"
+              }`}
             >
-              <Shield className="w-3.5 h-3.5" />
-              <span>Admin</span>
+              <div className="flex items-center justify-between mb-1">
+                <span className="font-extrabold text-sm text-[#1A080C] flex items-center gap-1.5">
+                  <Shield className="w-4 h-4 text-[#3B0F18]" />
+                  Platform Admin
+                </span>
+                <span className="badge badge-demo text-[9px] uppercase font-bold">
+                  Max Security
+                </span>
+              </div>
+              <p className="text-xs text-[#5E4A4E] leading-relaxed">
+                Platform statistics, KYC and approvals.
+              </p>
             </button>
           </div>
-          <p className="text-[10px] text-[#8C7B7F] text-center pt-0.5">
-            * Instant Demo buttons launch isolated sandboxes (/demo/*). Live portals (/admin, /manager, /tenant) require authenticated credentials.
+
+          {/* Mandatory Security Banner */}
+          <div className="p-3 bg-[#FAF5F5] border border-[#EADCDD] rounded-xl flex items-start gap-2.5 text-xs text-[#5E4A4E]">
+            <Shield className="w-4 h-4 text-[#3B0F18] shrink-0 mt-0.5" />
+            <p className="leading-relaxed">
+              <strong className="text-[#1A080C]">Security Notice:</strong> The selected role is NOT proof of authorization. A user must never obtain a role simply by clicking its card.
+            </p>
+          </div>
+        </div>
+
+        {/* Role-Specific Information & Invitation Code Input for Non-Investor Roles */}
+        {activeRoleTab !== "investor" && (
+          <div className="p-4 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-bold text-[#1A080C] uppercase tracking-wider flex items-center gap-1.5">
+                <KeyRound className="w-3.5 h-3.5 text-[#3B0F18]" />
+                {activeRoleTab === "manager"
+                  ? "Property Manager Clearance"
+                  : activeRoleTab === "tenant"
+                  ? "Tenant Resident Clearance"
+                  : "Administrator Clearance"}
+              </span>
+              <span className="badge badge-demo text-[10px]">Restricted Access</span>
+            </div>
+
+            <p className="text-[11px] text-[#5E4A4E] leading-relaxed">
+              {activeRoleTab === "manager" &&
+                "Public Property Manager registration is disabled. You may sign in with verified credentials below, or verify an authorized invitation code to enter the manager sandbox."}
+              {activeRoleTab === "tenant" &&
+                "Public Tenant registration is disabled. You may sign in with approved lease credentials below, or verify your lease token to enter the tenant sandbox."}
+              {activeRoleTab === "admin" &&
+                "Public Admin registration is disabled. Access requires an allowlisted administrative email or verified cryptographic token."}
+            </p>
+
+            {/* Invitation Code Verification Form */}
+            <form onSubmit={handleVerifyInvitation} className="space-y-2 pt-1">
+              <label className="block text-xs font-bold text-[#1A080C]">
+                Enter {activeRoleTab === "manager" ? "Manager" : activeRoleTab === "tenant" ? "Tenant" : "Admin"} Invitation / Demo Code
+              </label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={invitationCode}
+                  onChange={(e) => setInvitationCode(e.target.value.toUpperCase())}
+                  placeholder={
+                    activeRoleTab === "manager"
+                      ? "e.g. MGR-DEMO-2026"
+                      : activeRoleTab === "tenant"
+                      ? "e.g. TEN-DEMO-2026"
+                      : "e.g. ADMIN-DEMO-2026"
+                  }
+                  className="input flex-1 font-mono text-xs uppercase"
+                  disabled={verifyingCode}
+                />
+                <button
+                  type="submit"
+                  disabled={verifyingCode || !invitationCode.trim()}
+                  className="btn btn-primary text-xs whitespace-nowrap px-4 flex items-center gap-1.5"
+                >
+                  {verifyingCode && <Loader2 className="w-3.5 h-3.5 animate-spin" />}
+                  <span>Verify Code</span>
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* TEACHER DEMONSTRATION & SECURE EVALUATION SYSTEM */}
+        <div className="p-4 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl space-y-3">
+          <div className="flex items-center justify-between text-xs font-bold text-[#1A080C]">
+            <span className="flex items-center gap-1.5 text-[#3B0F18]">
+              <Info className="w-3.5 h-3.5" />
+              Teacher Demonstration &amp; Secure Evaluation System
+            </span>
+            <span className="badge badge-demo text-[10px]">Fictional Sandbox</span>
+          </div>
+
+          <p className="text-[11px] text-[#5E4A4E] leading-relaxed">
+            Teachers and evaluators may inspect all four roles safely. Demo accounts operate in isolated sandboxes (<code className="text-[#3B0F18]">/demo/*</code>) with mock data and never access live database tables.
           </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+            {/* Investor Demo Identity */}
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
+              <div>
+                <div className="font-bold text-[#1A080C]">investor.demo@stateera.test</div>
+                <div className="text-[10px] text-[#8C7B7F]">$25,000 Simulated Funds</div>
+              </div>
+              <button
+                type="button"
+                onClick={() => handleInstantDemoLogin("investor", "/dashboard")}
+                className="btn btn-secondary text-[11px] py-1 px-2.5"
+              >
+                Launch Demo
+              </button>
+            </div>
+
+            {/* Manager Demo Identity */}
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
+              <div>
+                <div className="font-bold text-[#1A080C]">manager.demo@stateera.test</div>
+                <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">MGR-DEMO-2026</code></div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveRoleTab("manager");
+                  setInvitationCode("MGR-DEMO-2026");
+                }}
+                className="btn btn-secondary text-[11px] py-1 px-2.5"
+              >
+                Fill Code
+              </button>
+            </div>
+
+            {/* Tenant Demo Identity */}
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
+              <div>
+                <div className="font-bold text-[#1A080C]">tenant.demo@stateera.test</div>
+                <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">TEN-DEMO-2026</code></div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveRoleTab("tenant");
+                  setInvitationCode("TEN-DEMO-2026");
+                }}
+                className="btn btn-secondary text-[11px] py-1 px-2.5"
+              >
+                Fill Code
+              </button>
+            </div>
+
+            {/* Admin Demo Identity */}
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
+              <div>
+                <div className="font-bold text-[#1A080C]">admin.demo@stateera.test</div>
+                <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">ADMIN-DEMO-2026</code></div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveRoleTab("admin");
+                  setInvitationCode("ADMIN-DEMO-2026");
+                }}
+                className="btn btn-secondary text-[11px] py-1 px-2.5"
+              >
+                Fill Code
+              </button>
+            </div>
+          </div>
+
+          {/* Test Unauthorized / Invalid Code Button */}
+          <div className="pt-1 flex items-center justify-between text-xs">
+            <span className="text-[10px] text-[#8C7B7F]">
+              Test system rejection of unauthorized codes:
+            </span>
+            <button
+              type="button"
+              onClick={async () => {
+                setActiveRoleTab("manager");
+                setInvitationCode("HACKER-CODE-403");
+                setVerifyingCode(true);
+                setError("");
+                setMessage("");
+                try {
+                  const res = await fetch("/api/invitation/verify", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      role: "manager",
+                      code: "HACKER-CODE-403",
+                    }),
+                  });
+                  const data = await res.json();
+                  setError(data.message || "Access Denied: The verification code is invalid, expired, or unauthorized.");
+                } catch {
+                  setError("Access Denied: Verification failed.");
+                } finally {
+                  setVerifyingCode(false);
+                }
+              }}
+              className="text-[11px] font-bold text-red-700 hover:underline"
+            >
+              Test Invalid Code Rejection →
+            </button>
+          </div>
         </div>
 
         {mode !== "forgot" && (
@@ -371,6 +810,7 @@ export default function LoginPage() {
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder="e.g. Jonathan Sterling"
                   className="input w-full"
+                  disabled={loading}
                 />
               </div>
             </>
@@ -389,6 +829,7 @@ export default function LoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
                 className="input w-full pl-10"
+                disabled={loading}
               />
             </div>
           </div>
@@ -423,6 +864,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
                   className="input w-full pl-10"
+                  disabled={loading}
                 />
               </div>
             </div>

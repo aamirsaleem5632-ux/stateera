@@ -27,6 +27,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   width,
   height,
   priority = false,
+  loading,
   sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
   className = "",
   containerClassName = "",
@@ -36,9 +37,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onError,
   ...rest
 }) => {
+  const [isMounted, setIsMounted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [currentSrc, setCurrentSrc] = useState(src);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Sync internal state when external src prop changes (e.g., gallery thumbnail clicks)
   useEffect(() => {
@@ -67,21 +73,30 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // If fill is true, the container must be relative and fill parent
   const isFill = fill || (!width && !height);
 
+  // Deterministic loading behavior: priority images are eager by browser default and must not pass loading="lazy",
+  // while non-priority images default to loading="lazy" for performance.
+  const resolvedLoading = priority ? undefined : (loading || "lazy");
+
+  // Guaranteed SSR and hydration parity: prior to mount settling, initial classes strictly match server HTML
+  const isShimmerActive = !isMounted || (isLoading && !hasError);
+  const isFallbackActive = isMounted && hasError;
+  const isImageVisible = isMounted && !isLoading;
+
   return (
     <div
       className={`relative overflow-hidden bg-[#FAF5F5] ${
         isFill ? "w-full h-full" : ""
       } ${containerClassName}`}
     >
-      {/* Shimmer skeleton placeholder */}
-      {isLoading && !hasError && (
-        <div
-          aria-hidden="true"
-          className="absolute inset-0 z-0 bg-gradient-to-r from-[#FAF5F5] via-[#F2E8E9] to-[#FAF5F5] bg-[length:200%_100%] animate-pulse flex items-center justify-center pointer-events-none"
-        >
-          <Building2 className="w-8 h-8 text-[#EADCDD] opacity-60" />
-        </div>
-      )}
+      {/* Shimmer skeleton placeholder - permanent DOM node to prevent SSR/client hydration mismatch */}
+      <div
+        aria-hidden="true"
+        className={`absolute inset-0 z-0 bg-gradient-to-r from-[#FAF5F5] via-[#F2E8E9] to-[#FAF5F5] bg-[length:200%_100%] animate-pulse flex items-center justify-center pointer-events-none transition-opacity duration-300 ${
+          isShimmerActive ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <Building2 className="w-8 h-8 text-[#EADCDD] opacity-60" />
+      </div>
 
       {/* Graceful Fallback if image fails to load */}
       {hasError ? (
@@ -102,15 +117,17 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         </div>
       ) : (
         <Image
+          key={typeof currentSrc === "string" ? currentSrc : undefined}
           src={currentSrc}
           alt={alt}
           fill={isFill}
           width={!isFill ? width : undefined}
           height={!isFill ? height : undefined}
           priority={priority}
+          loading={resolvedLoading}
           sizes={sizes}
           className={`transition-opacity duration-300 ${
-            isLoading ? "opacity-0" : "opacity-100"
+            isImageVisible ? "opacity-100" : "opacity-0"
           } ${className}`}
           onLoad={handleLoadingComplete}
           onError={handleError}

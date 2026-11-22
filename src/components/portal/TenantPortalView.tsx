@@ -12,6 +12,7 @@ import {
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { DemoBanner } from "@/components/common/DemoBanner";
+import { tenantService } from "@/lib/services/tenantService";
 
 function getOrdinalSuffix(day: number): string {
   if (day >= 11 && day <= 13) return `${day}th`;
@@ -57,6 +58,16 @@ export const TenantPortalView: React.FC<TenantPortalViewProps> = ({ isDemo = tru
     setIsPayingRent(true);
 
     const res = payTenantRent(leaseId);
+    if (!isDemo && activeLease) {
+      tenantService
+        .payRent({
+          leaseId: activeLease.id,
+          propertyId: activeLease.propertyId,
+          amount: activeLease.monthlyRent,
+          month: "Current Month",
+        })
+        .catch(() => {});
+    }
     setFeedback(res);
     setIsPayingRent(false);
   };
@@ -75,6 +86,19 @@ export const TenantPortalView: React.FC<TenantPortalViewProps> = ({ isDemo = tru
       estimatedCost: maintPriority === "Emergency" ? 650 : 200,
       description: maintDesc || "Submitted via Resident Tenant portal.",
     });
+
+    if (!isDemo) {
+      tenantService
+        .submitMaintenance({
+          propertyId: activeLease.propertyId,
+          unitNumber: activeLease.unitNumber,
+          title: maintTitle || "General Maintenance",
+          category: maintCategory,
+          priority: maintPriority,
+          description: maintDesc || "Submitted via Resident Tenant portal.",
+        })
+        .catch(() => {});
+    }
 
     setFeedback({
       success: true,

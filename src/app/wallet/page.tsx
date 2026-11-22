@@ -20,6 +20,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { TransactionType } from "@/types/investor";
 import { InfoTooltip } from "@/components/common/InfoTooltip";
+import { walletService } from "@/lib/services/walletService";
 
 export default function WalletPage() {
   const {
@@ -52,6 +53,7 @@ export default function WalletPage() {
   const handleDeposit = (e: React.FormEvent) => {
     e.preventDefault();
     const res = depositFunds(Number(depositAmount));
+    walletService.depositFunds(Number(depositAmount)).catch(() => {});
     setFeedback(res);
     setDepositModalOpen(false);
   };
@@ -59,6 +61,7 @@ export default function WalletPage() {
   const handleWithdraw = (e: React.FormEvent) => {
     e.preventDefault();
     const res = withdrawFunds(Number(withdrawAmount));
+    walletService.withdrawFunds(Number(withdrawAmount)).catch(() => {});
     setFeedback(res);
     setWithdrawModalOpen(false);
   };
