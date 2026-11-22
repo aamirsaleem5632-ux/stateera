@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/client";
+import { RAILWAY_BACKEND_URL } from "@/lib/apiConfig";
 
 export interface KycApprovalRecord {
   id: string;
@@ -45,6 +46,21 @@ export const adminService = {
     totalInvestors: number;
     pendingKycCount: number;
   }> {
+    // 1. Query production Railway backend service
+    try {
+      const res = await fetch(`${RAILWAY_BACKEND_URL}/api/admin/stats`, {
+        signal: AbortSignal.timeout(3500),
+      });
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success && json.stats) {
+          return json.stats;
+        }
+      }
+    } catch {
+      // Defer to direct Supabase PostgreSQL query if network hiccup
+    }
+
     const supabase = createClient();
 
     const { count: propCount, data: propData } = await supabase
