@@ -1,0 +1,290 @@
+[
+  {
+    "route": "/",
+    "file": "src/app/page.tsx",
+    "lines": 706,
+    "componentName": "HomePage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/explore",
+    "file": "src/app/explore/page.tsx",
+    "lines": 839,
+    "componentName": "ExplorePage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/schemes",
+    "file": "src/app/schemes/page.tsx",
+    "lines": 288,
+    "componentName": "InvestmentSchemesPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/ai-features",
+    "file": "src/app/ai-features/page.tsx",
+    "lines": 448,
+    "componentName": "AiFeaturesPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/community-lab",
+    "file": "src/app/community-lab/page.tsx",
+    "lines": 302,
+    "componentName": "CommunityPropertyLabPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/reports",
+    "file": "src/app/reports/page.tsx",
+    "lines": 567,
+    "componentName": "ReportsPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/simulator",
+    "file": "src/app/simulator/page.tsx",
+    "lines": 502,
+    "componentName": "ScenarioSimulatorPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/glossary",
+    "file": "src/app/glossary/page.tsx",
+    "lines": 192,
+    "componentName": "GlossaryPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/faq",
+    "file": "src/app/faq/page.tsx",
+    "lines": 173,
+    "componentName": "FaqPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/demo/manager",
+    "file": "src/app/demo/manager/page.tsx",
+    "lines": 12,
+    "componentName": "DemoManagerPage",
+    "isPlaceholder": true,
+    "hasTodo": false
+  },
+  {
+    "route": "/demo/admin",
+    "file": "src/app/demo/admin/page.tsx",
+    "lines": 12,
+    "componentName": "DemoAdminPage",
+    "isPlaceholder": true,
+    "hasTodo": false
+  },
+  {
+    "route": "/wallet",
+    "file": "src/app/wallet/page.tsx",
+    "lines": 429,
+    "componentName": "WalletPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/how-it-works",
+    "file": "src/app/how-it-works/page.tsx",
+    "lines": 208,
+    "componentName": "HowItWorksPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/trust",
+    "file": "src/app/trust/page.tsx",
+    "lines": 190,
+    "componentName": "TrustCentrePage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/experts",
+    "file": "src/app/experts/page.tsx",
+    "lines": 517,
+    "componentName": "ExpertsPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/dashboard",
+    "file": "src/app/dashboard/page.tsx",
+    "lines": 504,
+    "componentName": "InvestorDashboardPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/learn",
+    "file": "src/app/learn/page.tsx",
+    "lines": 315,
+    "componentName": "LearnCentrePage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/governance",
+    "file": "src/app/governance/page.tsx",
+    "lines": 255,
+    "componentName": "GovernancePage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/about",
+    "file": "src/app/about/page.tsx",
+    "lines": 173,
+    "componentName": "AboutPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/support",
+    "file": "src/app/support/page.tsx",
+    "lines": 222,
+    "componentName": "SupportCentrePage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/demo/tenant",
+    "file": "src/app/demo/tenant/page.tsx",
+    "lines": 12,
+    "componentName": "DemoTenantPage",
+    "isPlaceholder": true,
+    "hasTodo": false
+  },
+  {
+    "route": "/login",
+    "file": "src/app/login/page.tsx",
+    "lines": 958,
+    "componentName": "LoginPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/manager",
+    "file": "src/app/manager/page.tsx",
+    "lines": 88,
+    "componentName": "async",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/tenant",
+    "file": "src/app/tenant/page.tsx",
+    "lines": 88,
+    "componentName": "async",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/admin",
+    "file": "src/app/admin/page.tsx",
+    "lines": 79,
+    "componentName": "async",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/property/[id]",
+    "file": "src/app/property/[id]/page.tsx",
+    "lines": 811,
+    "componentName": "PropertyDetailPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/trade",
+    "file": "src/app/trade/page.tsx",
+    "lines": 6,
+    "componentName": "TradeIndexPage",
+    "isPlaceholder": true,
+    "hasTodo": false
+  },
+  {
+    "route": "/trade/[id]",
+    "file": "src/app/trade/[id]/page.tsx",
+    "lines": 526,
+    "componentName": "TradePropertyPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/fees-and-returns",
+    "file": "src/app/fees-and-returns/page.tsx",
+    "lines": 217,
+    "componentName": "FeesAndReturnsPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/notifications",
+    "file": "src/app/notifications/page.tsx",
+    "lines": 154,
+    "componentName": "NotificationsPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/contact",
+    "file": "src/app/contact/page.tsx",
+    "lines": 216,
+    "componentName": "ContactUsPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/legal",
+    "file": "src/app/legal/page.tsx",
+    "lines": 86,
+    "componentName": "LegalCentrePage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/legal/privacy",
+    "file": "src/app/legal/privacy/page.tsx",
+    "lines": 64,
+    "componentName": "PrivacyPolicyPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/legal/terms",
+    "file": "src/app/legal/terms/page.tsx",
+    "lines": 75,
+    "componentName": "TermsAndConditionsPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/legal/risks",
+    "file": "src/app/legal/risks/page.tsx",
+    "lines": 78,
+    "componentName": "RiskDisclosuresPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  },
+  {
+    "route": "/auth/reset-password",
+    "file": "src/app/auth/reset-password/page.tsx",
+    "lines": 283,
+    "componentName": "ResetPasswordPage",
+    "isPlaceholder": false,
+    "hasTodo": false
+  }
+]

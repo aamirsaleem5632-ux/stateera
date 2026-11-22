@@ -47,6 +47,34 @@ export const Navbar: React.FC = () => {
   const [notifDropdownOpen, setNotifDropdownOpen] = useState(false);
   const [moreDropdownOpen, setMoreDropdownOpen] = useState(false);
 
+  const navLeftColumn = [
+    { label: "Home", href: "/" },
+    { label: "Explore Properties", href: "/explore" },
+    { label: "Micro-Saver Schemes", href: "/schemes" },
+    { label: "AI Property Detective", href: "/ai-features" },
+    { label: "Community Property Lab", href: "/community-lab" },
+    { label: "P&L Analytics", href: "/reports" },
+    { label: "What If? Calculator", href: "/simulator" },
+    { label: "Simple Guide & Terms", href: "/glossary" },
+    { label: "FAQ", href: "/faq" },
+    { label: "Property Manager Demo", href: "/demo/manager" },
+    { label: "Admin Portal Demo", href: "/demo/admin" },
+    { label: "Practice Wallet", href: "/wallet" },
+  ];
+
+  const navRightColumn = [
+    { label: "How It Works", href: "/how-it-works" },
+    { label: "Trust Centre", href: "/trust" },
+    { label: "Human Expert Network", href: "/experts" },
+    { label: "My Investments", href: "/dashboard" },
+    { label: "Learn Centre", href: "/learn" },
+    { label: "Owner Updates & Voting", href: "/governance" },
+    { label: "About Us", href: "/about" },
+    { label: "Support Desk", href: "/support" },
+    { label: "Tenant Portal Demo", href: "/demo/tenant" },
+    { label: "Live Portal Login", href: "/login" },
+  ];
+
   const roles: { id: UserRole; label: string; desc: string; icon: any }[] = [
     { id: "investor", label: t.nav.roleInvestor, desc: "Explore, buy shares & collect rent", icon: UserCheck },
     { id: "manager", label: t.nav.roleManager, desc: "Manage properties, rent & work orders", icon: Layers },
@@ -106,48 +134,122 @@ export const Navbar: React.FC = () => {
           </Link>
 
           {/* Horizontal Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-5 text-xs font-semibold text-[#5E4A4E]">
-            <Link
-              href="/"
-              className={`hover:text-[#3B0F18] transition-colors ${
-                pathname === "/" ? "text-[#3B0F18] font-bold" : ""
-              }`}
-            >
-              {t.nav.home}
-            </Link>
-            <Link
-              href="/explore"
-              className={`hover:text-[#3B0F18] transition-colors ${
-                pathname === "/explore" ? "text-[#3B0F18] font-bold" : ""
-              }`}
-            >
-              {t.nav.explore}
-            </Link>
-            <Link
-              href="/dashboard"
-              className={`hover:text-[#3B0F18] transition-colors ${
-                pathname === "/dashboard" ? "text-[#3B0F18] font-bold" : ""
-              }`}
-            >
-              {t.nav.dashboard}
-            </Link>
-            <Link
-              href="/reports"
-              className={`hover:text-[#3B0F18] transition-colors ${
-                pathname === "/reports" ? "text-[#3B0F18] font-bold" : ""
-              }`}
-            >
-              {t.nav.reports}
-            </Link>
-            <Link
-              href="/wallet"
-              className={`lg:hidden hover:text-[#3B0F18] transition-colors ${
-                pathname === "/wallet" ? "text-[#3B0F18] font-bold" : ""
-              }`}
-            >
-              {t.nav.wallet}
-            </Link>
-          </nav>
+          <div className="hidden lg:flex items-center gap-4">
+            <nav className="hidden lg:flex items-center gap-5 text-xs font-semibold text-[#5E4A4E]">
+              <Link
+                href="/"
+                className={`hover:text-[#3B0F18] transition-colors ${
+                  pathname === "/" ? "text-[#3B0F18] font-bold" : ""
+                }`}
+              >
+                {t.nav.home}
+              </Link>
+              <Link
+                href="/explore"
+                className={`hover:text-[#3B0F18] transition-colors ${
+                  pathname === "/explore" ? "text-[#3B0F18] font-bold" : ""
+                }`}
+              >
+                {t.nav.explore}
+              </Link>
+              <Link
+                href="/dashboard"
+                className={`hover:text-[#3B0F18] transition-colors ${
+                  pathname === "/dashboard" ? "text-[#3B0F18] font-bold" : ""
+                }`}
+              >
+                {t.nav.dashboard}
+              </Link>
+              <Link
+                href="/reports"
+                className={`hover:text-[#3B0F18] transition-colors ${
+                  pathname === "/reports" ? "text-[#3B0F18] font-bold" : ""
+                }`}
+              >
+                {t.nav.reports}
+              </Link>
+              <Link
+                href="/wallet"
+                className={`lg:hidden hover:text-[#3B0F18] transition-colors ${
+                  pathname === "/wallet" ? "text-[#3B0F18] font-bold" : ""
+                }`}
+              >
+                {t.nav.wallet}
+              </Link>
+            </nav>
+
+            {/* All Pathways Dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => {
+                  setMoreDropdownOpen(!moreDropdownOpen);
+                  setLangDropdownOpen(false);
+                  setRoleDropdownOpen(false);
+                  setNotifDropdownOpen(false);
+                }}
+                className={`flex items-center gap-1 hover:text-[#3B0F18] transition-colors ${
+                  moreDropdownOpen ? "text-[#3B0F18] font-bold" : ""
+                }`}
+              >
+                <span>All Pathways</span>
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-150 ${moreDropdownOpen ? "rotate-180" : ""}`} />
+              </button>
+              {moreDropdownOpen && (
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 mt-3 w-[560px] bg-white border border-[#EADCDD] rounded-2xl shadow-xl p-5 z-50 text-xs"
+                  dir={dir}
+                >
+                  <div className="grid grid-cols-2 gap-6">
+                    {/* Left Column */}
+                    <div>
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-[#8C7B7F] mb-2.5 pb-1 border-b border-[#FAF5F5]">
+                        Discovery &amp; Analytics
+                      </div>
+                      <div className="space-y-1">
+                        {navLeftColumn.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMoreDropdownOpen(false)}
+                            className={`block px-2.5 py-1.5 rounded-lg transition-colors ${
+                              pathname === item.href
+                                ? "bg-[#FAF5F5] text-[#3B0F18] font-bold"
+                                : "text-[#1A080C] hover:bg-[#FAF5F5] hover:text-[#3B0F18]"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                    {/* Right Column */}
+                    <div>
+                      <div className="text-[10px] uppercase font-bold tracking-wider text-[#8C7B7F] mb-2.5 pb-1 border-b border-[#FAF5F5]">
+                        Ecosystem &amp; Portals
+                      </div>
+                      <div className="space-y-1">
+                        {navRightColumn.map((item) => (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMoreDropdownOpen(false)}
+                            className={`block px-2.5 py-1.5 rounded-lg transition-colors ${
+                              pathname === item.href
+                                ? "bg-[#FAF5F5] text-[#3B0F18] font-bold"
+                                : "text-[#1A080C] hover:bg-[#FAF5F5] hover:text-[#3B0F18]"
+                            }`}
+                          >
+                            {item.label}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
 
           {/* Right Action Icons & Controls */}
           <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
@@ -365,207 +467,72 @@ export const Navbar: React.FC = () => {
 
         {/* Mobile / Tablet Navigation Drawer */}
         {mobileMenuOpen && (
-          <div className="lg:hidden border-t border-[#EADCDD] bg-white px-4 pt-3 pb-6 space-y-3 shadow-lg" dir={dir}>
-            <div className="grid grid-cols-2 gap-2 text-sm font-medium">
-              <Link
-                href="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.home}
-              </Link>
-              <Link
-                href="/explore"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C] font-semibold"
-              >
-                {t.nav.explore}
-              </Link>
-              <Link
-                href="/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.dashboard}
-              </Link>
-              <Link
-                href="/reports"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.reports}
-              </Link>
-              <Link
-                href="/wallet"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.wallet}
-              </Link>
-              <Link
-                href="/#how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.howItWorks}
-              </Link>
-              <Link
-                href="/how-it-works"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                How It Works
-              </Link>
-              <Link
-                href="/schemes"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                Micro-Saver Schemes
-              </Link>
-              <Link
-                href="/trust"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                Trust Centre
-              </Link>
-              <Link
-                href="/ai-features"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                AI Property Detective
-              </Link>
-              <Link
-                href="/experts"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                Human Expert Network
-              </Link>
-              <Link
-                href="/community-lab"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                Community Property Lab
-              </Link>
-              <Link
-                href="/dashboard"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.dashboard}
-              </Link>
-              <Link
-                href="/reports"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                P&amp;L Analytics
-              </Link>
-              <Link
-                href="/learn"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                Learn Centre
-              </Link>
-              <Link
-                href="/simulator"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.simulator}
-              </Link>
-              <Link
-                href="/governance"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.governance}
-              </Link>
-              <Link
-                href="/glossary"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.glossary}
-              </Link>
-              <Link
-                href="/about"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                About Us
-              </Link>
-              <Link
-                href="/faq"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                FAQ
-              </Link>
-              <Link
-                href="/support"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                Support Desk
-              </Link>
-              <Link
-                href="/demo/manager"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.manager} (Demo)
-              </Link>
-              <Link
-                href="/demo/tenant"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.tenant} (Demo)
-              </Link>
-              <Link
-                href="/demo/admin"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.admin} (Demo)
-              </Link>
-              {authUserId ? (
-                <button
-                  type="button"
-                  onClick={async () => {
-                    setMobileMenuOpen(false);
-                    await signOut();
-                    router.push("/login");
-                  }}
-                  className="p-2.5 rounded-lg border border-[#DC2626] bg-[#FEF2F2] text-[#DC2626] font-bold text-left flex items-center justify-between"
-                >
-                  <span className="truncate text-xs">{authUserEmail || "Account"}</span>
-                  <span className="text-xs flex items-center gap-1 font-semibold">
-                    <LogOut className="w-3.5 h-3.5" /> Logout
-                  </span>
-                </button>
-              ) : (
-                <Link
-                  href="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="p-2.5 rounded-lg border border-[#3B0F18] bg-[#FAF5F5] text-[#3B0F18] font-bold"
-                >
-                  Live Portal Login
-                </Link>
-              )}
-              <Link
-                href="/wallet"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-2.5 rounded-lg border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
-              >
-                {t.nav.wallet}
-              </Link>
+          <div className="lg:hidden border-t border-[#EADCDD] bg-white px-4 pt-4 pb-6 space-y-4 shadow-lg max-h-[85vh] overflow-y-auto" dir={dir}>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-medium">
+              {/* Left Column (12 pathways) */}
+              <div className="space-y-1.5">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-[#8C7B7F] pb-1 border-b border-[#FAF5F5]">
+                  Discovery &amp; Analytics
+                </div>
+                {navLeftColumn.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setMobileMenuOpen(false)}
+                    className={`block p-2 rounded-lg border transition-colors ${
+                      pathname === item.href
+                        ? "bg-[#FAF5F5] text-[#3B0F18] font-bold border-[#3B0F18]"
+                        : "border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+
+              {/* Right Column (10 pathways) */}
+              <div className="space-y-1.5">
+                <div className="text-[10px] uppercase font-bold tracking-wider text-[#8C7B7F] pb-1 border-b border-[#FAF5F5]">
+                  Ecosystem &amp; Portals
+                </div>
+                {navRightColumn.map((item) => {
+                  if (item.href === "/login" && authUserId) {
+                    return (
+                      <button
+                        key="logout"
+                        type="button"
+                        onClick={async () => {
+                          setMobileMenuOpen(false);
+                          await signOut();
+                          router.push("/login");
+                        }}
+                        className="w-full p-2 rounded-lg border border-[#DC2626] bg-[#FEF2F2] text-[#DC2626] font-bold text-left flex items-center justify-between"
+                      >
+                        <span className="truncate text-xs">{authUserEmail || "Account"}</span>
+                        <span className="text-xs flex items-center gap-1 font-semibold">
+                          <LogOut className="w-3.5 h-3.5" /> Logout
+                        </span>
+                      </button>
+                    );
+                  }
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`block p-2 rounded-lg border transition-colors ${
+                        item.href === "/login"
+                          ? "border-[#3B0F18] bg-[#FAF5F5] text-[#3B0F18] font-bold"
+                          : pathname === item.href
+                          ? "bg-[#FAF5F5] text-[#3B0F18] font-bold border-[#3B0F18]"
+                          : "border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+                      }`}
+                    >
+                      {item.label}
+                    </Link>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Mobile Role Switcher */}
