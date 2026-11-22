@@ -166,6 +166,26 @@ ALTER TABLE public.invitation_rate_limits ENABLE ROW LEVEL SECURITY;
 -- HELPER FUNCTIONS FOR STRICT ROLE & ASSIGNMENT EVALUATION
 -- =========================================================================
 
+-- Helper: Check if current authenticated user is an approved administrator
+CREATE OR REPLACE FUNCTION public.is_approved_admin()
+RETURNS BOOLEAN
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1 FROM public.profiles p
+    WHERE p.id = (SELECT auth.uid())
+      AND p.role = 'admin'
+      AND p.role_approval_status = 'Approved'
+  );
+$$;
+
+REVOKE ALL ON FUNCTION public.is_approved_admin() FROM PUBLIC;
+REVOKE ALL ON FUNCTION public.is_approved_admin() FROM anon;
+GRANT EXECUTE ON FUNCTION public.is_approved_admin() TO authenticated;
+
 -- Helper: Check if current authenticated user is an assigned active manager for a given property
 CREATE OR REPLACE FUNCTION public.is_assigned_manager(p_property_id text)
 RETURNS BOOLEAN
