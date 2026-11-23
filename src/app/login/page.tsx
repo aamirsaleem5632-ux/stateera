@@ -656,24 +656,24 @@ export default function LoginPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             {/* Investor Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
-              <div>
-                <div className="font-bold text-[#1A080C]">investor.demo@stateera.test</div>
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
+              <div className="min-w-0 flex-1">
+                <div className="font-bold break-all leading-snug text-[#1A080C]">investor.demo@stateera.test</div>
                 <div className="text-[10px] text-[#8C7B7F]">$25,000 Simulated Funds</div>
               </div>
               <button
                 type="button"
                 onClick={() => handleInstantDemoLogin("investor", "/dashboard")}
-                className="btn btn-secondary text-[11px] py-1 px-2.5"
+                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
               >
                 Launch Demo
               </button>
             </div>
 
             {/* Manager Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
-              <div>
-                <div className="font-bold text-[#1A080C]">manager.demo@stateera.test</div>
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
+              <div className="min-w-0 flex-1">
+                <div className="font-bold break-all leading-snug text-[#1A080C]">manager.demo@stateera.test</div>
                 <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">MGR-DEMO-2026</code></div>
               </div>
               <button
@@ -682,16 +682,16 @@ export default function LoginPage() {
                   setActiveRoleTab("manager");
                   setInvitationCode("MGR-DEMO-2026");
                 }}
-                className="btn btn-secondary text-[11px] py-1 px-2.5"
+                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
               >
                 Fill Code
               </button>
             </div>
 
             {/* Tenant Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
-              <div>
-                <div className="font-bold text-[#1A080C]">tenant.demo@stateera.test</div>
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
+              <div className="min-w-0 flex-1">
+                <div className="font-bold break-all leading-snug text-[#1A080C]">tenant.demo@stateera.test</div>
                 <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">TEN-DEMO-2026</code></div>
               </div>
               <button
@@ -700,16 +700,16 @@ export default function LoginPage() {
                   setActiveRoleTab("tenant");
                   setInvitationCode("TEN-DEMO-2026");
                 }}
-                className="btn btn-secondary text-[11px] py-1 px-2.5"
+                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
               >
                 Fill Code
               </button>
             </div>
 
             {/* Admin Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-center justify-between">
-              <div>
-                <div className="font-bold text-[#1A080C]">admin.demo@stateera.test</div>
+            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
+              <div className="min-w-0 flex-1">
+                <div className="font-bold break-all leading-snug text-[#1A080C]">admin.demo@stateera.test</div>
                 <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">ADMIN-DEMO-2026</code></div>
               </div>
               <button
@@ -718,7 +718,7 @@ export default function LoginPage() {
                   setActiveRoleTab("admin");
                   setInvitationCode("ADMIN-DEMO-2026");
                 }}
-                className="btn btn-secondary text-[11px] py-1 px-2.5"
+                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
               >
                 Fill Code
               </button>
