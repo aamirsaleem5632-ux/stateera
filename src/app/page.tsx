@@ -9,6 +9,8 @@ import {
   ShieldCheck,
   Building2,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   Compass,
   PieChart,
   Coins,
@@ -85,6 +87,42 @@ export default function HomePage() {
 
   // FAQ Accordion State
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  // Horizontal Property Carousel State & Handlers
+  const carouselRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+
+  const checkCarouselScroll = React.useCallback(() => {
+    if (!carouselRef.current) return;
+    const { scrollLeft, scrollWidth, clientWidth } = carouselRef.current;
+    setCanScrollLeft(scrollLeft > 10);
+    setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+  }, []);
+
+  React.useEffect(() => {
+    const el = carouselRef.current;
+    if (!el) return;
+    checkCarouselScroll();
+    el.addEventListener("scroll", checkCarouselScroll, { passive: true });
+    window.addEventListener("resize", checkCarouselScroll);
+    return () => {
+      el.removeEventListener("scroll", checkCarouselScroll);
+      window.removeEventListener("resize", checkCarouselScroll);
+    };
+  }, [properties, checkCarouselScroll]);
+
+  const scrollPrev = () => {
+    if (!carouselRef.current) return;
+    const scrollAmount = carouselRef.current.clientWidth * 0.75;
+    carouselRef.current.scrollBy({ left: dir === "rtl" ? scrollAmount : -scrollAmount, behavior: "smooth" });
+  };
+
+  const scrollNext = () => {
+    if (!carouselRef.current) return;
+    const scrollAmount = carouselRef.current.clientWidth * 0.75;
+    carouselRef.current.scrollBy({ left: dir === "rtl" ? -scrollAmount : scrollAmount, behavior: "smooth" });
+  };
 
   const heroRef = useRef<HTMLElement>(null);
   const { scrollY } = useScroll();
@@ -362,10 +400,10 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Section: Featured Investment Properties */}
+      {/* Section: Featured Investment Properties — Institutional Portfolio Carousel */}
       <section className="py-20 bg-[#FAF5F5] border-t border-[#EADCDD]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
             <Reveal variant="fade-up">
               <div>
                 <span className="text-xs uppercase font-bold tracking-wider text-[#3B0F18] bg-white border border-[#EADCDD] px-2.5 py-1 rounded-md inline-block mb-2">
@@ -381,22 +419,62 @@ export default function HomePage() {
             </Reveal>
 
             <Reveal variant="fade-left" delay={0.1}>
-              <Link
-                href="/explore"
-                className="btn btn-secondary text-xs font-semibold inline-flex items-center gap-1.5"
-              >
-                <span>View All Properties</span>
-                <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
-              </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  href="/explore"
+                  className="btn btn-secondary text-xs font-semibold inline-flex items-center gap-1.5"
+                >
+                  <span>View All Properties</span>
+                  <ArrowRight className="w-3.5 h-3.5 rtl-flip" />
+                </Link>
+
+                {/* Carousel Previous / Next Arrow Controls */}
+                <div className="flex items-center gap-1.5" role="group" aria-label="Carousel navigation">
+                  <button
+                    type="button"
+                    onClick={scrollPrev}
+                    aria-label="Previous properties"
+                    className="w-9 h-9 rounded-lg border border-[#EADCDD] bg-white text-[#1A080C] hover:bg-[#FAF5F5] hover:text-[#3B0F18] flex items-center justify-center transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled={!canScrollLeft}
+                  >
+                    <ChevronLeft className="w-4 h-4 rtl-flip" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={scrollNext}
+                    aria-label="Next properties"
+                    className="w-9 h-9 rounded-lg border border-[#EADCDD] bg-white text-[#1A080C] hover:bg-[#FAF5F5] hover:text-[#3B0F18] flex items-center justify-center transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                    disabled={!canScrollRight}
+                  >
+                    <ChevronRight className="w-4 h-4 rtl-flip" />
+                  </button>
+                </div>
+              </div>
             </Reveal>
           </div>
 
-          {/* Property Cards Grid — staggered */}
-          <RevealGroup className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" stagger={0.08}>
-            {properties.slice(0, 3).map((property, idx) => (
-              <PropertyCard key={property.id} property={property} featured={idx === 0} priority={idx === 0} />
+          {/* Horizontal Property Carousel Track */}
+          <div
+            ref={carouselRef}
+            tabIndex={0}
+            role="region"
+            aria-label="Featured Properties Carousel"
+            className="flex gap-6 overflow-x-auto scroll-smooth snap-x snap-mandatory pb-4 pt-1 no-scrollbar focus:outline-none"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {properties.slice(0, 12).map((property, idx) => (
+              <div
+                key={property.id}
+                className="w-[85vw] max-w-[340px] sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)] flex-shrink-0 snap-start"
+              >
+                <PropertyCard
+                  property={property}
+                  featured={idx === 0}
+                  priority={idx < 4}
+                />
+              </div>
             ))}
-          </RevealGroup>
+          </div>
         </div>
       </section>
 

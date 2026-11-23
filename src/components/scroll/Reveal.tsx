@@ -119,7 +119,7 @@ export const Reveal: React.FC<RevealProps> = ({
     <MotionTag
       initial={getHiddenState(resolvedVariant)}
       whileInView={getVisibleState(resolvedVariant)}
-      viewport={{ once: true, amount: 0.2 }}
+      viewport={{ once: true, amount: 0.05, margin: "100px" }}
       transition={{
         duration,
         delay,
@@ -145,118 +145,15 @@ interface RevealGroupProps {
   as?: keyof JSX.IntrinsicElements;
 }
 
-const containerVariants = (stagger: number, delay: number): Variants => ({
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: stagger,
-      delayChildren: delay,
-    },
-  },
-});
-
-const childVariants = (
-  variant: RevealVariant,
-  duration: number,
-  isRTL: boolean,
-  dist: number
-): Variants => {
-  const resolvedVariant: RevealVariant =
-    isRTL && variant === "fade-left"
-      ? "fade-right"
-      : isRTL && variant === "fade-right"
-      ? "fade-left"
-      : variant;
-
-  const hidden: Record<string, number> = {};
-  const visible: Record<string, number> = {};
-
-  switch (resolvedVariant) {
-    case "fade-up":
-      hidden.opacity = 0; hidden.y = dist;
-      visible.opacity = 1; visible.y = 0;
-      break;
-    case "fade-in":
-      hidden.opacity = 0;
-      visible.opacity = 1;
-      break;
-    case "fade-left":
-      hidden.opacity = 0; hidden.x = -dist;
-      visible.opacity = 1; visible.x = 0;
-      break;
-    case "fade-right":
-      hidden.opacity = 0; hidden.x = dist;
-      visible.opacity = 1; visible.x = 0;
-      break;
-    case "scale-in":
-      hidden.opacity = 0; hidden.scale = 0.94;
-      visible.opacity = 1; visible.scale = 1;
-      break;
-  }
-
-  return {
-    hidden,
-    visible: {
-      ...visible,
-      transition: { duration, ease: EASING },
-    },
-  };
-};
-
 /**
- * Wraps children with staggered reveal animations (default 0.08s).
- * Each direct child animates one-by-one as the group scrolls into view.
+ * Robust group wrapper that reliably renders all children across all devices,
+ * eliminating blank grids or hidden DOM items while preserving responsive styling.
  */
 export const RevealGroup: React.FC<RevealGroupProps> = ({
   children,
-  stagger = 0.08,
-  delay = 0,
-  duration = 0.5,
-  variant = "fade-up",
   className,
   as = "div",
 }) => {
-  const [mounted, setMounted] = React.useState(false);
-  const reducedMotion = useReducedMotion();
-  const isMobile = useIsMobile();
-  const { dir } = useLanguage();
-  const isRTL = dir === "rtl";
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
   const Tag = as as any;
-
-  // Render pure static HTML on server and during initial client hydration to guarantee 100% hydration match
-  if (!mounted || reducedMotion) {
-    return <Tag className={className}>{children}</Tag>;
-  }
-
-  const MotionTag: any = (motion as any)[as] || motion.div;
-  const dist = isMobile ? MOBILE_DISTANCE : DESKTOP_DISTANCE;
-  const cv = childVariants(variant, duration, isRTL, dist);
-
-  return (
-    <MotionTag
-      variants={containerVariants(stagger, delay)}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.2 }}
-      className={className}
-    >
-      {React.Children.map(children, (child) =>
-        React.isValidElement(child) ? (
-          <motion.div
-            variants={cv}
-            initial="hidden"
-          >
-            {child}
-          </motion.div>
-        ) : (
-          child
-        )
-      )}
-    </MotionTag>
-  );
+  return <Tag className={className}>{children}</Tag>;
 };
