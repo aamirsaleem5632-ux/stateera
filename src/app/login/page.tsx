@@ -64,6 +64,8 @@ export default function LoginPage() {
   const [formError, setFormError] = useState("");
   const [dismissedUrlError, setDismissedUrlError] = useState(false);
   const [formMessage, setFormMessage] = useState("");
+  const [showResendOption, setShowResendOption] = useState(false);
+  const [resendingVerification, setResendingVerification] = useState(false);
 
   const [activeRoleTab, setActiveRoleTab] = useState<"investor" | "manager" | "tenant" | "admin">("investor");
   const [invitationCode, setInvitationCode] = useState("");
@@ -71,9 +73,22 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const p = new URLSearchParams(window.location.search).get("role");
-      if (p === "manager" || p === "tenant" || p === "admin" || p === "investor") {
-        setActiveRoleTab(p);
+      const p = new URLSearchParams(window.location.search);
+      const r = p.get("role");
+      if (r === "manager" || r === "tenant" || r === "admin" || r === "investor") {
+        setActiveRoleTab(r);
+      }
+      const emailParam = p.get("email");
+      if (emailParam) {
+        setEmail(emailParam);
+      }
+      const errParam = p.get("error");
+      if (
+        errParam === "email_link_expired" ||
+        errParam === "otp_expired" ||
+        errParam === "email_not_confirmed"
+      ) {
+        setShowResendOption(true);
       }
     }
   }, []);
@@ -156,6 +171,15 @@ export default function LoginPage() {
         return "Profile Not Found: Please sign up or contact platform administrators.";
       case "auth_callback_failed":
         return "Authentication Failed: Unable to complete sign-in or session exchange. Please try again.";
+      case "email_link_expired":
+      case "otp_expired":
+        return "Verification Link Expired or Invalid: The email confirmation link has expired or has already been used. Please enter your email and click 'Resend Verification Link' below.";
+      case "email_not_confirmed":
+        return "Email Verification Pending: Please verify your email via the link sent to your inbox before signing in, or click 'Resend Verification Link' below.";
+      case "token_expired":
+        return "Security Token Expired: Please request a fresh confirmation or password reset link below.";
+      case "over_email_send_rate_limit":
+        return "Email Dispatch Throttled: Email rate limit reached. Please wait a few moments before requesting another link.";
       default:
         return urlErrorParam;
     }
@@ -174,6 +198,49 @@ export default function LoginPage() {
   const setMessage = (msg: string) => {
     setFormMessage(msg);
   };
+
+  async function handleResendVerification() {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError("Please enter your registered email address first.");
+      return;
+    }
+    setResendingVerification(true);
+    setError("");
+    setMessage("");
+
+    try {
+      const { error } = await supabase.auth.resend({
+        type: "signup",
+        email: cleanEmail,
+        options: {
+          emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        },
+      });
+
+      if (error) {
+        const errMsg = (error.message || "").toLowerCase();
+        if (
+          errMsg.includes("rate limit") ||
+          errMsg.includes("over_email_send_rate_limit")
+        ) {
+          setError(
+            "Verification email rate limit reached. Supabase free tier throttles outbound emails. Please check your inbox (and Spam/Junk folder) for previous emails, or wait a few minutes before trying again."
+          );
+        } else {
+          setError(error.message || "Failed to dispatch verification email.");
+        }
+      } else {
+        setMessage(
+          `Fresh verification link dispatched to ${cleanEmail}. Please check your inbox and click the confirmation link to activate your account.`
+        );
+      }
+    } catch (err: any) {
+      setError(err?.message || "Failed to dispatch verification email.");
+    } finally {
+      setResendingVerification(false);
+    }
+  }
 
   const supabase = createClient();
 
@@ -267,7 +334,8 @@ export default function LoginPage() {
             setError(error.message || "Account creation failed. Please check your credentials.");
           }
         } else if (data.user && data.user.identities && data.user.identities.length === 0) {
-          setError("An account with this email address already exists. Please sign in or reset your password.");
+          setError("An account with this email address already exists. Please sign in, reset your password, or request a new verification link.");
+          setShowResendOption(true);
         } else if (data.session) {
           // Auto-login active (email confirmation disabled in Supabase project)
           setRole("investor");
@@ -275,7 +343,8 @@ export default function LoginPage() {
           router.refresh();
         } else {
           // Email confirmation is required by Supabase Auth
-          setMessage(`Account created successfully! A verification email has been sent to ${cleanEmail}. Please verify your email before signing in.`);
+          setMessage(`Account created successfully! A verification email has been sent to ${cleanEmail}. Please check your inbox and verify your email before signing in.`);
+          setShowResendOption(true);
         }
       } else {
         // Sign-in mode
@@ -287,9 +356,13 @@ export default function LoginPage() {
         if (error) {
           const errMsg = error.message.toLowerCase();
           if (errMsg.includes("invalid login credentials") || errMsg.includes("invalid credentials")) {
-            setError("Invalid email or password. Please verify your credentials or reset your password.");
+            setError("Invalid email or password. If you recently registered, please ensure your email has been confirmed, or click 'Resend Verification Link' below.");
+            setShowResendOption(true);
           } else if (errMsg.includes("email not confirmed")) {
-            setError("Email verification pending. Please verify your email via the link sent to your inbox before signing in.");
+            setError("Email verification pending. Please verify your email via the link sent to your inbox before signing in, or click 'Resend Verification Link' below.");
+            setShowResendOption(true);
+          } else if (errMsg.includes("rate limit") || errMsg.includes("over_email_send_rate_limit")) {
+            setError("Too many authentication attempts or email rate limit reached. Please wait a few moments before trying again.");
           } else {
             setError(error.message || "Invalid credentials. Please verify your email and password.");
           }
@@ -844,17 +917,30 @@ export default function LoginPage() {
                   Password
                 </label>
                 {mode === "signin" && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setMode("forgot");
-                      setError("");
-                      setMessage("");
-                    }}
-                    className="text-xs font-semibold text-[#3B0F18] hover:underline"
-                  >
-                    Forgot password?
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowResendOption(!showResendOption);
+                        setError("");
+                        setMessage("");
+                      }}
+                      className="text-xs font-semibold text-[#8C7B7F] hover:text-[#3B0F18] hover:underline"
+                    >
+                      Resend verification?
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setMode("forgot");
+                        setError("");
+                        setMessage("");
+                      }}
+                      className="text-xs font-semibold text-[#3B0F18] hover:underline"
+                    >
+                      Forgot password?
+                    </button>
+                  </div>
                 )}
               </div>
               <div className="relative">
@@ -892,6 +978,34 @@ export default function LoginPage() {
               <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>{message}</span>
             </p>
+          )}
+
+          {showResendOption && (
+            <div className="p-3.5 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+              <div className="space-y-0.5">
+                <span className="font-bold text-[#1A080C] block">
+                  Email verification link
+                </span>
+                <span className="text-[11px] text-[#5E4A4E] block">
+                  Didn't receive or link expired? Send a fresh link to your email.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={handleResendVerification}
+                disabled={resendingVerification || !email.trim()}
+                className="btn btn-secondary text-xs py-2 px-3.5 shrink-0 whitespace-nowrap flex items-center gap-1.5 self-stretch sm:self-auto justify-center font-bold"
+              >
+                {resendingVerification ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Dispatching...</span>
+                  </>
+                ) : (
+                  <span>Resend Verification Link</span>
+                )}
+              </button>
+            </div>
           )}
 
           <button

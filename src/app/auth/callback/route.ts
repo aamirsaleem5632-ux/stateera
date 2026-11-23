@@ -50,13 +50,17 @@ export async function GET(request: NextRequest) {
     const loginUrl = new URL("/login", siteOrigin);
     const errLower = (errorDescription || errorParam || "").toLowerCase();
 
-    // If verification token was already consumed or expired, user may already be verified
     if (
       errLower.includes("otp_expired") ||
       errLower.includes("token has expired") ||
-      errLower.includes("already")
+      errLower.includes("expired") ||
+      errLower.includes("invalid")
     ) {
-      loginUrl.searchParams.set("message", "email_confirmed");
+      loginUrl.searchParams.set("error", "email_link_expired");
+      loginUrl.searchParams.set(
+        "error_description",
+        "Your email verification link has expired or is invalid. Please request a fresh verification link."
+      );
       return NextResponse.redirect(loginUrl);
     }
 
@@ -111,22 +115,33 @@ export async function GET(request: NextRequest) {
     }
 
     const errMsg = (error?.message || "").toLowerCase();
-    const redirectUrl = new URL("/login", siteOrigin);
 
-    // If code was already exchanged, email was confirmed, or PKCE verifier mismatch across devices:
-    if (
-      errMsg.includes("code verifier") ||
-      errMsg.includes("pkce") ||
-      errMsg.includes("invalid grant") ||
-      errMsg.includes("expired") ||
-      errMsg.includes("already")
-    ) {
-      redirectUrl.searchParams.set("message", "email_confirmed");
-      return NextResponse.redirect(redirectUrl);
+    // Check if session is already established
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session?.user) {
+        return response;
+      }
+    } catch {
+      // Fall through to error redirect
     }
 
-    redirectUrl.searchParams.set("error", "auth_callback_failed");
-    redirectUrl.searchParams.set("error_description", error.message);
+    const redirectUrl = new URL("/login", siteOrigin);
+    if (
+      errMsg.includes("expired") ||
+      errMsg.includes("invalid") ||
+      errMsg.includes("pkce") ||
+      errMsg.includes("verifier")
+    ) {
+      redirectUrl.searchParams.set("error", "email_link_expired");
+      redirectUrl.searchParams.set(
+        "error_description",
+        "Verification session could not be completed. The link may have expired or was opened in another app. Please sign in or request a new verification link."
+      );
+    } else {
+      redirectUrl.searchParams.set("error", "auth_callback_failed");
+      redirectUrl.searchParams.set("error_description", error.message);
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
@@ -149,19 +164,32 @@ export async function GET(request: NextRequest) {
     }
 
     const errMsg = (error?.message || "").toLowerCase();
-    const redirectUrl = new URL("/login", siteOrigin);
 
-    if (
-      errMsg.includes("expired") ||
-      errMsg.includes("already") ||
-      errMsg.includes("invalid")
-    ) {
-      redirectUrl.searchParams.set("message", "email_confirmed");
-      return NextResponse.redirect(redirectUrl);
+    // Check if session is already established
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      if (sessionData?.session?.user) {
+        return response;
+      }
+    } catch {
+      // Fall through to error redirect
     }
 
-    redirectUrl.searchParams.set("error", "auth_callback_failed");
-    redirectUrl.searchParams.set("error_description", error.message);
+    const redirectUrl = new URL("/login", siteOrigin);
+    if (
+      errMsg.includes("expired") ||
+      errMsg.includes("invalid") ||
+      errMsg.includes("already")
+    ) {
+      redirectUrl.searchParams.set("error", "email_link_expired");
+      redirectUrl.searchParams.set(
+        "error_description",
+        "Your verification link has expired or is invalid. Please enter your email and click 'Resend Verification Link' below."
+      );
+    } else {
+      redirectUrl.searchParams.set("error", "auth_callback_failed");
+      redirectUrl.searchParams.set("error_description", error.message);
+    }
     return NextResponse.redirect(redirectUrl);
   }
 
