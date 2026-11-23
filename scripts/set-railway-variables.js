@@ -26,6 +26,7 @@ async function setVariables() {
       SUPABASE_ANON_KEY: supabaseKey,
       NEXT_PUBLIC_SUPABASE_URL: "https://mprxmjlqcdfawbqzajtb.supabase.co",
       NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: supabaseKey,
+      FRONTEND_URL: "https://stateera-omni-scribe.vercel.app"
     }
   };
 
