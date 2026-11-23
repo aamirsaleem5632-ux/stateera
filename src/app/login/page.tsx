@@ -299,7 +299,9 @@ export default function LoginPage() {
                 .eq("id", authData.user.id)
                 .single();
 
-              const isApproved = (profile?.role_approval_status || "").toLowerCase() === "approved";
+              const isApproved =
+                (profile?.role_approval_status || "").toLowerCase() === "approved" ||
+                profile?.role === "investor";
               const isRejected = (profile?.role_approval_status || "").toLowerCase() === "rejected";
 
               if (!profileErr && profile && isApproved) {
