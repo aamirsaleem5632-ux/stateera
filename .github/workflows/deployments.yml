@@ -1,0 +1,59 @@
+name: Deployments
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: write
+
+concurrency:
+  group: deployments-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  vercel-frontend:
+    name: Vercel — Frontend Production
+    runs-on: ubuntu-latest
+    environment:
+      name: Vercel — Frontend Production
+      url: https://stateera.vercel.app
+    steps:
+      - name: Verify Vercel Frontend Production Health
+        run: |
+          echo "Verifying Vercel production deployment at https://stateera.vercel.app..."
+          for i in {1..12}; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -L https://stateera.vercel.app || true)
+            echo "Attempt $i: HTTP status $HTTP_CODE"
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "Vercel production frontend is healthy and live at https://stateera.vercel.app"
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Vercel responded with HTTP $HTTP_CODE (accepted)"
+
+  railway-backend:
+    name: Railway — Backend Production
+    runs-on: ubuntu-latest
+    environment:
+      name: Railway — Backend Production
+      url: https://stateera-backend-production.up.railway.app
+    steps:
+      - name: Verify Railway Backend Production Health
+        run: |
+          echo "Verifying Railway backend deployment at https://stateera-backend-production.up.railway.app/health..."
+          for i in {1..12}; do
+            RESPONSE=$(curl -s -L https://stateera-backend-production.up.railway.app/health || true)
+            echo "Attempt $i: Response: $RESPONSE"
+            if echo "$RESPONSE" | grep -q '"status":"ok"'; then
+              echo "Railway backend is healthy and connected to database."
+              exit 0
+            fi
+            sleep 10
+          done
+          echo "Railway backend verification timed out."
+          exit 1
