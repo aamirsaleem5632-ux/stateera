@@ -220,6 +220,16 @@ body {
   font-size: 0.875rem;
   transition: border-color var(--se-fast), box-shadow var(--se-fast);
 }
+.input[class*="pl-10"],
+.input[class*="pl-11"],
+.input[class*="pl-12"] {
+  padding-left: 2.75rem !important;
+}
+.input[class*="pr-10"],
+.input[class*="pr-11"],
+.input[class*="pr-12"] {
+  padding-right: 2.75rem !important;
+}
 .input::placeholder,
 .textarea::placeholder {
   color: var(--se-text-muted);

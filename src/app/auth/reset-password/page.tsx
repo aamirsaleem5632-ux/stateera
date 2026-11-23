@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Building2, Lock, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
+import { Building2, Lock, Eye, EyeOff, Loader2, CheckCircle2, AlertCircle, ArrowLeft } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function ResetPasswordPage() {
@@ -11,7 +11,9 @@ export default function ResetPasswordPage() {
   const supabase = createClient();
 
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [checkingSession, setCheckingSession] = useState(true);
   const [hasValidSession, setHasValidSession] = useState(false);
@@ -220,17 +222,25 @@ export default function ResetPasswordPage() {
                 New Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-4 h-4 text-[#8C7B7F]" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B7F] pointer-events-none" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="input w-full pl-10"
+                  className="input w-full !pl-11 !pr-11"
                   disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7B7F] hover:text-[#1A080C] focus:outline-none transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 
@@ -239,17 +249,25 @@ export default function ResetPasswordPage() {
                 Confirm New Password
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-4 h-4 text-[#8C7B7F]" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B7F] pointer-events-none" />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   required
                   minLength={6}
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder="Re-enter your new password"
-                  className="input w-full pl-10"
+                  className="input w-full !pl-11 !pr-11"
                   disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7B7F] hover:text-[#1A080C] focus:outline-none transition-colors"
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
 

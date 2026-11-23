@@ -7,6 +7,8 @@ import {
   Building2,
   Mail,
   Lock,
+  Eye,
+  EyeOff,
   Loader2,
   UserCheck,
   KeyRound,
@@ -56,6 +58,7 @@ export default function LoginPage() {
   const [mode, setMode] = useState<"signin" | "signup" | "forgot">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
   const [formError, setFormError] = useState("");
@@ -821,14 +824,14 @@ export default function LoginPage() {
               Email address
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-3.5 w-4 h-4 text-[#8C7B7F]" />
+              <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B7F] pointer-events-none" />
               <input
                 type="email"
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="you@example.com"
-                className="input w-full pl-10"
+                className="input w-full !pl-11"
                 disabled={loading}
               />
             </div>
@@ -855,17 +858,25 @@ export default function LoginPage() {
                 )}
               </div>
               <div className="relative">
-                <Lock className="absolute left-3 top-3.5 w-4 h-4 text-[#8C7B7F]" />
+                <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C7B7F] pointer-events-none" />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   required
                   minLength={6}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="At least 6 characters"
-                  className="input w-full pl-10"
+                  className="input w-full !pl-11 !pr-11"
                   disabled={loading}
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C7B7F] hover:text-[#1A080C] focus:outline-none transition-colors"
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
               </div>
             </div>
           )}
