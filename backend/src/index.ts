@@ -14,23 +14,31 @@ const app = express();
 const PORT = Number(process.env.PORT) || 4000;
 const HOST = "0.0.0.0";
 
-// CORS configuration allowing Vercel frontends, localhost, and custom domains
+// Strict CORS configuration: restricted to confirmed production frontend and localhost origins
+const corsAllowedPatterns: (string | RegExp)[] = [
+  process.env.FRONTEND_URL || "",
+  process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "",
+  "https://stateera.vercel.app",
+  /^https:\/\/stateera.*\.vercel\.app$/,
+  /^http:\/\/localhost:\d+$/,
+  /^http:\/\/127\.0\.0\.1:\d+$/,
+].filter(Boolean);
+
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
-      const allowedPatterns = [
-        /^https:\/\/.*\.vercel\.app$/,
-        /^https:\/\/stateera.*\.vercel\.app$/,
-        /^http:\/\/localhost:\d+$/,
-        /^http:\/\/127\.0\.0\.1:\d+$/,
-      ];
-      const isAllowed = allowedPatterns.some((pattern) => pattern.test(origin));
-      if (isAllowed || process.env.NODE_ENV !== "production") {
+
+      const isAllowed = corsAllowedPatterns.some((pattern) => {
+        if (typeof pattern === "string") return pattern === origin;
+        return pattern.test(origin);
+      });
+
+      if (isAllowed) {
         callback(null, true);
       } else {
-        callback(null, true); // Permissive in production for API consumer flexibility
+        callback(new Error(`Origin '${origin}' not allowed by CORS restriction.`));
       }
     },
     credentials: true,
@@ -418,12 +426,120 @@ app.post("/api/investor/withdraw", async (req: Request, res: Response) => {
 });
 
 // ---------------------------------------------------------------------------
+// Authorization Helpers
+// ---------------------------------------------------------------------------
+async function requireAuthUser(
+  req: Request,
+  res: Response
+): Promise<{ user: any; token: string } | null> {
+  const token = extractToken(req);
+  if (!token) {
+    res.status(401).json({
+      success: false,
+      error: "Authentication required: Missing Bearer token",
+    });
+    return null;
+  }
+
+  const supabase = getSupabaseClient(token);
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    res.status(401).json({
+      success: false,
+      error: "Invalid or expired session token",
+    });
+    return null;
+  }
+
+  return { user, token };
+}
+
+async function requireAdminAuth(
+  req: Request,
+  res: Response
+): Promise<{ user: any; profile: any; token: string } | null> {
+  const auth = await requireAuthUser(req, res);
+  if (!auth) return null;
+
+  const supabase = getSupabaseClient(auth.token);
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role, role_approval_status")
+    .eq("id", auth.user.id)
+    .single();
+
+  if (profileError || !profile) {
+    res.status(403).json({
+      success: false,
+      error: "Access denied: User profile not found",
+    });
+    return null;
+  }
+
+  const isApproved =
+    (profile.role_approval_status || "").toLowerCase() === "approved";
+  if (profile.role !== "admin" || !isApproved) {
+    res.status(403).json({
+      success: false,
+      error: "Forbidden: Verified Platform Administrator clearance required",
+    });
+    return null;
+  }
+
+  return { user: auth.user, profile, token: auth.token };
+}
+
+async function requireManagerAuth(
+  req: Request,
+  res: Response
+): Promise<{ user: any; profile: any; token: string } | null> {
+  const auth = await requireAuthUser(req, res);
+  if (!auth) return null;
+
+  const supabase = getSupabaseClient(auth.token);
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("role, role_approval_status")
+    .eq("id", auth.user.id)
+    .single();
+
+  if (profileError || !profile) {
+    res.status(403).json({
+      success: false,
+      error: "Access denied: User profile not found",
+    });
+    return null;
+  }
+
+  const isApproved =
+    (profile.role_approval_status || "").toLowerCase() === "approved";
+  const isManagerOrAdmin =
+    (profile.role === "manager" || profile.role === "admin") && isApproved;
+
+  if (!isManagerOrAdmin) {
+    res.status(403).json({
+      success: false,
+      error: "Forbidden: Verified Property Manager clearance required",
+    });
+    return null;
+  }
+
+  return { user: auth.user, profile, token: auth.token };
+}
+
+// ---------------------------------------------------------------------------
 // 5. Manager Endpoints
 // ---------------------------------------------------------------------------
 app.get("/api/manager/properties", async (req: Request, res: Response) => {
   try {
-    const token = extractToken(req);
-    const supabase = getSupabaseClient(token);
+    const auth = await requireManagerAuth(req, res);
+    if (!auth) return;
+
+    const supabase = getSupabaseClient(auth.token);
 
     const { data, error } = await supabase
       .from("properties")
@@ -445,17 +561,19 @@ app.get("/api/manager/properties", async (req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 app.get("/api/tenant/lease", async (req: Request, res: Response) => {
   try {
-    const token = extractToken(req);
-    const supabase = getSupabaseClient(token);
+    const auth = await requireAuthUser(req, res);
+    if (!auth) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const supabase = getSupabaseClient(auth.token);
 
-    let query = supabase.from("leases").select("*, properties(title, address)").eq("status", "Active");
-    if (user) {
-      query = query.eq("tenant_id", user.id);
-    }
-
-    const { data, error } = await query.order("created_at", { ascending: false }).limit(1).maybeSingle();
+    const { data, error } = await supabase
+      .from("leases")
+      .select("*, properties(title, address)")
+      .eq("status", "Active")
+      .eq("tenant_id", auth.user.id)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       return res.status(500).json({ success: false, error: error.message });
@@ -472,7 +590,10 @@ app.get("/api/tenant/lease", async (req: Request, res: Response) => {
 // ---------------------------------------------------------------------------
 app.get("/api/admin/stats", async (req: Request, res: Response) => {
   try {
-    const supabase = getSupabaseClient(extractToken(req));
+    const auth = await requireAdminAuth(req, res);
+    if (!auth) return;
+
+    const supabase = getSupabaseClient(auth.token);
 
     const [propRes, userRes, kycRes] = await Promise.all([
       supabase.from("properties").select("total_valuation", { count: "exact" }),
@@ -501,10 +622,11 @@ app.get("/api/admin/stats", async (req: Request, res: Response) => {
 
 app.post("/api/admin/dividends/trigger", async (req: Request, res: Response) => {
   try {
-    const token = extractToken(req);
-    const { propertyId, period } = req.body || {};
+    const auth = await requireAdminAuth(req, res);
+    if (!auth) return;
 
-    const supabase = getSupabaseClient(token);
+    const { propertyId, period } = req.body || {};
+    const supabase = getSupabaseClient(auth.token);
 
     // Call atomic dividend distribution procedure
     const { data, error } = await supabase.rpc("process_monthly_dividends_atomic", {
@@ -534,7 +656,10 @@ app.post("/api/admin/dividends/trigger", async (req: Request, res: Response) => 
 
 app.get("/api/admin/audit-logs", async (req: Request, res: Response) => {
   try {
-    const supabase = getSupabaseClient(extractToken(req));
+    const auth = await requireAdminAuth(req, res);
+    if (!auth) return;
+
+    const supabase = getSupabaseClient(auth.token);
     const { data, error } = await supabase
       .from("audit_logs")
       .select("*")

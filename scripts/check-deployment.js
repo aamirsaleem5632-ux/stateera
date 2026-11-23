@@ -15,7 +15,7 @@ async function checkDeployment() {
     body: JSON.stringify({
       query: `
         query {
-          deployment(id: "d63d724e-a8f1-42da-812c-9507b974d407") {
+          deployment(id: "1e720eb0-6258-4d24-be1a-dc8db45991be") {
             id
             status
             createdAt

@@ -46,9 +46,20 @@ export const adminService = {
     totalInvestors: number;
     pendingKycCount: number;
   }> {
-    // 1. Query production Railway backend service
+    // 1. Query production Railway backend service (authorized with Supabase session)
     try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      const headers: Record<string, string> = {};
+      if (session?.access_token) {
+        headers["Authorization"] = `Bearer ${session.access_token}`;
+      }
+
       const res = await fetch(`${RAILWAY_BACKEND_URL}/api/admin/stats`, {
+        headers,
         signal: AbortSignal.timeout(3500),
       });
       if (res.ok) {
