@@ -13,6 +13,7 @@ import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { MaintenanceRequest } from "@/types/tenant";
 import { DemoBanner } from "@/components/common/DemoBanner";
+import { PortalChat } from "@/components/portal/PortalChat";
 import { managerService } from "@/lib/services/managerService";
 
 interface ManagerPortalViewProps {
@@ -580,6 +581,9 @@ export const ManagerPortalView: React.FC<ManagerPortalViewProps> = ({ isDemo = t
           </div>
         </div>
       )}
+
+      {/* Live Manager-Tenant Communication Channel */}
+      <PortalChat currentRole="manager" senderName={isDemo ? "Demo Manager" : "Property Manager"} />
     </div>
   );
 };

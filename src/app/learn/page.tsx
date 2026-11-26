@@ -1,26 +1,91 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   GraduationCap,
   BookOpen,
   CheckCircle2,
-  HelpCircle,
   Award,
   ArrowRight,
-  Sparkles,
-  PlayCircle,
-  FileCheck,
-  TrendingUp,
-  Percent,
+  Trophy,
+  Star,
+  X,
+  Medal,
 } from "lucide-react";
 
+const LEARN_STORAGE_KEY = "stateera-learn-progress-v1";
+const learnListeners = new Set<() => void>();
+
+interface LearnProgress {
+  completedModules: string[];
+  quizPassed: boolean;
+  bestQuizScore: number;
+}
+
+const DEFAULT_PROGRESS: LearnProgress = {
+  completedModules: [],
+  quizPassed: false,
+  bestQuizScore: 0,
+};
+
+let cachedRaw: string | null = null;
+let cachedParsed: LearnProgress = DEFAULT_PROGRESS;
+
+function getLearnSnapshot(): LearnProgress {
+  if (typeof window === "undefined") return DEFAULT_PROGRESS;
+  const raw = window.localStorage.getItem(LEARN_STORAGE_KEY);
+  if (raw === cachedRaw) return cachedParsed;
+  cachedRaw = raw;
+  if (!raw) {
+    cachedParsed = DEFAULT_PROGRESS;
+    return cachedParsed;
+  }
+  try {
+    const parsed = JSON.parse(raw) as Partial<LearnProgress>;
+    cachedParsed = {
+      completedModules: Array.isArray(parsed.completedModules) ? parsed.completedModules : [],
+      quizPassed: Boolean(parsed.quizPassed),
+      bestQuizScore: typeof parsed.bestQuizScore === "number" ? parsed.bestQuizScore : 0,
+    };
+  } catch {
+    cachedParsed = DEFAULT_PROGRESS;
+  }
+  return cachedParsed;
+}
+
+function getLearnServerSnapshot(): LearnProgress {
+  return DEFAULT_PROGRESS;
+}
+
+function subscribeLearn(cb: () => void): () => void {
+  learnListeners.add(cb);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === LEARN_STORAGE_KEY) cb();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    learnListeners.delete(cb);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+function saveLearnProgress(next: LearnProgress) {
+  if (typeof window === "undefined") return;
+  const serialized = JSON.stringify(next);
+  window.localStorage.setItem(LEARN_STORAGE_KEY, serialized);
+  cachedRaw = serialized;
+  cachedParsed = next;
+  learnListeners.forEach((cb) => cb());
+}
+
 export default function LearnCentrePage() {
+  const progress = useSyncExternalStore(subscribeLearn, getLearnSnapshot, getLearnServerSnapshot);
   const [activeQuizQuestion, setActiveQuizQuestion] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [score, setScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
+  const [readingModuleId, setReadingModuleId] = useState<string | null>(null);
 
   const modules = [
     {
@@ -123,8 +188,62 @@ export default function LearnCentrePage() {
       setSelectedAnswer(null);
     } else {
       setQuizCompleted(true);
+      const passed = score >= 2;
+      saveLearnProgress({
+        completedModules: progress.completedModules,
+        quizPassed: progress.quizPassed || passed,
+        bestQuizScore: Math.max(progress.bestQuizScore, score),
+      });
     }
   };
+
+  const toggleModuleComplete = (modId: string) => {
+    const exists = progress.completedModules.includes(modId);
+    const nextModules = exists
+      ? progress.completedModules.filter((id) => id !== modId)
+      : [...progress.completedModules, modId];
+    saveLearnProgress({
+      ...progress,
+      completedModules: nextModules,
+    });
+  };
+
+  const xpPoints = progress.completedModules.length * 25 + (progress.quizPassed ? 50 : 0);
+  const badges = [
+    {
+      id: "first-principles",
+      title: "First Principles",
+      desc: "Complete at least 1 literacy module",
+      earned: progress.completedModules.length >= 1,
+    },
+    {
+      id: "dd-scholar",
+      title: "Due Diligence Scholar",
+      desc: "Complete 3 or more modules",
+      earned: progress.completedModules.length >= 3,
+    },
+    {
+      id: "academy-grad",
+      title: "Academy Graduate",
+      desc: "Complete all 6 curriculum modules",
+      earned: progress.completedModules.length >= 6,
+    },
+    {
+      id: "quiz-master",
+      title: "Knowledge Master",
+      desc: "Score 3/3 on the Knowledge Check",
+      earned: progress.bestQuizScore >= 3,
+    },
+  ];
+
+  const leaderboardEntries = [
+    { name: "Amina K. (Demo Cohort)", xp: 200, badges: 4, isYou: false },
+    { name: "Tariq M. (Demo Cohort)", xp: 175, badges: 3, isYou: false },
+    { name: "Sara R. (Demo Cohort)", xp: 125, badges: 2, isYou: false },
+    { name: "You (Current Learner)", xp: xpPoints, badges: badges.filter((b) => b.earned).length, isYou: true },
+  ].sort((a, b) => b.xp - a.xp);
+
+  const activeModule = modules.find((m) => m.id === readingModuleId) || null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 md:py-16 space-y-16">
@@ -140,6 +259,98 @@ export default function LearnCentrePage() {
         <p className="text-base sm:text-lg text-[#5E4A4E] leading-relaxed">
           Knowledge precedes ownership. Explore visual guides, real-world case studies, and test your knowledge before deploying capital.
         </p>
+      </div>
+
+      {/* Educational Progress, Badges & Leaderboard */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-7 bg-[#FAF5F5] border border-[#EADCDD] rounded-3xl p-6 space-y-5">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 rounded-xl bg-[#3B0F18] text-white flex items-center justify-center">
+                <Trophy className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-[#1A080C]">Your Learning Progress</h2>
+                <p className="text-xs text-[#5E4A4E]">Educational XP &amp; milestones (no financial incentives)</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full bg-white border border-[#EADCDD] text-xs font-black text-[#3B0F18] flex items-center gap-1">
+                <Star className="w-3.5 h-3.5" />
+                {xpPoints} / 200 XP
+              </span>
+              <span className="px-3 py-1 rounded-full bg-white border border-[#EADCDD] text-xs font-bold text-[#1A080C]">
+                {progress.completedModules.length}/6 Modules
+              </span>
+            </div>
+          </div>
+
+          <div className="w-full h-2.5 bg-white border border-[#EADCDD] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-[#3B0F18] transition-all duration-300"
+              style={{ width: `${Math.round((xpPoints / 200) * 100)}%` }}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {badges.map((b) => (
+              <div
+                key={b.id}
+                className={`p-3.5 rounded-2xl border flex items-start gap-3 transition-colors ${
+                  b.earned
+                    ? "bg-white border-[#3B0F18]/40 shadow-sm"
+                    : "bg-white/60 border-[#EADCDD] opacity-65"
+                }`}
+              >
+                <div
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
+                    b.earned ? "bg-[#3B0F18] text-white" : "bg-[#FAF5F5] text-[#8C7B7F] border border-[#EADCDD]"
+                  }`}
+                >
+                  <Medal className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="text-xs font-bold text-[#1A080C] flex items-center gap-1.5">
+                    <span>{b.title}</span>
+                    {b.earned && <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                  </div>
+                  <p className="text-[11px] text-[#5E4A4E] mt-0.5">{b.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 bg-white border border-[#EADCDD] rounded-3xl p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-bold text-[#1A080C]">Academy Leaderboard</h2>
+              <p className="text-xs text-[#5E4A4E]">Educational literacy ranking (Demo Cohort)</p>
+            </div>
+            <span className="badge badge-demo text-[10px]">Education Only</span>
+          </div>
+          <div className="divide-y divide-[#EADCDD]">
+            {leaderboardEntries.map((entry, idx) => (
+              <div
+                key={entry.name}
+                className={`py-3 px-2.5 rounded-xl flex items-center justify-between gap-3 text-xs ${
+                  entry.isYou ? "bg-[#FAF5F5] font-bold" : ""
+                }`}
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <span className="w-6 h-6 rounded-full bg-[#FAF5F5] border border-[#EADCDD] flex items-center justify-center text-[11px] font-black text-[#3B0F18] shrink-0">
+                    #{idx + 1}
+                  </span>
+                  <span className="truncate text-[#1A080C]">{entry.name}</span>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className="text-[11px] text-[#5E4A4E]">{entry.badges} badges</span>
+                  <span className="font-black text-[#3B0F18]">{entry.xp} XP</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
 
       {/* Courses Grid */}
@@ -183,14 +394,27 @@ export default function LearnCentrePage() {
                 </div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => alert(`Module "${m.title}" opened. You can review the course materials and syllabus!`)}
-                className="btn btn-secondary w-full text-xs font-bold py-2.5 flex items-center justify-center gap-1.5"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                <span>Read Module</span>
-              </button>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setReadingModuleId(m.id)}
+                  className="btn btn-secondary flex-1 text-xs font-bold py-2.5 flex items-center justify-center gap-1.5"
+                >
+                  <BookOpen className="w-3.5 h-3.5" />
+                  <span>Read Module</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => toggleModuleComplete(m.id)}
+                  className={`px-3 py-2.5 rounded-xl text-xs font-bold border transition-colors ${
+                    progress.completedModules.includes(m.id)
+                      ? "bg-emerald-50 border-emerald-300 text-emerald-800"
+                      : "bg-[#FAF5F5] border-[#EADCDD] text-[#5E4A4E] hover:text-[#1A080C]"
+                  }`}
+                >
+                  {progress.completedModules.includes(m.id) ? "✓ Done" : "+25 XP"}
+                </button>
+              </div>
             </div>
           ))}
         </div>
@@ -309,6 +533,67 @@ export default function LearnCentrePage() {
           Open StateEra Glossary
         </Link>
       </div>
+
+      {/* Module Reader Modal */}
+      {activeModule && (
+        <div className="fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+          <div className="modal-glass w-full max-w-2xl max-h-[85vh] overflow-y-auto p-6 sm:p-8 space-y-5">
+            <div className="flex items-start justify-between gap-4 border-b border-[#EADCDD] pb-4">
+              <div>
+                <span className="badge badge-demo text-[10px] font-bold uppercase tracking-wider">
+                  {activeModule.level} • {activeModule.duration}
+                </span>
+                <h2 className="text-xl sm:text-2xl font-black text-[#1A080C] mt-2">
+                  {activeModule.title}
+                </h2>
+              </div>
+              <button
+                type="button"
+                onClick={() => setReadingModuleId(null)}
+                aria-label="Close module"
+                className="p-2 rounded-xl border border-[#EADCDD] hover:bg-[#FAF5F5] text-[#1A080C]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <p className="text-sm text-[#5E4A4E] leading-relaxed">{activeModule.desc}</p>
+            <div className="space-y-2.5 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl p-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-[#3B0F18]">
+                Key Syllabus Takeaways
+              </h3>
+              {activeModule.topics.map((topic, i) => (
+                <div key={i} className="flex items-start gap-2 text-xs sm:text-sm text-[#1A080C]">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                  <span>{topic}</span>
+                </div>
+              ))}
+            </div>
+            <div className="flex flex-col sm:flex-row justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setReadingModuleId(null)}
+                className="btn btn-secondary text-xs"
+              >
+                Close
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!progress.completedModules.includes(activeModule.id)) {
+                    toggleModuleComplete(activeModule.id);
+                  }
+                  setReadingModuleId(null);
+                }}
+                className="btn btn-primary text-xs"
+              >
+                {progress.completedModules.includes(activeModule.id)
+                  ? "Already Completed ✓"
+                  : "Mark Complete (+25 XP)"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

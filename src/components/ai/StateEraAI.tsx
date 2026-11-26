@@ -128,7 +128,41 @@ export const StateEraAI: React.FC = () => {
       let responseText = "";
       let actionObj: { label: string; path: string } | undefined;
 
-      if (lower.includes("how does") || lower.includes("how it works") || lower.includes("fractional")) {
+      if (
+        lower.includes("recommend") ||
+        lower.includes("best propert") ||
+        lower.includes("under $") ||
+        lower.includes("dubai") ||
+        lower.includes("lahore") ||
+        lower.includes("karachi") ||
+        lower.includes("london") ||
+        lower.includes("new york") ||
+        lower.includes("highest yield")
+      ) {
+        const maxPriceMatch = lower.match(/under\s*\$?(\d+)/);
+        const maxPrice = maxPriceMatch ? Number(maxPriceMatch[1]) : Infinity;
+        const cityKeywords = ["dubai", "lahore", "karachi", "islamabad", "london", "new york", "singapore", "tokyo", "miami", "zurich", "paris"];
+        const matchedCity = cityKeywords.find((c) => lower.includes(c));
+        const matches = properties
+          .filter((p) => {
+            const okPrice = p.sharePrice <= maxPrice;
+            const okCity = !matchedCity || p.city.toLowerCase().includes(matchedCity);
+            return okPrice && okCity;
+          })
+          .sort((a, b) => b.netYield - a.netYield)
+          .slice(0, 3);
+
+        if (matches.length > 0) {
+          const listText = matches
+            .map((p) => `• ${p.title} (${p.city}) — ${p.netYield}% net yield, $${p.sharePrice}/share`)
+            .join("\n");
+          responseText = `Based on the live StateEra catalog (${properties.length} properties), here are the top matching assets:\n${listText}`;
+          actionObj = { label: `Inspect ${matches[0].title}`, path: `/property/${matches[0].id}` };
+        } else {
+          responseText = `No properties matched those exact filters in our ${properties.length}-asset catalog. Try broadening your price or city criteria in Explore.`;
+          actionObj = { label: "Browse All Properties", path: "/explore" };
+        }
+      } else if (lower.includes("how does") || lower.includes("how it works") || lower.includes("fractional")) {
         responseText =
           "Fractional real estate means a large property is split into thousands of small, affordable parts called 'shares' (from $25–$100 each). When you own shares, real tenants pay rent each month. After basic building bills are paid, your share of the profit is sent straight into your practice wallet on the 1st of every month.";
         actionObj = { label: "How StateEra Works", path: "/how-it-works" };
@@ -242,7 +276,7 @@ export const StateEraAI: React.FC = () => {
                       {BRAND_CONFIG.aiAgentName}
                     </h3>
                     <span className="bg-[#FAF5F5] border border-[#EADCDD] text-[#5E4A4E] text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      Demo AI
+                      Rule-Based Demo
                     </span>
                   </div>
                   <p className="text-[11px] text-[#5E4A4E]">

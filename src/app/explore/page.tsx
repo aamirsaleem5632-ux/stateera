@@ -36,7 +36,7 @@ import { useIsMobile } from "@/hooks/useIsMobile";
 const EASING = [0.22, 1, 0.36, 1] as const;
 
 export default function ExplorePage() {
-  const { properties, isWatchlisted, toggleWatchlist } = useDemo();
+  const { properties, holdings, walletBalance, isWatchlisted, toggleWatchlist } = useDemo();
   const { t, dir } = useLanguage();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -105,15 +105,72 @@ export default function ExplorePage() {
     });
   };
 
+  // Smart Search Parser (handles natural expressions like "under $50", "> 9%", "dubai residential")
+  const smartTokens = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase();
+    const priceMatch = q.match(/(?:under|below|max|<)\s*\$?(\d+)/);
+    const yieldMatch = q.match(/(?:over|above|min|>)\s*(\d+(?:\.\d+)?)\s*%?|(\d+(?:\.\d+)?)\s*%\+/);
+    const parsedMaxPrice = priceMatch ? Number(priceMatch[1]) : null;
+    const parsedMinYield = yieldMatch ? Number(yieldMatch[1] || yieldMatch[2]) : null;
+    const cleanedTerms = q
+      .replace(/(?:under|below|max|<)\s*\$?\d+/g, "")
+      .replace(/(?:over|above|min|>)\s*\d+(?:\.\d+)?\s*%?/g, "")
+      .replace(/\d+(?:\.\d+)?\s*%\+/g, "")
+      .trim()
+      .split(/\s+/)
+      .filter(Boolean);
+    return { parsedMaxPrice, parsedMinYield, cleanedTerms };
+  }, [searchQuery]);
+
+  // Personalized Recommendations derived from actual holdings & wallet balance
+  const personalizedRecommendations = useMemo(() => {
+    const ownedIds = new Set(holdings.map((h) => h.propertyId));
+    const ownedCities = new Set(
+      holdings
+        .map((h) => properties.find((p) => p.id === h.propertyId)?.city)
+        .filter((c): c is string => Boolean(c))
+    );
+    const ownedCategories = new Set(
+      holdings
+        .map((h) => properties.find((p) => p.id === h.propertyId)?.category)
+        .filter((c): c is PropertyCategory => Boolean(c))
+    );
+
+    return properties
+      .filter((p) => !ownedIds.has(p.id) && p.availableShares > 0)
+      .map((p) => {
+        let score = p.netYield * 2 + p.aiValuationConfidence * 0.1;
+        let reason = `High ${p.netYield}% net yield with ${p.aiValuationConfidence}% audit confidence`;
+        if (ownedCities.size > 0 && !ownedCities.has(p.city)) {
+          score += 5;
+          reason = `Diversifies portfolio into ${p.city} (${p.netYield}% net yield)`;
+        } else if (ownedCategories.size > 0 && !ownedCategories.has(p.category)) {
+          score += 4;
+          reason = `Adds ${p.category} sector exposure (${p.netYield}% net yield)`;
+        } else if (p.sharePrice <= Math.max(50, walletBalance * 0.05)) {
+          score += 3;
+          reason = `Accessible $${p.sharePrice}/share entry within practice budget`;
+        }
+        return { property: p, score, reason };
+      })
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
+  }, [properties, holdings, walletBalance]);
+
   // Filtered & Sorted Properties
   const filteredProperties = useMemo(() => {
     return properties
       .filter((p) => {
+        const searchable = `${p.title} ${p.city} ${p.country} ${p.category} ${p.headline}`.toLowerCase();
         const matchesSearch =
-          p.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.city.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.country.toLowerCase().includes(searchQuery.toLowerCase());
-        
+          smartTokens.cleanedTerms.length === 0 ||
+          smartTokens.cleanedTerms.every((term) => searchable.includes(term));
+
+        const matchesSmartPrice =
+          smartTokens.parsedMaxPrice === null || p.sharePrice <= smartTokens.parsedMaxPrice;
+        const matchesSmartYield =
+          smartTokens.parsedMinYield === null || p.netYield >= smartTokens.parsedMinYield;
+
         const matchesCountry =
           selectedCountry === "all" || p.country.toLowerCase() === selectedCountry.toLowerCase();
 
@@ -128,7 +185,16 @@ export default function ExplorePage() {
         const matchesYield = p.netYield >= minYield;
         const matchesPrice = p.sharePrice <= maxSharePrice;
 
-        return matchesSearch && matchesCountry && matchesCity && matchesCategory && matchesYield && matchesPrice;
+        return (
+          matchesSearch &&
+          matchesSmartPrice &&
+          matchesSmartYield &&
+          matchesCountry &&
+          matchesCity &&
+          matchesCategory &&
+          matchesYield &&
+          matchesPrice
+        );
       })
       .sort((a, b) => {
         if (sortBy === "yield") return b.netYield - a.netYield;
@@ -137,7 +203,7 @@ export default function ExplorePage() {
         if (sortBy === "valuation") return b.totalValuation - a.totalValuation;
         return 0;
       });
-  }, [properties, searchQuery, selectedCountry, selectedCity, selectedCategory, minYield, maxSharePrice, sortBy]);
+  }, [properties, smartTokens, selectedCountry, selectedCity, selectedCategory, minYield, maxSharePrice, sortBy]);
 
   const mapSelectedProp = properties.find((p) => p.id === mapSelectedPropertyId) || properties[0];
 
@@ -211,7 +277,7 @@ export default function ExplorePage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by property name, neighborhood, city or country..."
+              placeholder="Smart search: e.g. 'Dubai under $100', '> 9%', 'Lahore residential'..."
               className="input pl-10 pr-10 rtl:pr-10 rtl:pl-10 text-sm"
             />
             {searchQuery && (
@@ -367,6 +433,46 @@ export default function ExplorePage() {
           </div>
         </div>
       </div>
+
+      {/* Personalized Recommendations Strip */}
+      {!isFiltered && personalizedRecommendations.length > 0 && (
+        <div className="mb-8 bg-[#FAF5F5] border border-[#EADCDD] rounded-3xl p-5 sm:p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <span className="text-[10px] uppercase font-bold tracking-wider text-accent-se">
+                Personalized For Your Portfolio
+              </span>
+              <h2 className="text-lg font-black text-[#1A080C]">
+                Recommended Diversification Matches
+              </h2>
+            </div>
+            <span className="text-[11px] text-secondary-se">
+              Computed from {holdings.length > 0 ? `${holdings.length} active holdings` : "starter budget & net yield"}
+            </span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {personalizedRecommendations.map(({ property: rec, reason }) => (
+              <Link
+                key={rec.id}
+                href={`/property/${rec.id}`}
+                className="bg-white border border-[#EADCDD] hover:border-[#3B0F18] rounded-2xl p-4 transition-colors flex flex-col justify-between gap-3"
+              >
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-bold text-accent-se">{rec.netYield}% Net Yield</span>
+                    <span className="font-bold text-[#1A080C]">${rec.sharePrice}/share</span>
+                  </div>
+                  <h3 className="font-bold text-sm text-[#1A080C] line-clamp-1">{rec.title}</h3>
+                  <p className="text-[11px] text-secondary-se">{rec.city}, {rec.country}</p>
+                </div>
+                <div className="text-[11px] text-[#3B0F18] bg-[#FAF5F5] border border-[#EADCDD] rounded-xl px-2.5 py-1.5 font-medium">
+                  {reason}
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Results Header */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-3">

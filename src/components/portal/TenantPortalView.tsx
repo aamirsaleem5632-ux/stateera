@@ -12,6 +12,7 @@ import {
 import { useDemo } from "@/context/DemoContext";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { DemoBanner } from "@/components/common/DemoBanner";
+import { PortalChat } from "@/components/portal/PortalChat";
 import { tenantService } from "@/lib/services/tenantService";
 
 function getOrdinalSuffix(day: number): string {
@@ -363,6 +364,9 @@ export const TenantPortalView: React.FC<TenantPortalViewProps> = ({ isDemo = tru
           </form>
         </div>
       </div>
+
+      {/* Live Tenant-Manager Communication Channel */}
+      <PortalChat currentRole="tenant" senderName={isDemo ? "Demo Tenant" : "Resident"} />
     </div>
   );
 };
