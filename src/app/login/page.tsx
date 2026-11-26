@@ -737,40 +737,48 @@ export default function LoginPage() {
         )}
 
         {/* TEACHER DEMONSTRATION & SECURE EVALUATION SYSTEM */}
-        <div className="p-4 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl space-y-3">
-          <div className="flex items-center justify-between text-xs font-bold text-[#1A080C]">
-            <span className="flex items-center gap-1.5 text-[#3B0F18]">
-              <Info className="w-3.5 h-3.5" />
-              Teacher Demonstration &amp; Secure Evaluation System
+        <div className="p-5 sm:p-6 bg-[#FAF5F5] border border-[#EADCDD] rounded-2xl sm:rounded-3xl space-y-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap sm:flex-nowrap">
+            <span className="flex items-center gap-2 text-sm sm:text-[15px] font-bold text-[#3B0F18] leading-snug">
+              <Info className="w-4 h-4 shrink-0" />
+              <span>Teacher Demonstration &amp; Secure Evaluation System</span>
             </span>
-            <span className="badge badge-demo text-[10px]">Fictional Sandbox</span>
+            <span className="badge badge-demo text-[11px] px-3 py-1 shrink-0 whitespace-nowrap">
+              Fictional Sandbox
+            </span>
           </div>
 
-          <p className="text-[11px] text-[#5E4A4E] leading-relaxed">
+          <p className="text-xs sm:text-[13px] text-[#5E4A4E] leading-relaxed">
             Teachers and evaluators may inspect all four roles safely. Demo accounts operate in isolated sandboxes (<code className="text-[#3B0F18]">/demo/*</code>) with mock data and never access live database tables.
           </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             {/* Investor Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
-              <div className="min-w-0 flex-1">
-                <div className="font-bold break-all leading-snug text-[#1A080C]">investor.demo@stateera.test</div>
-                <div className="text-[10px] text-[#8C7B7F]">$25,000 Simulated Funds</div>
+            <div className="p-3.5 sm:p-4 bg-white border border-[#EADCDD] rounded-2xl flex flex-col justify-between gap-3.5 min-w-0">
+              <div className="min-w-0">
+                <div className="text-[13px] font-bold break-words leading-snug text-[#1A080C]">
+                  investor.demo@stateera.test
+                </div>
+                <div className="text-xs text-[#5E4A4E] mt-1">$25,000 Simulated Funds</div>
               </div>
               <button
                 type="button"
                 onClick={() => handleInstantDemoLogin("investor", "/dashboard")}
-                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
+                className="w-full rounded-full border border-[#3B0F18]/75 bg-white hover:bg-[#FAF5F5] text-[#1A080C] py-2 px-4 text-sm font-semibold transition-colors text-center"
               >
                 Launch Demo
               </button>
             </div>
 
             {/* Manager Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
-              <div className="min-w-0 flex-1">
-                <div className="font-bold break-all leading-snug text-[#1A080C]">manager.demo@stateera.test</div>
-                <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">MGR-DEMO-2026</code></div>
+            <div className="p-3.5 sm:p-4 bg-white border border-[#EADCDD] rounded-2xl flex flex-col justify-between gap-3.5 min-w-0">
+              <div className="min-w-0">
+                <div className="text-[13px] font-bold break-words leading-snug text-[#1A080C]">
+                  manager.demo@stateera.test
+                </div>
+                <div className="text-xs text-[#5E4A4E] mt-1">
+                  Code: <code className="font-mono text-[#3B0F18]">MGR-DEMO-2026</code>
+                </div>
               </div>
               <button
                 type="button"
@@ -778,17 +786,21 @@ export default function LoginPage() {
                   setActiveRoleTab("manager");
                   setInvitationCode("MGR-DEMO-2026");
                 }}
-                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
+                className="w-full rounded-full border border-[#3B0F18]/75 bg-white hover:bg-[#FAF5F5] text-[#1A080C] py-2 px-4 text-sm font-semibold transition-colors text-center"
               >
                 Fill Code
               </button>
             </div>
 
             {/* Tenant Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
-              <div className="min-w-0 flex-1">
-                <div className="font-bold break-all leading-snug text-[#1A080C]">tenant.demo@stateera.test</div>
-                <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">TEN-DEMO-2026</code></div>
+            <div className="p-3.5 sm:p-4 bg-white border border-[#EADCDD] rounded-2xl flex flex-col justify-between gap-3.5 min-w-0">
+              <div className="min-w-0">
+                <div className="text-[13px] font-bold break-words leading-snug text-[#1A080C]">
+                  tenant.demo@stateera.test
+                </div>
+                <div className="text-xs text-[#5E4A4E] mt-1">
+                  Code: <code className="font-mono text-[#3B0F18]">TEN-DEMO-2026</code>
+                </div>
               </div>
               <button
                 type="button"
@@ -796,17 +808,21 @@ export default function LoginPage() {
                   setActiveRoleTab("tenant");
                   setInvitationCode("TEN-DEMO-2026");
                 }}
-                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
+                className="w-full rounded-full border border-[#3B0F18]/75 bg-white hover:bg-[#FAF5F5] text-[#1A080C] py-2 px-4 text-sm font-semibold transition-colors text-center"
               >
                 Fill Code
               </button>
             </div>
 
             {/* Admin Demo Identity */}
-            <div className="p-2.5 bg-white border border-[#EADCDD] rounded-xl flex items-start gap-2 min-w-0">
-              <div className="min-w-0 flex-1">
-                <div className="font-bold break-all leading-snug text-[#1A080C]">admin.demo@stateera.test</div>
-                <div className="text-[10px] text-[#8C7B7F]">Code: <code className="font-mono text-[#3B0F18]">ADMIN-DEMO-2026</code></div>
+            <div className="p-3.5 sm:p-4 bg-white border border-[#EADCDD] rounded-2xl flex flex-col justify-between gap-3.5 min-w-0">
+              <div className="min-w-0">
+                <div className="text-[13px] font-bold break-words leading-snug text-[#1A080C]">
+                  admin.demo@stateera.test
+                </div>
+                <div className="text-xs text-[#5E4A4E] mt-1">
+                  Code: <code className="font-mono text-[#3B0F18]">ADMIN-DEMO-2026</code>
+                </div>
               </div>
               <button
                 type="button"
@@ -814,7 +830,7 @@ export default function LoginPage() {
                   setActiveRoleTab("admin");
                   setInvitationCode("ADMIN-DEMO-2026");
                 }}
-                className="btn btn-secondary text-[11px] py-1 px-2.5 shrink-0 whitespace-nowrap self-center"
+                className="w-full rounded-full border border-[#3B0F18]/75 bg-white hover:bg-[#FAF5F5] text-[#1A080C] py-2 px-4 text-sm font-semibold transition-colors text-center"
               >
                 Fill Code
               </button>
@@ -822,8 +838,8 @@ export default function LoginPage() {
           </div>
 
           {/* Test Unauthorized / Invalid Code Button */}
-          <div className="pt-1 flex items-center justify-between text-xs">
-            <span className="text-[10px] text-[#8C7B7F]">
+          <div className="pt-1 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <span className="text-[11px] text-[#8C7B7F]">
               Test system rejection of unauthorized codes:
             </span>
             <button
