@@ -236,6 +236,7 @@ TO authenticated
 USING (auth.uid() = user_id OR public.is_approved_admin());
 
 -- Helper: Privacy-safe display name from profiles (First name + Last initial, never email)
+-- Uses profiles.display_name — the authoritative name column per migration 20261123234500.
 CREATE OR REPLACE FUNCTION public.format_public_learner_name(p_user_id uuid)
 RETURNS TEXT
 LANGUAGE sql
@@ -246,11 +247,11 @@ AS $$
   SELECT COALESCE(
     NULLIF(
       CASE
-        WHEN full_name IS NULL OR btrim(full_name) = '' THEN NULL
-        WHEN position(' ' IN btrim(full_name)) > 0 THEN
-          split_part(btrim(full_name), ' ', 1) || ' ' || left(split_part(btrim(full_name), ' ', 2), 1) || '.'
+        WHEN display_name IS NULL OR btrim(display_name) = '' THEN NULL
+        WHEN position(' ' IN btrim(display_name)) > 0 THEN
+          split_part(btrim(display_name), ' ', 1) || ' ' || left(split_part(btrim(display_name), ' ', 2), 1) || '.'
         ELSE
-          left(btrim(full_name), 16)
+          left(btrim(display_name), 16)
       END,
       ''
     ),
