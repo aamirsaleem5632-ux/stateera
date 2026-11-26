@@ -366,7 +366,13 @@ export const TenantPortalView: React.FC<TenantPortalViewProps> = ({ isDemo = tru
       </div>
 
       {/* Live Tenant-Manager Communication Channel */}
-      <PortalChat currentRole="tenant" senderName={isDemo ? "Demo Tenant" : "Resident"} />
+      <PortalChat
+        currentRole="tenant"
+        senderName={isDemo ? "Demo Tenant" : "Resident"}
+        isDemo={isDemo}
+        propertyId={activeLease?.propertyId}
+        unitNumber={activeLease?.unitNumber}
+      />
     </div>
   );
 };

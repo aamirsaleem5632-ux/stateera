@@ -31,6 +31,10 @@ function createUserMessageId(): string {
   return `usr-${Date.now()}`;
 }
 
+function createAiMessageId(): string {
+  return `ai-${Date.now()}`;
+}
+
 export const StateEraAI: React.FC = () => {
   const pathname = usePathname();
   const router = useRouter();
@@ -41,6 +45,7 @@ export const StateEraAI: React.FC = () => {
   const [isMaximized, setIsMaximized] = useState(false);
   const [input, setInput] = useState("");
   const [isTyping, setIsTyping] = useState(false);
+  const [aiMode, setAiMode] = useState<"rule-based" | "live-ai">("rule-based");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Initial welcome message
@@ -107,9 +112,98 @@ export const StateEraAI: React.FC = () => {
     ];
   }, [pathname]);
 
-  const handleSend = (textToSend?: string) => {
-    const query = textToSend || input;
-    if (!query.trim()) return;
+  const generateLocalFallbackReply = (
+    query: string
+  ): { responseText: string; actionObj?: { label: string; path: string } } => {
+    const lower = query.toLowerCase();
+    let responseText = "";
+    let actionObj: { label: string; path: string } | undefined;
+
+    if (
+      lower.includes("recommend") ||
+      lower.includes("best propert") ||
+      lower.includes("under $") ||
+      lower.includes("dubai") ||
+      lower.includes("lahore") ||
+      lower.includes("karachi") ||
+      lower.includes("london") ||
+      lower.includes("new york") ||
+      lower.includes("highest yield")
+    ) {
+      const maxPriceMatch = lower.match(/under\s*\$?(\d+)/);
+      const maxPrice = maxPriceMatch ? Number(maxPriceMatch[1]) : Infinity;
+      const cityKeywords = ["dubai", "lahore", "karachi", "islamabad", "london", "new york", "singapore", "tokyo", "miami", "zurich", "paris"];
+      const matchedCity = cityKeywords.find((c) => lower.includes(c));
+      const matches = properties
+        .filter((p) => {
+          const okPrice = p.sharePrice <= maxPrice;
+          const okCity = !matchedCity || p.city.toLowerCase().includes(matchedCity);
+          return okPrice && okCity;
+        })
+        .sort((a, b) => b.netYield - a.netYield)
+        .slice(0, 3);
+
+      if (matches.length > 0) {
+        const listText = matches
+          .map((p) => `• ${p.title} (${p.city}) — ${p.netYield}% net yield, $${p.sharePrice}/share`)
+          .join("\n");
+        responseText = `Based on the live StateEra catalog (${properties.length} properties), here are the top matching assets:\n${listText}`;
+        actionObj = { label: `Inspect ${matches[0].title}`, path: `/property/${matches[0].id}` };
+      } else {
+        responseText = `No properties matched those exact filters in our ${properties.length}-asset catalog. Try broadening your price or city criteria in Explore.`;
+        actionObj = { label: "Browse All Properties", path: "/explore" };
+      }
+    } else if (lower.includes("how does") || lower.includes("how it works") || lower.includes("fractional")) {
+      responseText =
+        "Fractional real estate means a large property is split into thousands of small, affordable parts called 'shares' (from $25–$100 each). When you own shares, real tenants pay rent each month. After basic building bills are paid, your share of the profit is sent straight into your practice wallet on the 1st of every month.";
+      actionObj = { label: "How StateEra Works", path: "/how-it-works" };
+    } else if (lower.includes("expert") || lower.includes("lawyer") || lower.includes("consult") || lower.includes("advisor") || lower.includes("attorney")) {
+      responseText =
+        "StateEra connects you directly with accredited Property Legal Advisors, Chartered RICS Valuation Surveyors, and Financial Strategists. You can schedule a video or in-person consultation anytime.";
+      actionObj = { label: "Human Expert Network", path: "/experts" };
+    } else if (lower.includes("micro") || lower.includes("saver") || lower.includes("scheme") || lower.includes("family circle") || lower.includes("rent to equity")) {
+      responseText =
+        "Our Affordable Ownership pathways include the Micro-Saver (recurring contributions from $15/wk), Learn-to-Own Academy, Rent-to-Equity for tenants, and Family Property Circles for intergenerational savings.";
+      actionObj = { label: "Explore Ownership Schemes", path: "/schemes" };
+    } else if (lower.includes("passport") || lower.includes("trust") || lower.includes("safe") || lower.includes("legal") || lower.includes("audit")) {
+      responseText =
+        "Every listed building features a verifiable Digital Property Passport with independent title checks, Bureau Veritas engineering audits, bank escrow reconciliations, and comprehensive replacement insurance.";
+      actionObj = { label: "Trust & Verification Centre", path: "/trust" };
+    } else if (lower.includes("ai") || lower.includes("detective") || lower.includes("urdu") || lower.includes("predict")) {
+      responseText =
+        "Explore the StateEra AI Property Detective for instant document parsing, multi-factor rental yield predictions, and plain-language Urdu property risk explanations.";
+      actionObj = { label: "AI Intelligence Ecosystem", path: "/ai-features" };
+    } else if (lower.includes("rent") || lower.includes("monthly") || lower.includes("payout")) {
+      const estMonthly = holdings.reduce((sum, h) => sum + h.sharesOwned * 0.9, 0);
+      responseText = `You currently earn an estimated $${estMonthly.toFixed(2)} in monthly rent from your holdings. Rent is collected from tenants and paid directly into your wallet on the 1st of every month.`;
+      actionObj = { label: "Open Wallet", path: "/wallet" };
+    } else if (lower.includes("safe") || lower.includes("legal") || lower.includes("due diligence") || lower.includes("audit")) {
+      responseText =
+        "Every building undergoes 4 independent checks before listing: 1) Title Deed check at the official land registry, 2) Structural engineering & MEP audit, 3) Financial & escrow bank reconciliation, and 4) All-risk property insurance. You can view all audited certificates on the property's Due Diligence tab.";
+      actionObj = { label: "View Reports", path: "/reports" };
+    } else if (lower.includes("sell") || lower.includes("cash out") || lower.includes("trade") || lower.includes("liquidity")) {
+      responseText =
+        "You do not have to wait years to sell the building. You can place your shares on the secondary market trade page anytime, set your price, and receive demo cash as soon as another investor buys them.";
+      actionObj = { label: "Secondary Trading", path: "/trade" };
+    } else if (lower.includes("practice") || lower.includes("money") || lower.includes("wallet") || lower.includes("balance")) {
+      responseText = `Your practice wallet has $${walletBalance.toLocaleString()} available. This is simulated demo money so you can test buying shares, collecting rent, and selling shares with zero financial risk.`;
+      actionObj = { label: "View Wallet", path: "/wallet" };
+    } else if (lower.includes("calculator") || lower.includes("stress test") || lower.includes("what if")) {
+      responseText =
+        "Try our 'What If?' Scenario Calculator to see how your monthly rent changes if occupancy drops or maintenance costs rise.";
+      actionObj = { label: "Open Scenario Simulator", path: "/simulator" };
+    } else {
+      responseText =
+        "StateEra lets you own pieces of high-yield properties and collect passive monthly rent. Would you like me to guide you to our top-rated properties, explain the ownership paperwork, or show you how to buy your first share with practice funds?";
+      actionObj = { label: "Explore Properties", path: "/explore" };
+    }
+
+    return { responseText, actionObj };
+  };
+
+  const handleSend = async (textToSend?: string) => {
+    const query = (textToSend || input).trim();
+    if (!query || isTyping) return;
 
     const userMsg: ChatMessage = {
       id: createUserMessageId(),
@@ -122,102 +216,53 @@ export const StateEraAI: React.FC = () => {
     if (!textToSend) setInput("");
     setIsTyping(true);
 
-    // AI Response Generation
-    setTimeout(() => {
-      const lower = query.toLowerCase();
-      let responseText = "";
-      let actionObj: { label: string; path: string } | undefined;
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 13_000);
+      const res = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          message: query,
+          pathname,
+          walletBalance,
+        }),
+      });
+      clearTimeout(timeout);
 
-      if (
-        lower.includes("recommend") ||
-        lower.includes("best propert") ||
-        lower.includes("under $") ||
-        lower.includes("dubai") ||
-        lower.includes("lahore") ||
-        lower.includes("karachi") ||
-        lower.includes("london") ||
-        lower.includes("new york") ||
-        lower.includes("highest yield")
-      ) {
-        const maxPriceMatch = lower.match(/under\s*\$?(\d+)/);
-        const maxPrice = maxPriceMatch ? Number(maxPriceMatch[1]) : Infinity;
-        const cityKeywords = ["dubai", "lahore", "karachi", "islamabad", "london", "new york", "singapore", "tokyo", "miami", "zurich", "paris"];
-        const matchedCity = cityKeywords.find((c) => lower.includes(c));
-        const matches = properties
-          .filter((p) => {
-            const okPrice = p.sharePrice <= maxPrice;
-            const okCity = !matchedCity || p.city.toLowerCase().includes(matchedCity);
-            return okPrice && okCity;
-          })
-          .sort((a, b) => b.netYield - a.netYield)
-          .slice(0, 3);
-
-        if (matches.length > 0) {
-          const listText = matches
-            .map((p) => `• ${p.title} (${p.city}) — ${p.netYield}% net yield, $${p.sharePrice}/share`)
-            .join("\n");
-          responseText = `Based on the live StateEra catalog (${properties.length} properties), here are the top matching assets:\n${listText}`;
-          actionObj = { label: `Inspect ${matches[0].title}`, path: `/property/${matches[0].id}` };
-        } else {
-          responseText = `No properties matched those exact filters in our ${properties.length}-asset catalog. Try broadening your price or city criteria in Explore.`;
-          actionObj = { label: "Browse All Properties", path: "/explore" };
+      if (res.ok) {
+        const data = await res.json();
+        if (data?.mode === "ai" && typeof data.reply === "string" && data.reply.trim()) {
+          setAiMode("live-ai");
+          const aiMsg: ChatMessage = {
+            id: createAiMessageId(),
+            sender: "ai",
+            text: data.reply,
+            timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+            action: data.action,
+          };
+          setMessages((prev) => [...prev, aiMsg]);
+          setIsTyping(false);
+          return;
         }
-      } else if (lower.includes("how does") || lower.includes("how it works") || lower.includes("fractional")) {
-        responseText =
-          "Fractional real estate means a large property is split into thousands of small, affordable parts called 'shares' (from $25–$100 each). When you own shares, real tenants pay rent each month. After basic building bills are paid, your share of the profit is sent straight into your practice wallet on the 1st of every month.";
-        actionObj = { label: "How StateEra Works", path: "/how-it-works" };
-      } else if (lower.includes("expert") || lower.includes("lawyer") || lower.includes("consult") || lower.includes("advisor") || lower.includes("attorney")) {
-        responseText =
-          "StateEra connects you directly with accredited Property Legal Advisors, Chartered RICS Valuation Surveyors, and Financial Strategists. You can schedule a video or in-person consultation anytime.";
-        actionObj = { label: "Human Expert Network", path: "/experts" };
-      } else if (lower.includes("micro") || lower.includes("saver") || lower.includes("scheme") || lower.includes("family circle") || lower.includes("rent to equity")) {
-        responseText =
-          "Our Affordable Ownership pathways include the Micro-Saver (recurring contributions from $15/wk), Learn-to-Own Academy, Rent-to-Equity for tenants, and Family Property Circles for intergenerational savings.";
-        actionObj = { label: "Explore Ownership Schemes", path: "/schemes" };
-      } else if (lower.includes("passport") || lower.includes("trust") || lower.includes("safe") || lower.includes("legal") || lower.includes("audit")) {
-        responseText =
-          "Every listed building features a verifiable Digital Property Passport with independent title checks, Bureau Veritas engineering audits, bank escrow reconciliations, and comprehensive replacement insurance.";
-        actionObj = { label: "Trust & Verification Centre", path: "/trust" };
-      } else if (lower.includes("ai") || lower.includes("detective") || lower.includes("urdu") || lower.includes("predict")) {
-        responseText =
-          "Explore the StateEra AI Property Detective for instant document parsing, multi-factor rental yield predictions, and plain-language Urdu property risk explanations.";
-        actionObj = { label: "AI Intelligence Ecosystem", path: "/ai-features" };
-      } else if (lower.includes("rent") || lower.includes("monthly") || lower.includes("payout")) {
-        const estMonthly = holdings.reduce((sum, h) => sum + h.sharesOwned * 0.9, 0);
-        responseText = `You currently earn an estimated $${estMonthly.toFixed(2)} in monthly rent from your holdings. Rent is collected from tenants and paid directly into your wallet on the 1st of every month.`;
-        actionObj = { label: "Open Wallet", path: "/wallet" };
-      } else if (lower.includes("safe") || lower.includes("legal") || lower.includes("due diligence") || lower.includes("audit")) {
-        responseText =
-          "Every building undergoes 4 independent checks before listing: 1) Title Deed check at the official land registry, 2) Structural engineering & MEP audit, 3) Financial & escrow bank reconciliation, and 4) All-risk property insurance. You can view all audited certificates on the property's Due Diligence tab.";
-        actionObj = { label: "View Reports", path: "/reports" };
-      } else if (lower.includes("sell") || lower.includes("cash out") || lower.includes("trade") || lower.includes("liquidity")) {
-        responseText =
-          "You do not have to wait years to sell the building. You can place your shares on the secondary market trade page anytime, set your price, and receive demo cash as soon as another investor buys them.";
-        actionObj = { label: "Secondary Trading", path: "/trade" };
-      } else if (lower.includes("practice") || lower.includes("money") || lower.includes("wallet") || lower.includes("balance")) {
-        responseText = `Your practice wallet has $${walletBalance.toLocaleString()} available. This is simulated demo money so you can test buying shares, collecting rent, and selling shares with zero financial risk.`;
-        actionObj = { label: "View Wallet", path: "/wallet" };
-      } else if (lower.includes("calculator") || lower.includes("stress test") || lower.includes("what if")) {
-        responseText =
-          "Try our 'What If?' Scenario Calculator to see how your monthly rent changes if occupancy drops or maintenance costs rise.";
-        actionObj = { label: "Open Scenario Simulator", path: "/simulator" };
-      } else {
-        responseText =
-          "StateEra lets you own pieces of high-yield properties and collect passive monthly rent. Would you like me to guide you to our top-rated properties, explain the ownership paperwork, or show you how to buy your first share with practice funds?";
-        actionObj = { label: "Explore Properties", path: "/explore" };
       }
+    } catch {
+      // Fall back cleanly to local catalog-aware rule-based engine
+    }
 
-      const aiMsg: ChatMessage = {
-        id: `ai-${Date.now()}`,
-        sender: "ai",
-        text: responseText,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-        action: actionObj,
-      };
+    setAiMode("rule-based");
+    const { responseText, actionObj } = generateLocalFallbackReply(query);
+    const aiMsg: ChatMessage = {
+      id: createAiMessageId(),
+      sender: "ai",
+      text: responseText,
+      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+      action: actionObj,
+    };
 
-      setMessages((prev) => [...prev, aiMsg]);
-      setIsTyping(false);
-    }, 800);
+    setMessages((prev) => [...prev, aiMsg]);
+    setIsTyping(false);
   };
 
   const clearChat = () => {
@@ -276,7 +321,7 @@ export const StateEraAI: React.FC = () => {
                       {BRAND_CONFIG.aiAgentName}
                     </h3>
                     <span className="bg-[#FAF5F5] border border-[#EADCDD] text-[#5E4A4E] text-[10px] font-bold px-1.5 py-0.5 rounded">
-                      Rule-Based Demo
+                      {aiMode === "live-ai" ? "Live AI" : "Rule-Based Demo"}
                     </span>
                   </div>
                   <p className="text-[11px] text-[#5E4A4E]">

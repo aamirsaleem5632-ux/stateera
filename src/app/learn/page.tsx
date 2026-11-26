@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useSyncExternalStore } from "react";
+import React, { useState, useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import {
   GraduationCap,
@@ -12,7 +12,14 @@ import {
   Star,
   X,
   Medal,
+  AlertCircle,
 } from "lucide-react";
+import { useDemo } from "@/context/DemoContext";
+import {
+  learnService,
+  DbLearnProgress,
+  DbLeaderboardEntry,
+} from "@/lib/services/learnService";
 
 const LEARN_STORAGE_KEY = "stateera-learn-progress-v1";
 const learnListeners = new Set<() => void>();
@@ -80,12 +87,65 @@ function saveLearnProgress(next: LearnProgress) {
 }
 
 export default function LearnCentrePage() {
-  const progress = useSyncExternalStore(subscribeLearn, getLearnSnapshot, getLearnServerSnapshot);
+  const { authUserId } = useDemo();
+  const guestProgress = useSyncExternalStore(
+    subscribeLearn,
+    getLearnSnapshot,
+    getLearnServerSnapshot
+  );
+
+  const [dbProgress, setDbProgress] = useState<DbLearnProgress | null>(null);
+  const [leaderboard, setLeaderboard] = useState<DbLeaderboardEntry[]>([]);
+  const [loadingDb, setLoadingDb] = useState<boolean>(false);
+  const [dbError, setDbError] = useState<string | null>(null);
+
   const [activeQuizQuestion, setActiveQuizQuestion] = useState<number>(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [score, setScore] = useState<number>(0);
   const [quizCompleted, setQuizCompleted] = useState<boolean>(false);
   const [readingModuleId, setReadingModuleId] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function loadLearningData() {
+      setLoadingDb(true);
+      setDbError(null);
+      try {
+        const [prog, board] = await Promise.all([
+          authUserId ? learnService.getProgress() : Promise.resolve(null),
+          learnService.getLeaderboard(10).catch(() => []),
+        ]);
+        if (!active) return;
+        if (prog) setDbProgress(prog);
+        setLeaderboard(board);
+      } catch (err) {
+        if (!active) return;
+        setDbError(
+          err instanceof Error
+            ? err.message
+            : "Unable to sync learning progress with database."
+        );
+      } finally {
+        if (active) setLoadingDb(false);
+      }
+    }
+
+    loadLearningData();
+    return () => {
+      active = false;
+    };
+  }, [authUserId]);
+
+  const progress: LearnProgress =
+    authUserId && dbProgress
+      ? {
+          completedModules: dbProgress.completedModules,
+          quizPassed: dbProgress.quizPassed,
+          bestQuizScore: dbProgress.bestQuizScore,
+        }
+      : guestProgress;
 
   const modules = [
     {
@@ -177,27 +237,58 @@ export default function LearnCentrePage() {
   const handleSelectOption = (idx: number) => {
     if (selectedAnswer !== null) return;
     setSelectedAnswer(idx);
+    setQuizAnswers((prev) => [...prev, idx]);
     if (idx === quizQuestions[activeQuizQuestion].correct) {
       setScore((s) => s + 1);
     }
   };
 
-  const handleNextQuestion = () => {
+  const handleNextQuestion = async () => {
     if (activeQuizQuestion < quizQuestions.length - 1) {
       setActiveQuizQuestion((q) => q + 1);
       setSelectedAnswer(null);
     } else {
       setQuizCompleted(true);
       const passed = score >= 2;
-      saveLearnProgress({
-        completedModules: progress.completedModules,
-        quizPassed: progress.quizPassed || passed,
-        bestQuizScore: Math.max(progress.bestQuizScore, score),
-      });
+      if (authUserId) {
+        try {
+          setDbError(null);
+          const result = await learnService.submitQuiz(quizAnswers);
+          setDbProgress(result.progress);
+          const board = await learnService.getLeaderboard(10).catch(() => leaderboard);
+          setLeaderboard(board);
+        } catch (err) {
+          setDbError(
+            err instanceof Error ? err.message : "Could not save quiz score to account."
+          );
+        }
+      } else {
+        saveLearnProgress({
+          completedModules: progress.completedModules,
+          quizPassed: progress.quizPassed || passed,
+          bestQuizScore: Math.max(progress.bestQuizScore, score),
+        });
+      }
     }
   };
 
-  const toggleModuleComplete = (modId: string) => {
+  const toggleModuleComplete = async (modId: string) => {
+    if (authUserId) {
+      if (progress.completedModules.includes(modId)) return;
+      try {
+        setDbError(null);
+        const updated = await learnService.completeModule(modId);
+        setDbProgress(updated);
+        const board = await learnService.getLeaderboard(10).catch(() => leaderboard);
+        setLeaderboard(board);
+      } catch (err) {
+        setDbError(
+          err instanceof Error ? err.message : "Could not save module completion to account."
+        );
+      }
+      return;
+    }
+
     const exists = progress.completedModules.includes(modId);
     const nextModules = exists
       ? progress.completedModules.filter((id) => id !== modId)
@@ -208,7 +299,10 @@ export default function LearnCentrePage() {
     });
   };
 
-  const xpPoints = progress.completedModules.length * 25 + (progress.quizPassed ? 50 : 0);
+  const xpPoints =
+    authUserId && dbProgress
+      ? dbProgress.xpPoints
+      : progress.completedModules.length * 25 + (progress.quizPassed ? 50 : 0);
   const badges = [
     {
       id: "first-principles",
@@ -236,12 +330,12 @@ export default function LearnCentrePage() {
     },
   ];
 
-  const leaderboardEntries = [
-    { name: "Amina K. (Demo Cohort)", xp: 200, badges: 4, isYou: false },
-    { name: "Tariq M. (Demo Cohort)", xp: 175, badges: 3, isYou: false },
-    { name: "Sara R. (Demo Cohort)", xp: 125, badges: 2, isYou: false },
-    { name: "You (Current Learner)", xp: xpPoints, badges: badges.filter((b) => b.earned).length, isYou: true },
-  ].sort((a, b) => b.xp - a.xp);
+  const leaderboardEntries = leaderboard.map((row) => ({
+    name: row.isCurrentUser ? `${row.displayName} (You)` : row.displayName,
+    xp: row.xpPoints,
+    badges: row.badgesCount,
+    isYou: row.isCurrentUser,
+  }));
 
   const activeModule = modules.find((m) => m.id === readingModuleId) || null;
 
@@ -271,7 +365,11 @@ export default function LearnCentrePage() {
               </div>
               <div>
                 <h2 className="text-lg font-bold text-[#1A080C]">Your Learning Progress</h2>
-                <p className="text-xs text-[#5E4A4E]">Educational XP &amp; milestones (no financial incentives)</p>
+                <p className="text-xs text-[#5E4A4E]">
+                  {authUserId
+                    ? "Saved to your StateEra account (no financial incentives)"
+                    : "Guest Preview — sign in to save XP & join the live leaderboard"}
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
@@ -325,30 +423,49 @@ export default function LearnCentrePage() {
           <div className="flex items-center justify-between">
             <div>
               <h2 className="text-lg font-bold text-[#1A080C]">Academy Leaderboard</h2>
-              <p className="text-xs text-[#5E4A4E]">Educational literacy ranking (Demo Cohort)</p>
+              <p className="text-xs text-[#5E4A4E]">
+                Verified learner rankings from StateEra database
+              </p>
             </div>
             <span className="badge badge-demo text-[10px]">Education Only</span>
           </div>
+          {dbError && (
+            <div className="p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 flex items-center gap-2">
+              <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+              <span>{dbError}</span>
+            </div>
+          )}
           <div className="divide-y divide-[#EADCDD]">
-            {leaderboardEntries.map((entry, idx) => (
-              <div
-                key={entry.name}
-                className={`py-3 px-2.5 rounded-xl flex items-center justify-between gap-3 text-xs ${
-                  entry.isYou ? "bg-[#FAF5F5] font-bold" : ""
-                }`}
-              >
-                <div className="flex items-center gap-2.5 min-w-0">
-                  <span className="w-6 h-6 rounded-full bg-[#FAF5F5] border border-[#EADCDD] flex items-center justify-center text-[11px] font-black text-[#3B0F18] shrink-0">
-                    #{idx + 1}
-                  </span>
-                  <span className="truncate text-[#1A080C]">{entry.name}</span>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <span className="text-[11px] text-[#5E4A4E]">{entry.badges} badges</span>
-                  <span className="font-black text-[#3B0F18]">{entry.xp} XP</span>
-                </div>
+            {loadingDb ? (
+              <div className="py-6 text-center text-xs text-[#5E4A4E]">
+                Loading verified leaderboard...
               </div>
-            ))}
+            ) : leaderboardEntries.length === 0 ? (
+              <div className="py-6 text-center text-xs text-[#5E4A4E] space-y-1">
+                <p className="font-semibold text-[#1A080C]">No verified leaderboard entries yet.</p>
+                <p>Sign in and complete a module to record your XP on the live leaderboard.</p>
+              </div>
+            ) : (
+              leaderboardEntries.map((entry, idx) => (
+                <div
+                  key={`${entry.name}-${idx}`}
+                  className={`py-3 px-2.5 rounded-xl flex items-center justify-between gap-3 text-xs ${
+                    entry.isYou ? "bg-[#FAF5F5] font-bold" : ""
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <span className="w-6 h-6 rounded-full bg-[#FAF5F5] border border-[#EADCDD] flex items-center justify-center text-[11px] font-black text-[#3B0F18] shrink-0">
+                      #{idx + 1}
+                    </span>
+                    <span className="truncate text-[#1A080C]">{entry.name}</span>
+                  </div>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-[11px] text-[#5E4A4E]">{entry.badges} badges</span>
+                    <span className="font-black text-[#3B0F18]">{entry.xp} XP</span>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
@@ -508,6 +625,7 @@ export default function LearnCentrePage() {
                 onClick={() => {
                   setActiveQuizQuestion(0);
                   setSelectedAnswer(null);
+                  setQuizAnswers([]);
                   setScore(0);
                   setQuizCompleted(false);
                 }}

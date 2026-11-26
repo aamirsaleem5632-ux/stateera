@@ -583,7 +583,12 @@ export const ManagerPortalView: React.FC<ManagerPortalViewProps> = ({ isDemo = t
       )}
 
       {/* Live Manager-Tenant Communication Channel */}
-      <PortalChat currentRole="manager" senderName={isDemo ? "Demo Manager" : "Property Manager"} />
+      <PortalChat
+        currentRole="manager"
+        senderName={isDemo ? "Demo Manager" : "Property Manager"}
+        isDemo={isDemo}
+        propertyId={properties[0]?.id}
+      />
     </div>
   );
 };
