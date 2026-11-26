@@ -449,3 +449,10 @@ GRANT EXECUTE ON FUNCTION public.submit_learning_quiz(int[]) TO authenticated;
 
 REVOKE ALL ON FUNCTION public.get_learning_leaderboard(int) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION public.get_learning_leaderboard(int) TO anon, authenticated;
+
+-- Table-level privileges for authenticated clients (enforced alongside RLS)
+GRANT SELECT, INSERT ON TABLE public.portal_conversations TO authenticated;
+GRANT SELECT, INSERT ON TABLE public.portal_messages TO authenticated;
+GRANT UPDATE (read_at) ON TABLE public.portal_messages TO authenticated;
+GRANT SELECT ON TABLE public.user_learning_progress TO authenticated;
+GRANT SELECT ON TABLE public.user_learning_badges TO authenticated;
