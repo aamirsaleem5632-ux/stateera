@@ -3,6 +3,7 @@
 import React from "react";
 import { motion, Variants, HTMLMotionProps } from "framer-motion";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useIsMounted } from "@/hooks/useIsMounted";
 import { useLanguage } from "@/lib/i18n/LanguageContext";
 import { useIsMobile } from "@/hooks/useIsMobile";
 
@@ -47,15 +48,11 @@ export const Reveal: React.FC<RevealProps> = ({
   className,
   ...rest
 }) => {
-  const [mounted, setMounted] = React.useState(false);
+  const mounted = useIsMounted();
   const reducedMotion = useReducedMotion();
   const isMobile = useIsMobile();
   const { dir } = useLanguage();
   const isRTL = dir === "rtl";
-
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
 
   const Tag = as as any;
 

@@ -139,7 +139,6 @@ export default function InvestorDashboardPage() {
             <button
               onClick={async () => {
                 await signOut();
-                window.location.href = "/login";
               }}
               className="btn btn-secondary text-xs text-[#DC2626] border-[#FCA5A5] hover:bg-[#FEF2F2]"
               title="Sign out of live session"

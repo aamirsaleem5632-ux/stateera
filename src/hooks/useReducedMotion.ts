@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useReducedMotion as useFramerReducedMotion } from "framer-motion";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 /**
  * Returns true if the user has requested reduced motion.
@@ -9,12 +9,8 @@ import { useReducedMotion as useFramerReducedMotion } from "framer-motion";
  * resolving to the client's actual system preference only after mount.
  */
 export function useReducedMotion(): boolean {
-  const [mounted, setMounted] = useState(false);
+  const mounted = useIsMounted();
   const shouldReduce = useFramerReducedMotion();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   if (!mounted) return false;
   return shouldReduce ?? false;

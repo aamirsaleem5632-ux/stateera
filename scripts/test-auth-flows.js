@@ -165,6 +165,50 @@ runTest("Email Sign In safely routes approved users while blocking unapproved ro
   assert.strictEqual(routeUser("tenant", "Pending"), "/dashboard");
 });
 
+runTest("Email Sign In strictly enforces approval states and blocks pending/rejected accounts from bypassing approval rules", () => {
+  function evaluateApproval(role, approvalStatus) {
+    const isApproved = (approvalStatus || "").toLowerCase() === "approved";
+    const isRejected = (approvalStatus || "").toLowerCase() === "rejected";
+    return { isApproved, isRejected };
+  }
+
+  // 1. Approved States for all 4 roles
+  ["investor", "manager", "tenant", "admin"].forEach((r) => {
+    const res = evaluateApproval(r, "Approved");
+    assert.strictEqual(res.isApproved, true, `${r} with Approved must be approved`);
+    assert.strictEqual(res.isRejected, false);
+  });
+
+  // 2. Pending States for all 4 roles must NEVER be approved
+  ["investor", "manager", "tenant", "admin"].forEach((r) => {
+    const res = evaluateApproval(r, "Pending");
+    assert.strictEqual(res.isApproved, false, `${r} with Pending must NOT be approved`);
+    assert.strictEqual(res.isRejected, false);
+  });
+
+  // 3. Rejected States for all 4 roles must NEVER be approved and must be marked rejected
+  ["investor", "manager", "tenant", "admin"].forEach((r) => {
+    const res = evaluateApproval(r, "Rejected");
+    assert.strictEqual(res.isApproved, false, `${r} with Rejected must NOT be approved`);
+    assert.strictEqual(res.isRejected, true, `${r} with Rejected must be flagged as rejected`);
+  });
+
+  // 4. Verify login source code does not grant unconditional approval to investor role
+  const loginSrc = fs.readFileSync(path.join(ROOT, "src", "app", "login", "page.tsx"), "utf8");
+  assert.ok(
+    !loginSrc.includes('profile?.role === "investor";'),
+    "Login must NOT grant automatic approval bypass to investor role"
+  );
+  assert.ok(
+    loginSrc.includes('const isApproved = (profile?.role_approval_status || "").toLowerCase() === "approved";'),
+    "Login must strictly verify role_approval_status is approved"
+  );
+  assert.ok(
+    loginSrc.includes('if (isRejected) {'),
+    "Login must handle rejected compliance status explicitly"
+  );
+});
+
 // =============================================================
 // PILLAR 3: Create Account (Email Sign Up)
 // =============================================================

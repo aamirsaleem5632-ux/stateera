@@ -2,6 +2,35 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { NextResponse, type NextRequest } from "next/server";
 
+function getSafeSiteOrigin(request: NextRequest, fallbackOrigin: string): string {
+  if (process.env.NODE_ENV === "development") return fallbackOrigin;
+
+  const rawForwardedHost = request.headers.get("x-forwarded-host");
+  const forwardedHost = rawForwardedHost ? rawForwardedHost.split(",")[0].trim().toLowerCase() : null;
+  if (!forwardedHost || !/^[a-z0-9.-]+(:\d+)?$/.test(forwardedHost)) {
+    return fallbackOrigin;
+  }
+
+  const requestHost = new URL(fallbackOrigin).host.toLowerCase();
+  const allowedHosts = new Set<string>([requestHost, "stateera.vercel.app"]);
+  if (process.env.VERCEL_URL) allowedHosts.add(process.env.VERCEL_URL.toLowerCase());
+  if (process.env.NEXT_PUBLIC_SITE_URL) {
+    try {
+      allowedHosts.add(new URL(process.env.NEXT_PUBLIC_SITE_URL).host.toLowerCase());
+    } catch {
+      // Ignore malformed env URL
+    }
+  }
+
+  const isAllowedVercelPreview =
+    forwardedHost.endsWith(".vercel.app") && forwardedHost.startsWith("stateera");
+  if (allowedHosts.has(forwardedHost) || isAllowedVercelPreview) {
+    return `https://${forwardedHost}`;
+  }
+
+  return fallbackOrigin;
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
@@ -11,9 +40,7 @@ export async function GET(request: NextRequest) {
   const errorParam = searchParams.get("error");
   const errorDescription = searchParams.get("error_description");
 
-  const forwardedHost = request.headers.get("x-forwarded-host");
-  const isLocalEnv = process.env.NODE_ENV === "development";
-  const siteOrigin = !isLocalEnv && forwardedHost ? `https://${forwardedHost}` : origin;
+  const siteOrigin = getSafeSiteOrigin(request, origin);
 
   // 1. Determine safe target URL
   let next = type === "recovery" ? "/auth/reset-password" : "/dashboard";
@@ -100,9 +127,24 @@ export async function GET(request: NextRequest) {
 
   // 4. Exchange PKCE authorization code
   if (code) {
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    const { data: exchangeData, error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
+      if (!isPasswordRecovery && exchangeData?.user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("role_approval_status")
+          .eq("id", exchangeData.user.id)
+          .single();
+        if ((profile?.role_approval_status || "").toLowerCase() === "rejected") {
+          await supabase.auth.signOut();
+          const rejectedUrl = new URL("/login", siteOrigin);
+          rejectedUrl.searchParams.set("error", "account_rejected");
+          const rejectedRes = NextResponse.redirect(rejectedUrl);
+          response.cookies.getAll().forEach((c) => rejectedRes.cookies.set(c.name, c.value, c));
+          return rejectedRes;
+        }
+      }
       return response;
     }
 

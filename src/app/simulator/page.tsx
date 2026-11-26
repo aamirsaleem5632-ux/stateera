@@ -98,18 +98,6 @@ export default function ScenarioSimulatorPage() {
   const [selectedPropertyId, setSelectedPropertyId] = useState<string>("");
   const prevPropertyIdRef = useRef<string>("");
 
-  // Auto-select valid property when data becomes available or current selection is invalid
-  useEffect(() => {
-    if (validProperties.length > 0) {
-      const exists = validProperties.some((p) => p.id === selectedPropertyId);
-      if (!exists) {
-        setSelectedPropertyId(validProperties[0].id);
-      }
-    } else {
-      setSelectedPropertyId("");
-    }
-  }, [validProperties, selectedPropertyId]);
-
   const selectedProperty = useMemo(() => {
     if (validProperties.length === 0) return null;
     return validProperties.find((p) => p.id === selectedPropertyId) || validProperties[0];

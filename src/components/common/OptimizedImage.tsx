@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import Image, { ImageProps } from "next/image";
 import { Building2 } from "lucide-react";
+import { useIsMounted } from "@/hooks/useIsMounted";
 
 export interface OptimizedImageProps extends Omit<ImageProps, "onError" | "onLoad"> {
   fallbackSrc?: string;
@@ -67,27 +68,24 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   onError,
   ...rest
 }) => {
-  const [isMounted, setIsMounted] = useState(false);
+  const isMounted = useIsMounted();
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [retried, setRetried] = useState(false);
 
   const targetW = typeof width === "number" ? width : 800;
+  const srcKey = `${typeof src === "string" ? src : ""}|${targetW}`;
+  const [prevSrcKey, setPrevSrcKey] = useState(srcKey);
   const [currentSrc, setCurrentSrc] = useState<string>(() => getOptimizedSrc(src, targetW));
   const imgRef = useRef<HTMLImageElement | null>(null);
 
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  // Sync internal state when external src prop changes (e.g., gallery thumbnail clicks)
-  useEffect(() => {
-    const opt = getOptimizedSrc(src, targetW);
-    setCurrentSrc(opt);
+  if (srcKey !== prevSrcKey) {
+    setPrevSrcKey(srcKey);
+    setCurrentSrc(getOptimizedSrc(src, targetW));
     setHasError(false);
     setRetried(false);
     setIsLoading(true);
-  }, [src, targetW]);
+  }
 
   const handleLoadingComplete = useCallback(() => {
     setIsLoading(false);
