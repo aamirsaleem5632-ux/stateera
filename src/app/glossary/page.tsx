@@ -63,24 +63,24 @@ export default function GlossaryPage() {
           <span>The 60-Second Property Investing Summary</span>
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
-          <div className="p-4 rounded-2xl bg-white border border-[#EADCDD] space-y-1.5">
+          <div className="p-4 rounded-2xl bg-[#FAF5F5] border border-[#EADCDD] space-y-1.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-accent-se">Concept 1</span>
             <h3 className="font-bold text-sm text-[#1A080C]">You Own a Piece</h3>
             <p className="text-secondary-se leading-relaxed">
               Instead of needing $1,000,000 to buy an entire building, the building is sliced into 10,000 small shares of $100. You buy only what you can afford.
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-200 space-y-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-700">Concept 2</span>
-            <h3 className="font-bold text-sm text-emerald-950">You Collect Rent</h3>
-            <p className="text-emerald-800 leading-relaxed">
+          <div className="p-4 rounded-2xl bg-[#FAF5F5] border border-[#EADCDD] space-y-1.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-accent-se">Concept 2</span>
+            <h3 className="font-bold text-sm text-[#1A080C]">You Collect Rent</h3>
+            <p className="text-secondary-se leading-relaxed">
               Real tenants live or work in the building and pay monthly rent. After paying building bills, the net profit is split and sent straight to your wallet.
             </p>
           </div>
-          <div className="p-4 rounded-2xl bg-blue-50 border border-blue-200 space-y-1.5">
-            <span className="text-[10px] uppercase font-bold tracking-wider text-blue-700">Concept 3</span>
-            <h3 className="font-bold text-sm text-blue-950">You Can Sell Anytime</h3>
-            <p className="text-blue-800 leading-relaxed">
+          <div className="p-4 rounded-2xl bg-[#FAF5F5] border border-[#EADCDD] space-y-1.5">
+            <span className="text-[10px] uppercase font-bold tracking-wider text-accent-se">Concept 3</span>
+            <h3 className="font-bold text-sm text-[#1A080C]">You Can Sell Anytime</h3>
+            <p className="text-secondary-se leading-relaxed">
               If you ever want your money back, you can sell your shares to other investors on the secondary market without waiting years to sell the whole building.
             </p>
           </div>
