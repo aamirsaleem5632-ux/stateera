@@ -9,6 +9,7 @@ export interface OptimizedImageProps extends Omit<ImageProps, "onError" | "onLoa
   fallbackSrc?: string;
   fallbackLabel?: string;
   containerClassName?: string;
+  maxWidth?: number;
   onLoad?: () => void;
   onError?: () => void;
 }
@@ -62,6 +63,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   sizes = "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw",
   className = "",
   containerClassName = "",
+  maxWidth,
   fallbackSrc,
   fallbackLabel,
   onLoad,
@@ -73,11 +75,14 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [hasError, setHasError] = useState(false);
   const [retried, setRetried] = useState(false);
 
-  const targetW = typeof width === "number" ? width : 800;
+  const targetW = typeof maxWidth === "number" ? maxWidth : typeof width === "number" ? width : 800;
   const srcKey = `${typeof src === "string" ? src : ""}|${targetW}`;
   const [prevSrcKey, setPrevSrcKey] = useState(srcKey);
   const [currentSrc, setCurrentSrc] = useState<string>(() => getOptimizedSrc(src, targetW));
   const imgRef = useRef<HTMLImageElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const isLazy = !priority && loading !== "eager";
+  const [isInViewport, setIsInViewport] = useState(!isLazy);
 
   if (srcKey !== prevSrcKey) {
     setPrevSrcKey(srcKey);
@@ -128,9 +133,30 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     }
   }, [currentSrc]);
 
-  // 4s Watchdog Timeout: Prevent images from being indefinitely stuck in shimmer state
+  // Observe viewport intersection so lazy images don't trip the watchdog before loading
   useEffect(() => {
-    if (!isLoading) return;
+    if (!isLazy || isInViewport) return;
+    const el = containerRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") {
+      setIsInViewport(true);
+      return;
+    }
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((e) => e.isIntersecting)) {
+          setIsInViewport(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "350px" }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [isLazy, isInViewport]);
+
+  // 6s Watchdog Timeout: Only armed once image is in/near viewport to prevent false errors on lazy images
+  useEffect(() => {
+    if (!isLoading || !isInViewport) return;
     const timer = setTimeout(() => {
       if (isLoading) {
         if (imgRef.current && imgRef.current.complete && imgRef.current.naturalWidth > 0) {
@@ -143,9 +169,9 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
           setHasError(true);
         }
       }
-    }, 4000);
+    }, 6000);
     return () => clearTimeout(timer);
-  }, [isLoading, currentSrc, fallbackSrc, retried, targetW]);
+  }, [isLoading, isInViewport, currentSrc, fallbackSrc, retried, targetW]);
 
   // If fill is true, the container must be relative and fill parent
   const isFill = fill || (!width && !height);
@@ -158,6 +184,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   return (
     <div
+      ref={containerRef}
       className={`relative overflow-hidden bg-[#FAF5F5] ${
         isFill ? "w-full h-full" : ""
       } ${containerClassName}`}

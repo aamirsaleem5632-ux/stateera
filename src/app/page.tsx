@@ -470,7 +470,7 @@ export default function HomePage() {
                 <PropertyCard
                   property={property}
                   featured={idx === 0}
-                  priority={idx < 4}
+                  priority={idx < 2}
                 />
               </div>
             ))}
