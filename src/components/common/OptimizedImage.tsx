@@ -179,8 +179,10 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   // Deterministic loading behavior
   const resolvedLoading = priority ? undefined : (loading || "lazy");
 
-  const isShimmerActive = !isMounted || (isLoading && !hasError);
-  const isImageVisible = isMounted && !isLoading && !hasError;
+  // Priority (above-the-fold LCP) images must paint immediately on SSR without
+  // waiting for client hydration or opacity transitions.
+  const isShimmerActive = priority ? false : (!isMounted || (isLoading && !hasError));
+  const isImageVisible = priority ? !hasError : (isMounted && !isLoading && !hasError);
 
   return (
     <div

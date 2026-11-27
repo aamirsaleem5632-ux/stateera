@@ -160,12 +160,11 @@ export default function HomePage() {
       >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-            {/* Left Hero Content */}
+            {/* Left Hero Content — render immediately visible on SSR for fast LCP */}
             <motion.div
               className="lg:col-span-7 space-y-6 text-left"
-              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+              initial={false}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: EASING }}
             >
               {/* Main Headline — solid dark text, key phrase in maroon */}
               <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-[#1A080C] tracking-tight leading-[1.12]">
@@ -206,12 +205,11 @@ export default function HomePage() {
               </div>
             </motion.div>
 
-            {/* Right Architectural Visual — clean photo with simple rounded corners, NO floating badges */}
+            {/* Right Architectural Visual — render immediately visible on SSR for fast LCP */}
             <motion.div
               className="lg:col-span-5"
-              initial={reducedMotion ? false : { opacity: 0, scale: 0.98 }}
+              initial={false}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ duration: 0.7, delay: 0.15, ease: EASING }}
             >
               <motion.div
                 style={{ y: heroImageY }}
