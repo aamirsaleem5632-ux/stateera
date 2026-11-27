@@ -1,13 +1,13 @@
-const CACHE_NAME = "stateera-pwa-v1";
+const CACHE_NAME = "stateera-pwa-v2";
 const OFFLINE_URL = "/offline";
 const PRECACHE_ASSETS = [
   "/",
   "/offline",
   "/explore",
   "/glossary",
-  "/skyline-logo.svg",
-  "/skyline-logo-dark.png",
-  "/skyline-logo-white.png",
+  "/brand/skyline-logo.svg",
+  "/brand/skyline-logo-dark.png",
+  "/brand/skyline-logo-white.png",
 ];
 
 self.addEventListener("install", (event) => {

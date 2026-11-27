@@ -14,19 +14,19 @@ export default function manifest(): MetadataRoute.Manifest {
     categories: ["finance", "education", "business"],
     icons: [
       {
-        src: "/skyline-logo-dark.png",
+        src: "/brand/skyline-logo-dark.png",
         sizes: "192x192",
         type: "image/png",
         purpose: "any",
       },
       {
-        src: "/skyline-logo-dark.png",
+        src: "/brand/skyline-logo-dark.png",
         sizes: "512x512",
         type: "image/png",
         purpose: "maskable",
       },
       {
-        src: "/skyline-logo.svg",
+        src: "/brand/skyline-logo.svg",
         sizes: "any",
         type: "image/svg+xml",
       },
