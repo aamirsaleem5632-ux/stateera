@@ -15,7 +15,9 @@ export const BeginnerGuideBanner: React.FC<BeginnerGuideBannerProps> = ({ pageNa
   const [locallyDismissed, setLocallyDismissed] = useState<boolean>(false);
 
   const storageKey = `stateera_beginner_banner_${pageName}`;
-  const isStoredDismissed = useStorageBoolean(storageKey, true);
+  // Default to false (visible) on SSR so first-time visitors don't get a
+  // post-hydration layout shift when localStorage has no dismissal record.
+  const isStoredDismissed = useStorageBoolean(storageKey, false);
 
   const isDismissed = isStoredDismissed || locallyDismissed;
 
